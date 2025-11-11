@@ -5,7 +5,7 @@
 // API Base URL - adjust this based on your environment
 const API_BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:5000' 
-    : 'http://localhost:5000';
+    : 'https://bharathmedicare.onrender.com';
 
 // API Endpoints
 const API_ENDPOINTS = {

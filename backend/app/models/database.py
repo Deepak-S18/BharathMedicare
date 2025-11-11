@@ -22,7 +22,9 @@ class Database:
                 cls._client = MongoClient(
                     mongo_uri,
                     serverSelectionTimeoutMS=10000,
-                    connectTimeoutMS=10000
+                    connectTimeoutMS=10000,
+                    tls=True,
+                    tlsAllowInvalidCertificates=True
                 )
                 # Test the connection
                 cls._client.admin.command('ping')
