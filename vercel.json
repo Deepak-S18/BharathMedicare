@@ -2,5 +2,23 @@
   "buildCommand": null,
   "outputDirectory": "frontend",
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "routes": [
+    {
+      "src": "/pages/(.*)",
+      "dest": "/pages/$1"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/js/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
 }
