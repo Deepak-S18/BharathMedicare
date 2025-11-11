@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Portal - Bharath Medicare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="../assets/css/auth-pages.css">
+    <style>
+        #qr-reader {
+            width: 100%;
+            border: 2px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .scanner-status {
+            padding: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+        
+        .status-waiting {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .status-success {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+        
+        .status-error {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 30px 0;
+            color: var(--text-secondary);
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .divider span {
+            padding: 0 15px;
+            font-size: 0.9rem;
+        }
+        
+        .manual-entry-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="brand-section">
+                    <div class="logo-container">
+                        <div class="logo">
+                            <img src="../assets/images/logo.png" alt="Bharath Medicare Logo">
+                        </div>
+                        <h1 class="brand-name">Bharath Medicare</h1>
+                    </div>
+                </div>
+                <div class="sidebar-content">
+                    <h2 class="portal-title">Hospital Portal</h2>
+                    <p class="portal-description">
+                        Scan patient QR codes for instant, secure access to their medical records and health information.
+                    </p>
+                    <div class="features">
+                        <div class="feature">
+                            <div class="feature-icon">
+                                <i class="fas fa-qrcode"></i>
+                            </div>
+                            <span>Quick QR Code Scanning</span>
+                        </div>
+                        <div class="feature">
+                            <div class="feature-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <span>Secure Patient Authentication</span>
+                        </div>
+                        <div class="feature">
+                            <div class="feature-icon">
+                                <i class="fas fa-user-md"></i>
+                            </div>
+                            <span>Instant Record Access</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scanner Section -->
+            <div class="form-section">
+                <div class="form-header">
+                    <h2 class="form-title">Scan Patient QR Code</h2>
+                    <p class="form-subtitle">Position the QR code within the camera frame</p>
+                </div>
+
+                <div class="auth-form">
+                    <!-- Start Scan Button -->
+                    <div id="scanButtonContainer" style="text-align: center; margin-bottom: 20px;">
+                        <button class="submit-button" onclick="startScanner()" style="width: 100%;">
+                            <i class="fas fa-camera"></i> Start QR Code Scanner
+                        </button>
+                    </div>
+                    
+                    <div id="qr-reader" style="display: none;"></div>
+                    
+                    <div id="scanner-status" class="scanner-status status-waiting" style="display: none;">
+                        Scanning for QR code...
+                    </div>
+                    
+                    <!-- Stop Scan Button -->
+                    <div id="stopButtonContainer" style="text-align: center; margin-bottom: 20px; display: none;">
+                        <button class="submit-button" onclick="stopScanner()" style="width: 100%; background: #e53e3e;">
+                            <i class="fas fa-stop"></i> Stop Scanner
+                        </button>
+                    </div>
+
+                    <div class="divider">
+                        <span>OR</span>
+                    </div>
+
+                    <div class="manual-entry">
+                        <h3 class="manual-entry-title">Manual Patient ID Entry</h3>
+                        <div class="form-group">
+                            <label for="manualPatientId">Patient ID</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-id-card input-icon"></i>
+                                <input type="text" id="manualPatientId" placeholder="Enter Patient ID">
+                            </div>
+                        </div>
+                        <button class="submit-button" onclick="loginManually()">
+                            <i class="fas fa-sign-in-alt"></i> Access Patient Records
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-footer">
+                    <p>
+                        <a href="../index.html" class="link-button">
+                            <i class="fas fa-home"></i> Back to Home
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/hospital-portal.js"></script>
+</body>
+</html>

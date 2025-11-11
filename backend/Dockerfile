@@ -23,6 +23,10 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy application code
 COPY . .
 
+# CRITICAL CLEANUP: Remove Python cache directories 
+# to ensure runtime uses freshly loaded modules.
+RUN find . -name "__pycache__" -exec rm -rf {} +
+
 # Expose port
 EXPOSE 5000
 

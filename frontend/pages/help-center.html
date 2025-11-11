@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Center - Bharath Medicare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="../assets/css/landing.css">
+    <style>
+        .help-container {
+            max-width: 1200px;
+            margin: 80px auto 40px;
+            padding: 40px 20px;
+        }
+        .help-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .help-header h1 {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        .help-header p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+        .help-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        .help-category {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .help-category:hover {
+            transform: translateY(-5px);
+        }
+        .help-category-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            margin-bottom: 20px;
+        }
+        .help-category h3 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        .help-category ul {
+            list-style: none;
+            padding: 0;
+        }
+        .help-category li {
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .help-category li:last-child {
+            border-bottom: none;
+        }
+        .help-category a {
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .help-category a:hover {
+            color: var(--secondary-color);
+        }
+        .help-item {
+            cursor: pointer;
+        }
+        .help-item-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        .help-item-header:hover {
+            color: var(--secondary-color);
+        }
+        .help-item-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding: 0 20px;
+        }
+        .help-item-content.active {
+            max-height: 300px;
+            padding: 15px 20px;
+        }
+        .help-item-content p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+        .chevron-icon {
+            transition: transform 0.3s ease;
+        }
+        .chevron-icon.rotated {
+            transform: rotate(90deg);
+        }
+        .contact-section {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 60px 40px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .contact-section h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .contact-section p {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        .contact-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .contact-btn {
+            background: white;
+            color: var(--primary-color);
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.3s ease;
+        }
+        .contact-btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container navbar-content">
+            <a href="../index.html" class="navbar-brand">
+                <img src="../assets/images/logo.png" alt="Bharath Medicare Logo" style="height: 40px; margin-right: 10px; vertical-align: middle;">
+                Bharath Medicare
+            </a>
+            <div class="navbar-nav">
+                <a href="../index.html" class="nav-link">Home</a>
+                <a href="login.html" class="btn-primary">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="help-container">
+        <div class="help-header">
+            <h1><i class="fas fa-question-circle"></i> Help Center</h1>
+            <p>Find answers to common questions and learn how to use Bharath Medicare</p>
+        </div>
+
+        <div class="help-categories">
+            <div class="help-category">
+                <div class="help-category-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <h3>Getting Started</h3>
+                <ul>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> How to create an account</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>Click the "Register" button on the homepage, select your role (Patient or Doctor), fill in your email, password, and full name. Patients are verified instantly, while doctors need to provide their NMC UID and wait for admin approval.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Patient registration guide</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>As a patient, you'll need to provide basic information during registration. After creating your account, complete your profile with medical details like blood group, allergies, chronic conditions, and emergency contacts to unlock all features.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Doctor registration process</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>Doctors must provide their 7-digit NMC (National Medical Commission) UID during registration. Your account will be pending until an admin verifies your credentials. You'll receive access once approved.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Completing your profile</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>Navigate to your dashboard and click on "Profile" section. Fill in all required fields including personal information, medical history, and emergency contacts. A complete profile is required to access all platform features.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="help-category">
+                <div class="help-category-icon">
+                    <i class="fas fa-file-medical"></i>
+                </div>
+                <h3>Medical Records</h3>
+                <ul>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Uploading medical records</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>Go to "Records" section in your dashboard, click "Upload New Record", select a file (PDF, JPG, or PNG up to 10MB), add a description, and click upload. Your file will be encrypted and stored securely.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Viewing your records</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>All your uploaded records are displayed in the "Records" section. You can see the file name, upload date, and description. Click on any record to view it in full screen or download it.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Downloading records</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>Click the download icon next to any record to save it to your device. The file will be decrypted and downloaded in its original format. You can download your records anytime.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Deleting records</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>Click the delete icon next to a record and confirm the action. Note: Deleted records cannot be recovered. Make sure to download important files before deleting them.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="help-category">
+                <div class="help-category-icon">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <h3>Doctor Access</h3>
+                <ul>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Granting access to doctors</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>Navigate to "Access Control" section, enter the doctor's registered email address, and click "Grant Access". The doctor will immediately be able to view all your medical records and profile information.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Revoking doctor access</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>In the "Access Control" section, find the doctor in your authorized list and click "Revoke". The doctor will lose access immediately and won't be able to view your records anymore.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Viewing access history</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>Check the "Audit Logs" section to see complete history of who accessed your records, when they accessed them, and what actions they performed. All access is tracked for your security.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Managing permissions</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>You have complete control over your data. You can grant or revoke access to any doctor at any time. Currently, all authorized doctors have full read access to your records.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="help-category">
+                <div class="help-category-icon">
+                    <i class="fas fa-qrcode"></i>
+                </div>
+                <h3>Health Card & QR Code</h3>
+                <ul>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Understanding your health card</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>Your digital health card contains your patient ID, personal information, blood group, and a QR code. It's available in the "Health Card" section and displays key medical information for quick reference.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Using QR code at hospitals</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>Show your health card QR code at hospital reception. They can scan it using the hospital portal to instantly access your medical records without you needing to log in manually.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Downloading health card</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>In the "Health Card" section, click "Download" to save your health card as an image. You can also print it or save it to your phone for easy access at medical facilities.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Hospital portal access</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>Hospitals can access the dedicated hospital portal to scan patient QR codes. This provides quick, secure access to patient records during emergencies or routine visits without password requirements.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="help-category">
+                <div class="help-category-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Security & Privacy</h3>
+                <ul>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> How we protect your data</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>We use military-grade AES-256 encryption for all medical records, secure HTTPS connections for data transmission, and role-based access control. Your data is stored in secure cloud servers with regular backups.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Encryption explained</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>All your medical files are encrypted before storage using AES-256 encryption. This means even if someone gains unauthorized access to our servers, they cannot read your files without the encryption key.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Audit logs and tracking</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>Every access to your records is logged with timestamp, user information, and IP address. You can view complete audit trails in your dashboard to see who accessed your data and when.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Account security tips</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>Use a strong password with at least 8 characters including uppercase, lowercase, numbers, and symbols. Never share your password. Log out after each session, especially on shared devices.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="help-category">
+                <div class="help-category-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <h3>Account Settings</h3>
+                <ul>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Updating profile information</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>Go to "Profile" section in your dashboard, click "Edit Profile", update your information (name, phone, address, medical details), and click "Save Changes". Your profile will be updated immediately.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Changing password</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>Navigate to account settings, enter your current password, then your new password twice for confirmation. Your new password must be at least 8 characters with mixed case, numbers, and symbols.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Managing notifications</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>In settings, you can control email notifications for account activities, access grants, and system updates. Toggle each notification type on or off based on your preferences.</p>
+                        </div>
+                    </li>
+                    <li class="help-item">
+                        <div class="help-item-header" onclick="toggleHelp(this)">
+                            <span><i class="fas fa-chevron-right chevron-icon"></i> Deactivating account</span>
+                        </div>
+                        <div class="help-item-content">
+                            <p>Contact support to request account deactivation. Note: Deactivating your account will revoke all doctor access and make your records inaccessible. Download important files before deactivation.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="contact-section">
+            <h2>Still Need Help?</h2>
+            <p>Our support team is here to assist you with any questions or concerns</p>
+            <div class="contact-buttons">
+                <a href="mailto:support@bharathmedicare.com" class="contact-btn">
+                    <i class="fas fa-envelope"></i> Email Support
+                </a>
+                <a href="tel:+911800123456" class="contact-btn">
+                    <i class="fas fa-phone"></i> Call Us
+                </a>
+                <a href="faq.html" class="contact-btn">
+                    <i class="fas fa-question"></i> View FAQ
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2025 Bharath Medicare. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleHelp(element) {
+            const content = element.nextElementSibling;
+            const icon = element.querySelector('.chevron-icon');
+            
+            // Close all other open items in the same category
+            const category = element.closest('.help-category');
+            const allContents = category.querySelectorAll('.help-item-content');
+            const allIcons = category.querySelectorAll('.chevron-icon');
+            
+            allContents.forEach(c => {
+                if (c !== content) {
+                    c.classList.remove('active');
+                }
+            });
+            
+            allIcons.forEach(i => {
+                if (i !== icon) {
+                    i.classList.remove('rotated');
+                }
+            });
+            
+            // Toggle current item
+            content.classList.toggle('active');
+            icon.classList.toggle('rotated');
+        }
+    </script>
+</body>
+</html>

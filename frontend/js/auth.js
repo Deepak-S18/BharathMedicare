@@ -37,20 +37,127 @@ async function handleLogin(event) {
 }
 
 // ============================================
+// OTP VERIFICATION FOR REGISTRATION
+// ============================================
+
+let isPhoneVerified = false;
+let otpSent = false;
+
+async function handleOTPAction() {
+    const phoneInput = document.getElementById('phone');
+    const otpInput = document.getElementById('otp');
+    const otpSection = document.getElementById('otpSection');
+    const otpButton = document.getElementById('otpButton');
+    const registerButton = document.getElementById('registerButton');
+    const verificationStatus = document.getElementById('verificationStatus');
+    const otpMessage = document.getElementById('otpMessage');
+    
+    const phone = phoneInput.value.trim();
+    
+    // Validate phone number
+    if (!phone) {
+        showError('Please enter your phone number');
+        return;
+    }
+    
+    // Ensure phone has country code
+    let formattedPhone = phone;
+    if (!formattedPhone.startsWith('+')) {
+        formattedPhone = '+91' + formattedPhone.replace(/\D/g, '');
+    }
+    
+    if (!otpSent) {
+        // Send OTP
+        showLoading();
+        try {
+            const response = await apiCall(API_ENDPOINTS.SEND_OTP, {
+                method: 'POST',
+                body: JSON.stringify({ phone: formattedPhone })
+            });
+            
+            showSuccess('OTP sent successfully to ' + formattedPhone);
+            
+            // Update UI
+            otpSent = true;
+            otpSection.style.display = 'block';
+            phoneInput.disabled = true;
+            otpButton.innerHTML = '<i class="fas fa-check"></i> Verify OTP';
+            otpButton.style.background = 'var(--success-color)';
+            otpMessage.textContent = 'OTP sent to ' + formattedPhone;
+            
+        } catch (error) {
+            showError(error.message || 'Failed to send OTP. Please try again.');
+        } finally {
+            hideLoading();
+        }
+        
+    } else {
+        // Verify OTP
+        const otp = otpInput.value.trim();
+        
+        if (!otp || otp.length !== 6) {
+            showError('Please enter a valid 6-digit OTP');
+            return;
+        }
+        
+        showLoading();
+        try {
+            const response = await apiCall(API_ENDPOINTS.VERIFY_OTP_REGISTRATION, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    phone: formattedPhone,
+                    otp: otp 
+                })
+            });
+            
+            if (response.valid) {
+                showSuccess('Phone number verified successfully!');
+                
+                // Update UI
+                isPhoneVerified = true;
+                otpSection.style.display = 'none';
+                otpButton.style.display = 'none';
+                registerButton.disabled = false;
+                verificationStatus.style.display = 'block';
+                
+            } else {
+                showError('Invalid OTP. Please try again.');
+            }
+            
+        } catch (error) {
+            showError(error.message || 'OTP verification failed. Please try again.');
+        } finally {
+            hideLoading();
+        }
+    }
+}
+
+// ============================================
 // REGISTER HANDLER
 // ============================================
 
 async function handleRegister(event) {
     event.preventDefault();
     
+    // Check if phone is verified
+    if (!isPhoneVerified) {
+        showError('Please verify your phone number first');
+        return;
+    }
+    
     const fullName = document.getElementById('fullName').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
     const role = document.getElementById('role').value;
-    const phone = document.getElementById('phone')?.value;
+    let phone = document.getElementById('phone')?.value;
     const nmcUid = document.getElementById('nmcUid')?.value;
     const isDiabeticInput = document.getElementById('isDiabetic');
+    
+    // Format phone number
+    if (phone && !phone.startsWith('+')) {
+        phone = '+91' + phone.replace(/\D/g, '');
+    }
     
     // Validate passwords match
     if (password !== confirmPassword) {
@@ -179,6 +286,9 @@ function toggleNMCField() {
 // ============================================
 
 function redirectToDashboard(role) {
+    // Clear hospital access flag on regular login
+    localStorage.removeItem('hospital_access');
+    
     switch(role) {
         case 'admin':
             window.location.href = 'admin-dashboard.html';
@@ -196,8 +306,19 @@ function redirectToDashboard(role) {
 
 function handleLogout() {
     if (confirm('Are you sure you want to logout?')) {
-        logout();
+        // Clear all local storage items related to auth
+        localStorage.clear();
+        
+        // Clear session storage as well
+        sessionStorage.clear();
+        
+        // Show success message briefly
         showSuccess('Logged out successfully');
+        
+        // Delay redirect slightly to ensure storage is cleared
+        setTimeout(() => {
+            window.location.href = '../index.html?logout=true';
+        }, 500);
     }
 }
 

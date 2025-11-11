@@ -7,7 +7,13 @@ let currentPhotoFile = null;
 
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Authentication and Role Check
+    // 1. Check if this is hospital access - redirect to hospital view
+    if (localStorage.getItem('hospital_access') === 'true') {
+        window.location.href = 'hospital-patient-view.html';
+        return;
+    }
+    
+    // 2. Authentication and Role Check
     if (!requireAuth()) return;
     
     const user = getUserData();
@@ -550,7 +556,8 @@ async function loadDashboardData() {
         await Promise.all([
             loadRecords(),
             loadPermissions(),
-            loadHealthCard()
+            loadHealthCard(),
+            loadAppointments()
         ]);
         
         updateStats();
@@ -765,7 +772,9 @@ function displayHealthCard() {
     }
     
     // FRONT SIDE
-    document.getElementById('cardNumberFront').textContent = healthCardData.patient_id.substring(0, 8).toUpperCase();
+    // Use the formatted patient ID (PAT-XXXXXX) instead of MongoDB ID
+    const patientIdDisplay = user.patient_id || healthCardData.patient_id.substring(0, 8).toUpperCase();
+    document.getElementById('cardNumberFront').textContent = patientIdDisplay;
     document.getElementById('cardHolderName').textContent = user.full_name || 'Patient Name';
     document.getElementById('cardGenderFront').textContent = user.gender || '--';
     document.getElementById('cardDOBFront').textContent = dobFormatted;
@@ -941,7 +950,7 @@ async function handleUpdateProfile(event) {
     try {
         const updateData = {
             full_name: document.getElementById('profileName').value,
-            phone: document.getElementById('profilePhone').value,
+            // phone is read-only (verified during registration)
             gender: document.getElementById('profileGender').value,
             date_of_birth: document.getElementById('profileDob').value,
             address: document.getElementById('profileAddress').value,
@@ -1270,7 +1279,8 @@ function printHealthCardSideBySide() {
         ) ? 'Yes' : 'No';
     }
     
-    const cardId = healthCardData ? healthCardData.patient_id.substring(0, 8).toUpperCase() : '--------';
+    // Use the formatted patient ID (PAT-XXXXXX) instead of MongoDB ID
+    const cardId = user.patient_id || (healthCardData ? healthCardData.patient_id.substring(0, 8).toUpperCase() : '--------');
     
     const qrData = healthCardData ? 
         encodeURIComponent(`BHARATH|${healthCardData.patient_id}|${user.full_name}|${user.email}`) :
@@ -1687,5 +1697,231 @@ function showSection(section) {
     
     if (targetLinkElement) {
         targetLinkElement.classList.add('active');
+    }
+}
+
+
+// ============================================
+// APPOINTMENT FUNCTIONS
+// ============================================
+
+// Search for doctors
+async function searchDoctors() {
+    showLoading();
+    
+    try {
+        const doctorId = document.getElementById('searchDoctorId').value.trim();
+        const specialization = document.getElementById('searchSpecialization').value;
+        
+        if (!doctorId && !specialization) {
+            showError('Please enter a Doctor ID or select a specialization');
+            hideLoading();
+            return;
+        }
+        
+        const response = await apiCall(API_ENDPOINTS.SEARCH_DOCTORS, {
+            method: 'POST',
+            body: JSON.stringify({
+                doctor_id: doctorId,
+                specialization: specialization
+            })
+        });
+        
+        displayDoctorResults(response.doctors);
+        document.getElementById('searchResultsCard').style.display = 'block';
+        
+    } catch (error) {
+        showError('Failed to search doctors');
+        console.error(error);
+    } finally {
+        hideLoading();
+    }
+}
+
+// Display doctor search results
+function displayDoctorResults(doctors) {
+    const container = document.getElementById('doctorSearchResults');
+    
+    if (doctors.length === 0) {
+        container.innerHTML = `
+            <p class="text-center" style="padding: 40px; color: var(--text-secondary);">
+                <i class="fas fa-user-md" style="font-size: 3rem; margin-bottom: 15px; display: block; opacity: 0.5;"></i>
+                No doctors found matching your search criteria
+            </p>
+        `;
+        return;
+    }
+    
+    container.innerHTML = doctors.map(doctor => `
+        <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; gap: 20px; align-items: start;">
+            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; flex-shrink: 0;">
+                <i class="fas fa-user-md"></i>
+            </div>
+            <div style="flex: 1;">
+                <h4 style="margin: 0 0 8px 0; color: var(--text-primary);">Dr. ${doctor.full_name}</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; margin-bottom: 12px;">
+                    <div><strong>ID:</strong> ${doctor.doctor_id}</div>
+                    <div><strong>Specialization:</strong> ${doctor.specialization}</div>
+                    <div><strong>Experience:</strong> ${doctor.years_of_experience} years</div>
+                    <div><strong>Fee:</strong> ₹${doctor.consultation_fee || 'N/A'}</div>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <strong>Qualification:</strong> ${doctor.qualification}<br>
+                    ${doctor.hospital_affiliation ? `<strong>Hospital:</strong> ${doctor.hospital_affiliation}<br>` : ''}
+                    <strong>Languages:</strong> ${doctor.languages_spoken.join(', ')}
+                </div>
+                ${doctor.bio ? `<p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 12px;">${doctor.bio}</p>` : ''}
+                <button class="btn btn-primary" onclick="showBookingForm('${doctor._id}', '${doctor.full_name}', '${doctor.specialization}')">
+                    <i class="fas fa-calendar-plus"></i> Book Appointment
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Show booking form
+function showBookingForm(doctorId, doctorName, specialization) {
+    const today = new Date().toISOString().split('T')[0];
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+    modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%;">
+            <h3 style="margin: 0 0 20px 0;"><i class="fas fa-calendar-check"></i> Book Appointment</h3>
+            <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                <strong>Doctor:</strong> Dr. ${doctorName}<br>
+                <strong>Specialization:</strong> ${specialization}
+            </p>
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label>Appointment Date *</label>
+                    <input type="date" id="appointmentDate" required min="${today}">
+                </div>
+                <div class="form-group">
+                    <label>Appointment Time *</label>
+                    <input type="time" id="appointmentTime" required>
+                </div>
+                <div class="form-group">
+                    <label>Reason for Visit</label>
+                    <textarea id="appointmentReason" rows="3" placeholder="Brief description of your health concern"></textarea>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-check"></i> Confirm Booking
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="this.closest('div[style*=fixed]').remove()">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    document.getElementById('bookingForm').onsubmit = async (e) => {
+        e.preventDefault();
+        await bookAppointment(doctorId, doctorName);
+        modal.remove();
+    };
+}
+
+// Book appointment
+async function bookAppointment(doctorId, doctorName) {
+    showLoading();
+    
+    try {
+        const appointmentData = {
+            doctor_id: doctorId,
+            appointment_date: document.getElementById('appointmentDate').value,
+            appointment_time: document.getElementById('appointmentTime').value,
+            reason: document.getElementById('appointmentReason').value
+        };
+        
+        await apiCall(API_ENDPOINTS.BOOK_APPOINTMENT, {
+            method: 'POST',
+            body: JSON.stringify(appointmentData)
+        });
+        
+        showSuccess(`Appointment request sent to Dr. ${doctorName}! Waiting for doctor approval.`);
+        
+        // Reload appointments
+        await loadAppointments();
+        
+    } catch (error) {
+        showError(error.message || 'Failed to book appointment');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Load appointments
+async function loadAppointments() {
+    try {
+        const response = await apiCall(API_ENDPOINTS.MY_APPOINTMENTS);
+        displayAppointments(response.appointments);
+    } catch (error) {
+        console.error('Failed to load appointments:', error);
+    }
+}
+
+// Display appointments
+function displayAppointments(appointments) {
+    const container = document.getElementById('appointmentsList');
+    
+    if (appointments.length === 0) {
+        container.innerHTML = '<p class="text-center" style="padding: 20px; color: var(--text-secondary);">No appointments yet</p>';
+        return;
+    }
+    
+    container.innerHTML = appointments.map(apt => {
+        const statusColors = {
+            'pending': 'warning',
+            'confirmed': 'success',
+            'completed': 'info',
+            'cancelled': 'danger'
+        };
+        
+        return `
+            <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4 style="margin: 0 0 8px 0;">Dr. ${apt.doctor.full_name}</h4>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                        <i class="fas fa-calendar"></i> ${new Date(apt.appointment_date).toLocaleDateString('en-IN')}
+                        <i class="fas fa-clock" style="margin-left: 15px;"></i> ${apt.appointment_time}
+                    </div>
+                    ${apt.reason ? `<div style="margin-top: 8px; font-size: 0.9rem;"><strong>Reason:</strong> ${apt.reason}</div>` : ''}
+                    <span class="badge badge-${statusColors[apt.status]}" style="margin-top: 8px; display: inline-block;">
+                        ${apt.status.toUpperCase()}
+                    </span>
+                </div>
+                ${apt.status === 'pending' || apt.status === 'confirmed' ? `
+                    <button class="btn btn-danger" style="padding: 8px 16px;" onclick="cancelAppointment('${apt._id}')">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                ` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+// Cancel appointment
+async function cancelAppointment(appointmentId) {
+    if (!confirmAction('Are you sure you want to cancel this appointment?')) return;
+    
+    showLoading();
+    
+    try {
+        await apiCall(API_ENDPOINTS.CANCEL_APPOINTMENT(appointmentId), {
+            method: 'POST'
+        });
+        
+        showSuccess('Appointment cancelled successfully');
+        await loadAppointments();
+        
+    } catch (error) {
+        showError('Failed to cancel appointment');
+    } finally {
+        hideLoading();
     }
 }

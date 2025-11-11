@@ -133,9 +133,15 @@ function isAuthenticated() {
 
 // Logout
 function logout() {
+    // Clear all authentication data
     removeAuthToken();
     removeUserData();
-    window.location.href = '../index.html';
+    
+    // Also clear any other session data
+    localStorage.removeItem('hospital_access');
+    
+    // Force a clean redirect with cache busting
+    window.location.href = '../index.html?logout=true';
 }
 
 // Require authentication

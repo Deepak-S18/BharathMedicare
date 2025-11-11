@@ -19,6 +19,8 @@ class UserSchema:
             'full_name': full_name,
             'phone': phone,
             'nmc_uid': nmc_uid,
+            'patient_id': None,  # Will be set during registration for patients
+            'doctor_id': None,   # Will be set during registration for doctors
             'profile_photo': None,
             'gender': None,
             'date_of_birth': None,
@@ -32,9 +34,17 @@ class UserSchema:
             'allergies': [],  # Initialize as empty list, not None
             'chronic_conditions': conditions,  # Initialize with diabetes if applicable
             'current_medications': [],  # Initialize as empty list, not None
+            # Doctor-specific fields
+            'specialization': None,  # e.g., "Cardiologist", "Pediatrician"
+            'years_of_experience': None,
+            'qualification': None,  # e.g., "MBBS, MD"
+            'hospital_affiliation': None,
+            'consultation_fee': None,
+            'languages_spoken': [],  # e.g., ["English", "Hindi"]
+            'bio': None,  # Short professional bio
             'is_verified': True if role == 'patient' else False,
             'is_active': True,
-            'is_profile_complete': False if role == 'patient' else True,  # Critical: False for new patients
+            'is_profile_complete': False if role in ['patient', 'doctor'] else True,  # Both patient and doctor need to complete profile
             'created_at': datetime.utcnow(),
             'updated_at': datetime.utcnow()
         }

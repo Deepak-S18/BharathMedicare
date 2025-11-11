@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Hospital API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .result {
+            background: white;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hospital API Test Page</h1>
+    
+    <div class="test-section">
+        <h2>1. Test API Connection</h2>
+        <p>API Base URL: <strong id="apiUrl"></strong></p>
+        <button onclick="testConnection()">Test Connection</button>
+        <div id="connectionResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Hospital Login</h2>
+        <div>
+            <input type="text" id="testPatientId" placeholder="Patient ID">
+            <input type="email" id="testEmail" placeholder="Patient Email">
+        </div>
+        <button onclick="testHospitalLogin()">Test Hospital Login</button>
+        <div id="loginResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test QR Data Parsing</h2>
+        <input type="text" id="testQR" placeholder="Paste QR data (BHARATH|id|name|email)" style="width: 500px;">
+        <button onclick="testQRParsing()">Parse QR Data</button>
+        <div id="qrResult" class="result"></div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        // Display API URL
+        document.getElementById('apiUrl').textContent = API_BASE_URL;
+
+        async function testConnection() {
+            const resultDiv = document.getElementById('connectionResult');
+            resultDiv.textContent = 'Testing connection...';
+            resultDiv.className = 'result';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/health`);
+                const data = await response.json();
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = 'Connection successful!\n\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Connection failed!\n\nError: ' + error.message + 
+                    '\n\nMake sure your Flask backend is running on ' + API_BASE_URL;
+            }
+        }
+
+        async function testHospitalLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            const patientId = document.getElementById('testPatientId').value.trim();
+            const email = document.getElementById('testEmail').value.trim();
+            
+            if (!patientId) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Please enter a Patient ID';
+                return;
+            }
+            
+            resultDiv.textContent = 'Testing hospital login...';
+            resultDiv.className = 'result';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/hospital-login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        patient_id: patientId,
+                        email: email || undefined
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = 'Login successful!\n\n' + JSON.stringify(data, null, 2);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = 'Login failed!\n\nStatus: ' + response.status + 
+                        '\n\n' + JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Request failed!\n\nError: ' + error.message;
+            }
+        }
+
+        function testQRParsing() {
+            const resultDiv = document.getElementById('qrResult');
+            const qrData = document.getElementById('testQR').value.trim();
+            
+            if (!qrData) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Please enter QR data';
+                return;
+            }
+            
+            const parts = qrData.split('|');
+            
+            if (parts.length >= 4 && parts[0] === 'BHARATH') {
+                resultDiv.className = 'result success';
+                resultDiv.textContent = 'QR Data parsed successfully!\n\n' +
+                    'Prefix: ' + parts[0] + '\n' +
+                    'Patient ID: ' + parts[1] + '\n' +
+                    'Full Name: ' + parts[2] + '\n' +
+                    'Email: ' + parts[3];
+            } else {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Invalid QR format!\n\n' +
+                    'Expected: BHARATH|patient_id|full_name|email\n' +
+                    'Got: ' + qrData;
+            }
+        }
+    </script>
+</body>
+</html>

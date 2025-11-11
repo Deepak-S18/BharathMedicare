@@ -495,6 +495,7 @@
           <ul>
             <li><a href="pages/register.html">Patient Portal</a></li>
             <li><a href="pages/register.html">Doctor Portal</a></li>
+            <li><a href="pages/hospital-portal.html">Hospital Portal</a></li>
             <li><a href="#">Medical Records</a></li>
             <li><a href="#">Health Analytics</a></li>
           </ul>
@@ -503,10 +504,10 @@
         <div class="footer-section">
           <h3>Support</h3>
           <ul>
-            <li><a href="#">Help Center</a></li>
-            <li><a href="#">Privacy Policy</a></li>
-            <li><a href="#">Terms of Service</a></li>
-            <li><a href="#">FAQ</a></li>
+            <li><a href="pages/help-center.html">Help Center</a></li>
+            <li><a href="pages/privacy-policy.html">Privacy Policy</a></li>
+            <li><a href="pages/terms-of-service.html">Terms of Service</a></li>
+            <li><a href="pages/faq.html">FAQ</a></li>
           </ul>
         </div>
       </div>
@@ -534,12 +535,20 @@
       document.getElementById('contactForm').reset();
     }
 
-    // Redirect if already logged in
-    if (isAuthenticated()) {
+    // Redirect if already logged in (but not if just logged out)
+    const urlParams = new URLSearchParams(window.location.search);
+    const justLoggedOut = urlParams.get('logout') === 'true';
+    
+    if (isAuthenticated() && !justLoggedOut) {
       const user = getUserData();
       if (user && user.role) {
         redirectToDashboard(user.role);
       }
+    }
+    
+    // Clean up URL if logout parameter exists
+    if (justLoggedOut) {
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
 
     // Smooth scroll for anchor links

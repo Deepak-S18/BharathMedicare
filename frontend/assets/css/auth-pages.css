@@ -201,6 +201,29 @@ body {
     flex-direction: column;
 }
 
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.info-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(0, 208, 132, 0.1);
+    border-left: 3px solid var(--secondary-color);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.info-box i {
+    color: var(--secondary-color);
+}
+
 .form-group label {
     font-size: 0.9rem;
     font-weight: 600;
@@ -233,6 +256,11 @@ body {
     font-family: 'Poppins', sans-serif;
     transition: all 0.3s ease;
     background: white;
+}
+
+/* Special padding for password inputs with toggle button */
+.input-wrapper:has(.password-toggle) input {
+    padding-right: 50px;
 }
 
 /* --- FIX APPLIED: For SELECT element --- */
@@ -299,6 +327,52 @@ body {
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+    color: var(--text-secondary);
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.divider span {
+    padding: 0 15px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.alt-login-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 15px;
+    border: 2px solid var(--primary-color);
+    border-radius: var(--border-radius);
+    background: white;
+    color: var(--primary-color);
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.alt-login-button:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(19,136,8,0.2);
 }
 
 .form-footer {
@@ -390,5 +464,9 @@ body {
     
     .form-title {
         font-size: 1.8rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
     }
 }

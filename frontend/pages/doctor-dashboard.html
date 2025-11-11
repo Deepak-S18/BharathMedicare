@@ -31,13 +31,18 @@
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
+                    <a href="#" class="sidebar-menu-link" onclick="showSection('appointments')">
+                        <i class="fas fa-calendar-check" style="margin-right: 12px; width: 20px;"></i> Appointments
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
                     <a href="#" class="sidebar-menu-link" onclick="showSection('patients')">
                         <i class="fas fa-users" style="margin-right: 12px; width: 20px;"></i> My Patients
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <a href="#" class="sidebar-menu-link" onclick="showSection('records')">
-                        <i class="fas fa-folder-open" style="margin-right: 12px; width: 20px;"></i> Patient Records
+                    <a href="#" class="sidebar-menu-link" onclick="showSection('doctorCard')">
+                        <i class="fas fa-id-card" style="margin-right: 12px; width: 20px;"></i> My Doctor Card
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
@@ -79,7 +84,7 @@
                             <i class="fas fa-file-medical"></i>
                         </div>
                         <div>
-                            <div class="stat-value" id="totalRecords">0</div>
+                            <div class="stat-value" id="accessibleRecords">0</div>
                             <div class="stat-label">Accessible Records</div>
                         </div>
                     </div>
@@ -89,8 +94,8 @@
                             <i class="fas fa-id-badge"></i>
                         </div>
                         <div>
-                            <div class="stat-value" id="nmcUid" style="font-size: 1.5rem;">N/A</div>
-                            <div class="stat-label">NMC UID</div>
+                            <div class="stat-value" id="doctorIdDisplay" style="font-size: 1.5rem;">N/A</div>
+                            <div class="stat-label">Doctor ID</div>
                         </div>
                     </div>
                 </div>
@@ -99,11 +104,27 @@
                     <h3 class="card-header"><i class="fas fa-info-circle"></i> Quick Access</h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 16px;">
                         <button class="btn btn-primary" onclick="showSection('patients')" style="justify-content: center;">
-                            <i class="fas fa-users"></i> View Patients
+                            <i class="fas fa-users"></i> View My Patients
                         </button>
-                        <button class="btn btn-secondary" onclick="showSection('records')" style="justify-content: center;">
-                            <i class="fas fa-folder-open"></i> View Records
+                        <button class="btn btn-secondary" onclick="showSection('profile')" style="justify-content: center;">
+                            <i class="fas fa-user-circle"></i> Edit Profile
                         </button>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <div class="card">
+                        <h3 class="card-header"><i class="fas fa-user-md"></i> Profile Summary</h3>
+                        <div id="profileInfo" style="margin-top: 12px;">
+                            <p style="color: var(--text-secondary);">Loading profile...</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card-header"><i class="fas fa-clock"></i> Recent Patients</h3>
+                        <div id="recentPatientsList" style="margin-top: 12px;">
+                            <p style="color: var(--text-secondary);">Loading patients...</p>
+                        </div>
                     </div>
                 </div>
 
@@ -116,6 +137,36 @@
                             All record access is logged for security and compliance purposes.
                         </p>
                     </div>
+                </div>
+            </section>
+
+            <!-- Appointments Section -->
+            <section id="appointmentsSection" style="display: none;">
+                <div class="dashboard-header">
+                    <h1><i class="fas fa-calendar-check"></i> Appointment Requests</h1>
+                    <p>Review and manage patient appointment requests</p>
+                </div>
+
+                <div id="appointmentsMessage"></div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Patient Name</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appointmentsTableBody">
+                            <tr>
+                                <td colspan="6" class="text-center">Loading appointments...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </section>
 
@@ -149,28 +200,117 @@
                 </div>
             </section>
 
-            <!-- Patient Records Section -->
-            <section id="recordsSection" style="display: none;">
+            <!-- Doctor Card Section -->
+            <section id="doctorCardSection" style="display: none;">
                 <div class="dashboard-header">
-                    <h1><i class="fas fa-folder-open"></i> Patient Records</h1>
-                    <p>View medical records of patients who have authorized your access</p>
+                    <h1><i class="fas fa-id-card"></i> My Doctor ID Card</h1>
+                    <p>Your digital professional identification card</p>
                 </div>
 
-                <div class="card" style="margin-bottom: 24px;">
-                    <div class="form-group">
-                        <label for="patientSelect">Select Patient</label>
-                        <select id="patientSelect" onchange="loadPatientRecords()">
-                            <option value="">-- Select a patient --</option>
-                        </select>
+                <div style="max-width: 1200px; margin: 0 auto;">
+                    <!-- Doctor Card - Front and Back -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <!-- Front Card -->
+                        <div id="cardFront" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 18px; color: white; box-shadow: 0 8px 24px rgba(0,0,0,0.3); aspect-ratio: 1.586; width: 100%; max-width: 500px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
+                                        <img src="../assets/images/logo.png" alt="Logo" style="width: 28px; height: 28px;">
+                                        <h2 style="margin: 0; font-size: 1.1rem; font-weight: 700;">BharathMedicare</h2>
+                                    </div>
+                                    <p style="margin: 0; opacity: 0.9; font-size: 0.65rem; line-height: 1.2;">National Medical Council Registered</p>
+                                </div>
+                                <div style="background: white; padding: 5px; border-radius: 6px; flex-shrink: 0;">
+                                    <div id="doctorQRCode" style="width: 70px; height: 70px;"></div>
+                                </div>
+                            </div>
+
+                            <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 8px; padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: center; margin: 10px 0;">
+                                <h3 style="margin: 0 0 10px 0; font-size: 1.3rem; font-weight: 700; line-height: 1.2;" id="cardDoctorName">Dr. Loading...</h3>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+                                    <div>
+                                        <p style="margin: 0; opacity: 0.8; font-size: 0.6rem; line-height: 1;">Doctor ID</p>
+                                        <p style="margin: 2px 0 0 0; font-size: 0.85rem; font-weight: 600; line-height: 1.2;" id="cardDoctorId">-</p>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <p style="margin: 0; opacity: 0.8; font-size: 0.6rem; line-height: 1;">NMC UID</p>
+                                        <p style="margin: 2px 0 0 0; font-size: 0.85rem; font-weight: 600; line-height: 1.2;" id="cardNmcUid">-</p>
+                                    </div>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                    <div>
+                                        <p style="margin: 0; opacity: 0.8; font-size: 0.6rem; line-height: 1;">Specialization</p>
+                                        <p style="margin: 2px 0 0 0; font-size: 0.8rem; font-weight: 500; line-height: 1.2;" id="cardSpecialization">-</p>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <p style="margin: 0; opacity: 0.8; font-size: 0.6rem; line-height: 1;">Experience</p>
+                                        <p style="margin: 2px 0 0 0; font-size: 0.8rem; font-weight: 500; line-height: 1.2;" id="cardExperience">-</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <p style="margin: 0; opacity: 0.8; font-size: 0.6rem; line-height: 1;">Member Since</p>
+                                    <p style="margin: 2px 0 0 0; font-weight: 600; font-size: 0.75rem; line-height: 1.2;" id="cardMemberSince">-</p>
+                                </div>
+                                <span style="background: rgba(255,255,255,0.3); padding: 3px 8px; border-radius: 12px; font-size: 0.6rem; font-weight: 700; white-space: nowrap;">
+                                    <i class="fas fa-check-circle"></i> VERIFIED
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Back Card -->
+                        <div id="cardBack" style="background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); border-radius: 12px; padding: 18px; color: white; box-shadow: 0 8px 24px rgba(0,0,0,0.3); aspect-ratio: 1.586; width: 100%; max-width: 500px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div style="text-align: center;">
+                                <h2 style="margin: 0 0 2px 0; font-size: 1.1rem; font-weight: 700; line-height: 1.2;">Professional Details</h2>
+                                <p style="margin: 0; opacity: 0.9; font-size: 0.6rem; line-height: 1.2;">Medical Practitioner Information</p>
+                            </div>
+
+                            <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 8px; padding: 12px; flex: 1; display: flex; flex-direction: column; justify-content: space-around; margin: 8px 0;">
+                                <div>
+                                    <p style="margin: 0; opacity: 0.8; font-size: 0.6rem; line-height: 1;">QUALIFICATION</p>
+                                    <p style="margin: 2px 0 0 0; font-size: 0.85rem; font-weight: 600; line-height: 1.2;" id="cardBackQualification">-</p>
+                                </div>
+
+                                <div>
+                                    <p style="margin: 0; opacity: 0.8; font-size: 0.6rem; line-height: 1;">HOSPITAL AFFILIATION</p>
+                                    <p style="margin: 2px 0 0 0; font-size: 0.75rem; font-weight: 500; line-height: 1.2;" id="cardBackHospital">-</p>
+                                </div>
+
+                                <div>
+                                    <p style="margin: 0; opacity: 0.8; font-size: 0.6rem; line-height: 1;">BLOOD GROUP</p>
+                                    <p style="margin: 2px 0 0 0; font-size: 0.85rem; font-weight: 600; line-height: 1.2;" id="cardBackBloodGroup">-</p>
+                                </div>
+
+                                <div>
+                                    <p style="margin: 0; opacity: 0.8; font-size: 0.6rem; line-height: 1;">LANGUAGES SPOKEN</p>
+                                    <p style="margin: 2px 0 0 0; font-size: 0.7rem; font-weight: 500; line-height: 1.2;" id="cardBackLanguages">-</p>
+                                </div>
+
+                                <div>
+                                    <p style="margin: 0; opacity: 0.8; font-size: 0.6rem; line-height: 1;">CONTACT</p>
+                                    <p style="margin: 2px 0 0 0; font-size: 0.65rem; font-weight: 500; line-height: 1.2;" id="cardBackEmail">-</p>
+                                    <p style="margin: 2px 0 0 0; font-size: 0.65rem; font-weight: 500; line-height: 1.2;" id="cardBackPhone">-</p>
+                                </div>
+                            </div>
+
+                            <div style="text-align: center; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.3);">
+                                <p style="margin: 0; font-size: 0.6rem; opacity: 0.8; line-height: 1.2;">For emergencies, please call the hospital directly</p>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div id="recordsMessage"></div>
-
-                <div id="recordsGrid" class="records-grid">
-                    <div class="card" style="text-align: center; padding: 60px 20px;">
-                        <i class="fas fa-folder-open" style="font-size: 4rem; color: var(--text-secondary); margin-bottom: 20px;"></i>
-                        <p style="color: var(--text-secondary); font-size: 1.1rem;">Select a patient to view their medical records</p>
+                    <!-- Actions -->
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button class="btn btn-primary" onclick="downloadDoctorCard()" style="flex: 1; justify-content: center;">
+                            <i class="fas fa-download"></i> Download Card
+                        </button>
+                        <button class="btn btn-secondary" onclick="printDoctorCard()" style="flex: 1; justify-content: center;">
+                            <i class="fas fa-print"></i> Print Card
+                        </button>
                     </div>
                 </div>
             </section>
@@ -179,55 +319,207 @@
             <section id="profileSection" style="display: none;">
                 <div class="dashboard-header">
                     <h1><i class="fas fa-user-circle"></i> My Profile</h1>
-                    <p>View your professional information</p>
+                    <p>Complete your professional profile to access all features</p>
                 </div>
 
-                <div class="card" style="max-width: 600px; margin: 0 auto;">
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 3rem; color: white;">
-                            <i class="fas fa-user-md"></i>
+                <form id="doctorProfileForm" onsubmit="handleUpdateDoctorProfile(event)" style="max-width: 900px; margin: 0 auto;">
+                    <!-- Basic Information Card -->
+                    <div class="card" style="margin-bottom: 24px;">
+                        <h3 class="card-header"><i class="fas fa-user"></i> Basic Information</h3>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label>Full Name *</label>
+                                <input type="text" id="profileName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email Address</label>
+                                <input type="email" id="profileEmail" readonly style="background: var(--bg-secondary);">
+                            </div>
                         </div>
-                        <h2 id="profileNameDisplay" style="color: var(--text-primary); margin-bottom: 4px;">Dr. Name</h2>
-                        <p style="color: var(--text-secondary);">Healthcare Professional</p>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label>Phone Number</label>
+                                <input type="tel" id="profilePhone" placeholder="+91 XXXXX XXXXX">
+                            </div>
+                            <div class="form-group">
+                                <label>Gender *</label>
+                                <select id="profileGender" required>
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Date of Birth *</label>
+                                <input type="date" id="profileDob" required>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label>Blood Group *</label>
+                                <select id="profileBloodGroup" required>
+                                    <option value="">Select Blood Group</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>NMC Unique ID</label>
+                                <input type="text" id="profileNmc" readonly style="background: var(--bg-secondary); font-family: monospace; font-weight: bold;">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Address</label>
+                            <textarea id="profileAddress" rows="2" placeholder="Enter your address"></textarea>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Full Name</label>
-                        <input type="text" id="profileName" readonly style="background: var(--bg-secondary);">
-                    </div>
-                    <div class="form-group">
-                        <label>Email Address</label>
-                        <input type="email" id="profileEmail" readonly style="background: var(--bg-secondary);">
-                    </div>
-                    <div class="form-group">
-                        <label>Phone Number</label>
-                        <input type="tel" id="profilePhone" readonly style="background: var(--bg-secondary);">
-                    </div>
-                    <div class="form-group">
-                        <label>NMC Unique ID</label>
-                        <input type="text" id="profileNmc" readonly style="background: var(--bg-secondary); font-family: monospace; font-weight: bold;">
-                    </div>
-                    <div class="form-group">
-                        <label>Account Type</label>
-                        <input type="text" value="Doctor / Healthcare Provider" readonly style="background: var(--bg-secondary);">
-                    </div>
-                    <div class="form-group">
-                        <label>Verification Status</label>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span class="badge badge-success" style="font-size: 1rem;">
-                                <i class="fas fa-check-circle"></i> Verified by Admin
-                            </span>
+                    <!-- Professional Information Card -->
+                    <div class="card" style="margin-bottom: 24px;">
+                        <h3 class="card-header"><i class="fas fa-stethoscope"></i> Professional Information</h3>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label>Specialization *</label>
+                                <select id="profileSpecialization" required>
+                                    <option value="">Select Specialization</option>
+                                    <option value="General Physician">General Physician</option>
+                                    <option value="Cardiologist">Cardiologist</option>
+                                    <option value="Dermatologist">Dermatologist</option>
+                                    <option value="Pediatrician">Pediatrician</option>
+                                    <option value="Orthopedic">Orthopedic</option>
+                                    <option value="Neurologist">Neurologist</option>
+                                    <option value="Gynecologist">Gynecologist</option>
+                                    <option value="Psychiatrist">Psychiatrist</option>
+                                    <option value="ENT Specialist">ENT Specialist</option>
+                                    <option value="Ophthalmologist">Ophthalmologist</option>
+                                    <option value="Dentist">Dentist</option>
+                                    <option value="Surgeon">Surgeon</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Years of Experience *</label>
+                                <input type="number" id="profileExperience" min="0" max="60" placeholder="e.g., 5" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Qualification *</label>
+                            <input type="text" id="profileQualification" placeholder="e.g., MBBS, MD (Medicine)" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Hospital/Clinic Affiliation</label>
+                            <input type="text" id="profileHospital" placeholder="e.g., Apollo Hospital, Mumbai">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Consultation Fee (₹)</label>
+                            <input type="number" id="profileFee" min="0" placeholder="e.g., 500">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Languages Spoken * (comma-separated)</label>
+                            <input type="text" id="profileLanguages" placeholder="e.g., English, Hindi, Tamil" required>
+                            <small style="color: var(--text-secondary);">Enter languages separated by commas</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Professional Bio</label>
+                            <textarea id="profileBio" rows="4" placeholder="Brief description about your practice and expertise"></textarea>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>Member Since</label>
-                        <input type="text" id="profileCreated" readonly style="background: var(--bg-secondary);">
+
+                    <!-- Account Information Card -->
+                    <div class="card" style="margin-bottom: 24px;">
+                        <h3 class="card-header"><i class="fas fa-info-circle"></i> Account Information</h3>
+                        
+                        <div class="form-group">
+                            <label>Doctor ID</label>
+                            <input type="text" id="profileDoctorId" readonly style="background: var(--bg-secondary); font-family: monospace; font-weight: bold;">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Verification Status</label>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="badge badge-success" style="font-size: 1rem;">
+                                    <i class="fas fa-check-circle"></i> Verified by Admin
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Member Since</label>
+                            <input type="text" id="profileCreated" readonly style="background: var(--bg-secondary);">
+                        </div>
                     </div>
-                </div>
+
+                    <!-- Action Buttons -->
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button type="submit" class="btn btn-primary" style="padding: 14px 32px;">
+                            <i class="fas fa-save"></i> Save Profile
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="loadProfile()" style="padding: 14px 32px;">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                </form>
             </section>
         </main>
     </div>
 
+    <!-- Patient Records Modal -->
+    <div id="recordsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; max-width: 900px; width: 90%; max-height: 80vh; overflow-y: auto; padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--primary-color); padding-bottom: 12px;">
+                <h2 id="modalPatientName" style="margin: 0; color: var(--primary-color);">
+                    <i class="fas fa-file-medical"></i> Patient Records
+                </h2>
+                <button onclick="closeRecordsModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary);">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="modalRecordsList">
+                <p style="text-align: center; color: var(--text-secondary);">Loading records...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Record Viewer Modal -->
+    <div id="recordViewerModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 12px; max-width: 95%; width: 1200px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 2px solid var(--primary-color);">
+                <h2 id="viewerFileName" style="margin: 0; color: var(--primary-color);">
+                    <i class="fas fa-file-medical"></i> Medical Record
+                </h2>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <button id="downloadFromViewer" class="btn btn-primary" style="padding: 8px 16px;">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                    <button onclick="closeRecordViewer()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary);">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="recordViewerContent" style="flex: 1; overflow: auto; padding: 20px; background: #f5f5f5;">
+                <p style="text-align: center; color: var(--text-secondary);">Loading record...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="../js/config.js"></script>
     <script src="../js/api.js"></script>
     <script src="../js/ui.js"></script>

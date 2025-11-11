@@ -75,13 +75,35 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="phone">Phone Number (Optional)</label>
+                            <label for="phone">Phone Number <span style="color: var(--primary-color);">*</span></label>
                             <div class="input-wrapper">
                                 <i class="fas fa-phone input-icon"></i>
-                                <input type="tel" id="phone" name="phone" 
-                                       placeholder="+91 XXXXX XXXXX">
+                                <input type="tel" id="phone" name="phone" required
+                                       placeholder="+91 XXXXX XXXXX" maxlength="13">
                             </div>
                         </div>
+                    </div>
+
+                    <!-- OTP Verification Section -->
+                    <div class="form-group" id="otpSection" style="display: none;">
+                        <label for="otp">Enter OTP</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-key input-icon"></i>
+                            <input type="text" id="otp" name="otp" 
+                                   placeholder="Enter 6-digit OTP" maxlength="6" pattern="[0-9]{6}">
+                        </div>
+                        <div class="info-box" style="margin-top: 8px;">
+                            <i class="fas fa-info-circle"></i>
+                            <span id="otpMessage">OTP sent to your phone number</span>
+                        </div>
+                    </div>
+
+                    <!-- Send/Verify OTP Button -->
+                    <div class="form-group">
+                        <button type="button" id="otpButton" class="submit-button" 
+                                style="background: var(--secondary-color);" onclick="handleOTPAction()">
+                            <i class="fas fa-paper-plane"></i> Send OTP
+                        </button>
                     </div>
 
                     <div class="form-group">
@@ -160,9 +182,13 @@
                         </ul>
                     </div>
 
-                    <button type="submit" class="submit-button">
+                    <button type="submit" class="submit-button" id="registerButton" disabled>
                         <i class="fas fa-user-plus"></i> Create Account
                     </button>
+                    <div class="info-box" style="margin-top: 10px; display: none;" id="verificationStatus">
+                        <i class="fas fa-check-circle" style="color: var(--success-color);"></i>
+                        Phone number verified successfully
+                    </div>
                 </form>
 
                 <div class="form-footer">

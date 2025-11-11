@@ -1,3 +1,5 @@
+// frontend/js/config.js
+
 // Configuration JavaScript
 
 // API Base URL - adjust this based on your environment
@@ -14,6 +16,9 @@ const API_ENDPOINTS = {
     REGISTER: '/api/auth/register',
     LOGIN: '/api/auth/login',
     VERIFY_TOKEN: '/api/auth/verify',
+    SEND_OTP: '/api/auth/send-otp',
+    VERIFY_OTP: '/api/auth/verify-otp', // For SMS login
+    VERIFY_OTP_REGISTRATION: '/api/auth/verify-otp-registration', // For registration
     
     // User endpoints
     CURRENT_USER: '/api/users/me',
@@ -28,22 +33,35 @@ const API_ENDPOINTS = {
     LIST_PATIENTS: '/api/patients/list',
     HEALTH_CARD: '/api/patients/health-card',
     
+    // Doctors endpoints
+    DOCTOR_CARD: '/api/doctors/doctor-card',
+    
     // Records endpoints
     UPLOAD_RECORD: '/api/records/upload',
     MY_RECORDS: '/api/records/my-records',
     GET_RECORD: (recordId) => `/api/records/${recordId}`,
     DOWNLOAD_RECORD: (recordId) => `/api/records/${recordId}/download`,
     DELETE_RECORD: (recordId) => `/api/records/${recordId}`,
+    PATIENT_RECORDS: (patientId) => `/api/records/patient/${patientId}`,
     
     // Access control endpoints
     GRANT_ACCESS: '/api/access/grant',
     REVOKE_ACCESS: '/api/access/revoke',
     MY_PERMISSIONS: '/api/access/my-permissions',
     
+    // Appointments endpoints
+    SEARCH_DOCTORS: '/api/appointments/search-doctors',
+    BOOK_APPOINTMENT: '/api/appointments/book',
+    MY_APPOINTMENTS: '/api/appointments/my-appointments',
+    APPROVE_APPOINTMENT: (appointmentId) => `/api/appointments/${appointmentId}/approve`,
+    REJECT_APPOINTMENT: (appointmentId) => `/api/appointments/${appointmentId}/reject`,
+    CANCEL_APPOINTMENT: (appointmentId) => `/api/appointments/${appointmentId}/cancel`,
+    
     // Admin endpoints
     ADMIN_STATS: '/api/admin/stats',
     AUDIT_LOGS: '/api/admin/audit-logs',
     TOGGLE_USER_STATUS: (userId) => `/api/admin/users/${userId}/toggle-status`,
+    DELETE_USER: (userId) => `/api/admin/users/${userId}`,
     PENDING_DOCTORS: '/api/admin/pending-doctors',
     VERIFY_DOCTOR: (doctorId) => `/api/admin/verify-doctor/${doctorId}`
 };

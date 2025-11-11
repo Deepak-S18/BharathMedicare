@@ -1,5 +1,3 @@
-// Admin Dashboard JavaScript
-
 let allUsers = [];
 let pendingDoctors = [];
 let auditLogs = [];
@@ -8,9 +6,9 @@ let stats = {};
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', async () => {
     if (!requireAuth()) return;
-    
+
     const user = getUserData();
-    
+
     if (user.role !== 'admin') {
         showError('Access denied. This page is for admins only.');
         setTimeout(() => {
@@ -18,14 +16,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 2000);
         return;
     }
-    
+
     await loadDashboardData();
 });
 
 // Load all dashboard data
 async function loadDashboardData() {
     showLoading();
-    
+
     try {
         await Promise.all([
             loadStats(),
@@ -46,7 +44,7 @@ async function loadStats() {
     try {
         const response = await apiCall(API_ENDPOINTS.ADMIN_STATS);
         stats = response;
-        
+
         // Update stats display
         document.getElementById('totalUsers').textContent = stats.users.total;
         document.getElementById('totalPatients').textContent = stats.users.patients;
@@ -55,10 +53,10 @@ async function loadStats() {
         document.getElementById('totalRecords').textContent = stats.records.active;
         document.getElementById('recentUploads').textContent = stats.recent_activity.uploads_last_7_days;
         document.getElementById('recentRegistrations').textContent = stats.recent_activity.registrations_last_7_days;
-        
+
         // Update badge
         document.getElementById('pendingBadge').textContent = stats.users.pending_doctors;
-        
+
     } catch (error) {
         console.error('Failed to load stats:', error);
     }
@@ -79,7 +77,7 @@ async function loadPendingDoctors() {
 // Display pending doctors
 function displayPendingDoctors() {
     const tbody = document.getElementById('pendingDoctorsTableBody');
-    
+
     if (pendingDoctors.length === 0) {
         tbody.innerHTML = `
             <tr>
@@ -88,7 +86,7 @@ function displayPendingDoctors() {
         `;
         return;
     }
-    
+
     tbody.innerHTML = pendingDoctors.map(doctor => `
         <tr>
             <td>${doctor.full_name}</td>
@@ -113,24 +111,24 @@ function displayPendingDoctors() {
 // Verify doctor (approve or reject)
 async function verifyDoctor(doctorId, action) {
     const actionText = action === 'approve' ? 'approve' : 'reject';
-    
+
     if (!confirmAction(`Are you sure you want to ${actionText} this doctor?`)) {
         return;
     }
-    
+
     showLoading();
-    
+
     try {
         await apiCall(API_ENDPOINTS.VERIFY_DOCTOR(doctorId), {
             method: 'PATCH',
             body: JSON.stringify({ action })
         });
-        
+
         showSuccess(`Doctor ${action}d successfully`);
-        
+
         // Reload data
         await loadDashboardData();
-        
+
     } catch (error) {
         showError(`Failed to ${actionText} doctor`);
     } finally {
@@ -150,20 +148,35 @@ async function loadUsers() {
     }
 }
 
-// Display users in table
+// Display users in table with Delete button added
 function displayUsers(users) {
     const tbody = document.getElementById('usersTableBody');
-    
+
     if (users.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center">No users found</td>
+                <td colspan="8" class="text-center">No users found</td>
             </tr>
         `;
         return;
     }
-    
-    tbody.innerHTML = users.map(user => `
+
+    tbody.innerHTML = users.map(user => {
+        // Get the appropriate ID based on role
+        let roleSpecificId = '';
+        if (user.role === 'doctor') {
+            roleSpecificId = user.doctor_id ? 
+                `<span style="font-family: monospace; background: #e3f2fd; padding: 4px 8px; border-radius: 4px; color: #1976d2; font-weight: 600;">${user.doctor_id}</span>` : 
+                '<span style="color: #999;">Not assigned</span>';
+        } else if (user.role === 'patient') {
+            roleSpecificId = user.patient_id ? 
+                `<span style="font-family: monospace; background: #e8f5e9; padding: 4px 8px; border-radius: 4px; color: #388e3c; font-weight: 600;">${user.patient_id}</span>` : 
+                '<span style="color: #999;">Not assigned</span>';
+        } else {
+            roleSpecificId = '<span style="color: #999;">N/A</span>';
+        }
+
+        return `
         <tr>
             <td>${user.full_name}</td>
             <td>${user.email}</td>
@@ -172,7 +185,8 @@ function displayUsers(users) {
                     ${user.role}
                 </span>
             </td>
-            <td>${user.nmc_uid ? `<span class="nmc-badge">${user.nmc_uid}</span>` : 'N/A'}</td>
+            <td style="text-align: center;">${roleSpecificId}</td>
+            <td style="text-align: center;">${user.nmc_uid ? `<span class="nmc-badge">${user.nmc_uid}</span>` : '<span style="color: #999;">N/A</span>'}</td>
             <td>
                 <span class="badge ${user.is_active ? 'badge-success' : 'badge-warning'}">
                     ${user.is_active ? 'Active' : 'Inactive'}
@@ -181,21 +195,27 @@ function displayUsers(users) {
                     '<span class="badge badge-warning" style="margin-left: 5px;">Unverified</span>' : ''}
             </td>
             <td>${formatDate(user.created_at)}</td>
-            <td>
+            <td style="white-space: nowrap;">
                 <button class="btn ${user.is_active ? 'btn-danger' : 'btn-success'}" 
-                    style="padding: 6px 12px;" 
+                    style="padding: 6px 12px; font-size: 0.85rem;" 
                     onclick="toggleUserStatus('${user._id}', ${user.is_active})">
                     ${user.is_active ? 'Deactivate' : 'Activate'}
                 </button>
+                <button class="btn btn-danger" 
+                    style="padding: 6px 12px; margin-left: 8px; font-size: 0.85rem;" 
+                    onclick="deleteUser('${user._id}')">
+                    Delete
+                </button>
             </td>
         </tr>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // Display audit logs
 function displayAuditLogs() {
     const tbody = document.getElementById('auditLogsBody');
-    
+
     if (auditLogs.length === 0) {
         tbody.innerHTML = `
             <tr>
@@ -204,7 +224,7 @@ function displayAuditLogs() {
         `;
         return;
     }
-    
+
     tbody.innerHTML = auditLogs.map(log => `
         <tr>
             <td>${formatDate(log.timestamp)}</td>
@@ -235,38 +255,57 @@ async function loadAuditLogs() {
 // Filter users by role
 function filterUsers(role) {
     let filteredUsers;
-    
+
     if (role === 'all') {
         filteredUsers = allUsers;
     } else {
         filteredUsers = allUsers.filter(user => user.role === role);
     }
-    
+
     displayUsers(filteredUsers);
 }
 
-// Toggle user status
+// Toggle user status (activate/deactivate)
 async function toggleUserStatus(userId, currentStatus) {
     const action = currentStatus ? 'deactivate' : 'activate';
-    
+
     if (!confirmAction(`Are you sure you want to ${action} this user?`)) {
         return;
     }
-    
+
     showLoading();
-    
+
     try {
         await apiCall(API_ENDPOINTS.TOGGLE_USER_STATUS(userId), {
             method: 'PATCH'
         });
-        
+
         showSuccess(`User ${action}d successfully`);
-        
+
         await loadUsers();
         await loadStats();
-        
+
     } catch (error) {
         showError(`Failed to ${action} user`);
+    } finally {
+        hideLoading();
+    }
+}
+
+// New: Delete user
+async function deleteUser(userId) {
+    if (!confirmAction('Are you sure you want to delete this user? This action cannot be undone.')) {
+        return;
+    }
+    showLoading();
+    try {
+        await apiCall(API_ENDPOINTS.DELETE_USER(userId), { method: 'DELETE' });
+        showSuccess('User deleted successfully');
+        // Reload users and stats after deletion
+        await loadUsers();
+        await loadStats();
+    } catch (error) {
+        showError('Failed to delete user');
     } finally {
         hideLoading();
     }
@@ -279,12 +318,12 @@ function showSection(section) {
     document.getElementById('pendingSection').style.display = 'none';
     document.getElementById('usersSection').style.display = 'none';
     document.getElementById('auditSection').style.display = 'none';
-    
+
     // Remove active class from all menu items
     document.querySelectorAll('.sidebar-menu-link').forEach(link => {
         link.classList.remove('active');
     });
-    
+
     // Show selected section
     switch(section) {
         case 'dashboard':
@@ -301,3 +340,4 @@ function showSection(section) {
             break;
     }
 }
+

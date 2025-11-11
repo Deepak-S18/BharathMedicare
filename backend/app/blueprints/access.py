@@ -135,8 +135,10 @@ def get_my_permissions():
                     patient.pop('password_hash', None)
                     perm['patient'] = {
                         'id': str(patient['_id']),
-                        'full_name': patient['full_name'],
-                        'email': patient['email']
+                        'full_name': patient.get('full_name', 'N/A'),
+                        'email': patient.get('email', 'N/A'),
+                        'phone': patient.get('phone', 'Not provided'),
+                        'patient_id': patient.get('patient_id', 'N/A')
                     }
         
         else:

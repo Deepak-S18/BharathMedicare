@@ -193,23 +193,44 @@ def update_profile():
         if 'current_medications' in data:
             update_fields['current_medications'] = data['current_medications'] if isinstance(data['current_medications'], list) else []
         
+        # Doctor-specific fields
+        if 'specialization' in data:
+            update_fields['specialization'] = data['specialization']
+        
+        if 'years_of_experience' in data:
+            update_fields['years_of_experience'] = data['years_of_experience']
+        
+        if 'qualification' in data:
+            update_fields['qualification'] = data['qualification']
+        
+        if 'hospital_affiliation' in data:
+            update_fields['hospital_affiliation'] = data['hospital_affiliation']
+        
+        if 'consultation_fee' in data:
+            update_fields['consultation_fee'] = data['consultation_fee']
+        
+        if 'languages_spoken' in data:
+            update_fields['languages_spoken'] = data['languages_spoken'] if isinstance(data['languages_spoken'], list) else []
+        
+        if 'bio' in data:
+            update_fields['bio'] = data['bio']
+        
         if not update_fields:
             return jsonify({'error': 'No fields to update'}), 400
         
         update_fields['updated_at'] = datetime.utcnow()
         
-        # Check for profile completion for patient role
+        # Check for profile completion
+        combined_profile = {**current_user, **update_fields}
+        
         if request.user['role'] == 'patient':
-            # Merge current data with updates
-            combined_profile = {**current_user, **update_fields}
-            
             # Check if profile is now complete
             is_complete = check_profile_completion(combined_profile)
             
             # Always set the completion status based on current state
             update_fields['is_profile_complete'] = is_complete
             
-            print(f"Profile completion check: {is_complete}")
+            print(f"Patient profile completion check: {is_complete}")
             print(f"Required fields status:")
             required_fields = [
                 'full_name', 'phone', 'gender', 'date_of_birth', 'blood_group', 'address', 
@@ -217,6 +238,26 @@ def update_profile():
                 'allergies', 'chronic_conditions'
             ]
             for field in required_fields:
+                value = combined_profile.get(field)
+                print(f"  {field}: {value} (type: {type(value)})")
+        
+        elif request.user['role'] == 'doctor':
+            # Check doctor profile completion
+            required_doctor_fields = [
+                'full_name', 'phone', 'gender', 'date_of_birth', 'blood_group', 
+                'specialization', 'years_of_experience', 'qualification', 'languages_spoken'
+            ]
+            
+            is_complete = all(
+                combined_profile.get(field) not in [None, '', []]
+                for field in required_doctor_fields
+            )
+            
+            update_fields['is_profile_complete'] = is_complete
+            
+            print(f"Doctor profile completion check: {is_complete}")
+            print(f"Required fields status:")
+            for field in required_doctor_fields:
                 value = combined_profile.get(field)
                 print(f"  {field}: {value} (type: {type(value)})")
 

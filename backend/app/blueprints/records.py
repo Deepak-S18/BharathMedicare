@@ -184,6 +184,67 @@ def download_record(record_id):
         print(f"Download error: {e}")
         return jsonify({'error': 'Download failed'}), 500
 
+@bp.route('/patient/<patient_id>', methods=['GET'])
+@require_auth
+def get_patient_records(patient_id):
+    """Get records for a specific patient (for doctors with permission)"""
+    try:
+        from app.models.database import get_access_permissions_collection
+        
+        records_collection = get_records_collection()
+        access_collection = get_access_permissions_collection()
+        
+        if records_collection is None or access_collection is None:
+            return jsonify({'error': 'Database connection error'}), 503
+        
+        user_id = request.user['user_id']
+        role = request.user['role']
+        
+        # If patient is viewing their own records
+        if role == 'patient' and patient_id == user_id:
+            records = list(records_collection.find({
+                'patient_id': ObjectId(patient_id),
+                'is_deleted': False
+            }).sort('uploaded_at', -1))
+        
+        # If doctor is viewing patient records
+        elif role == 'doctor':
+            # Check if doctor has permission to view this patient's records
+            permission = access_collection.find_one({
+                'doctor_id': ObjectId(user_id),
+                'patient_id': ObjectId(patient_id)
+            })
+            
+            if not permission:
+                return jsonify({'error': 'You do not have permission to view this patient\'s records'}), 403
+            
+            records = list(records_collection.find({
+                'patient_id': ObjectId(patient_id),
+                'is_deleted': False
+            }).sort('uploaded_at', -1))
+        
+        else:
+            return jsonify({'error': 'Access denied'}), 403
+        
+        # Format records
+        for record in records:
+            record['_id'] = str(record['_id'])
+            record['patient_id'] = str(record['patient_id'])
+            record['uploaded_by'] = str(record['uploaded_by'])
+            # Don't send encrypted data in list view
+            record.pop('encrypted_data', None)
+        
+        # Log the action
+        log_action(user_id, 'view_patient_records', 'record', patient_id)
+        
+        return jsonify({'records': records, 'count': len(records)}), 200
+    
+    except Exception as e:
+        print(f"Get patient records error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': 'Failed to fetch patient records'}), 500
+
 @bp.route('/<record_id>', methods=['DELETE'])
 @require_auth
 def delete_record(record_id):

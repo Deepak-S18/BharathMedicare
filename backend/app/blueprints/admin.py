@@ -110,6 +110,44 @@ def toggle_user_status(user_id):
         print(f"Toggle user status error: {e}")
         return jsonify({'error': 'Failed to toggle user status'}), 500
 
+@bp.route('/users/<user_id>', methods=['DELETE'])
+@require_auth
+@require_role(['admin'])
+def delete_user(user_id):
+    """Delete a user permanently"""
+    try:
+        users_collection = get_users_collection()
+        records_collection = get_records_collection()
+        
+        if users_collection is None or records_collection is None:
+            return jsonify({'error': 'Database connection error'}), 503
+        
+        # Check if user exists
+        user = users_collection.find_one({'_id': ObjectId(user_id)})
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Prevent admin from deleting themselves
+        if str(user['_id']) == request.user['user_id']:
+            return jsonify({'error': 'Cannot delete your own account'}), 400
+        
+        # Delete user's records if they're a patient
+        if user.get('role') == 'patient':
+            records_collection.delete_many({'patient_id': ObjectId(user_id)})
+        
+        # Delete the user
+        users_collection.delete_one({'_id': ObjectId(user_id)})
+        
+        # Log the action
+        log_action(request.user['user_id'], 'delete_user', 'user', user_id)
+        
+        return jsonify({'message': 'User deleted successfully'}), 200
+    
+    except Exception as e:
+        print(f"Delete user error: {e}")
+        return jsonify({'error': 'Failed to delete user'}), 500
+
 @bp.route('/pending-doctors', methods=['GET'])
 @require_auth
 @require_role(['admin'])
