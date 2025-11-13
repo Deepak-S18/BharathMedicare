@@ -413,17 +413,13 @@ function toggleMobileSidebar() {
     const overlay = document.querySelector('.sidebar-overlay');
     
     sidebar.classList.toggle('mobile-open');
-    overlay.classList.toggle('active');
+    
+    // Show/hide overlay
+    if (sidebar.classList.contains('mobile-open')) {
+        overlay.style.display = 'block';
+        setTimeout(() => overlay.classList.add('active'), 10);
+    } else {
+        overlay.classList.remove('active');
+        setTimeout(() => overlay.style.display = 'none', 300);
+    }
 }
-
-// Close sidebar when clicking on a menu item (mobile only)
-document.addEventListener('DOMContentLoaded', () => {
-    const menuLinks = document.querySelectorAll('.sidebar-menu-link');
-    menuLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            if (window.innerWidth <= 768) {
-                toggleMobileSidebar();
-            }
-        });
-    });
-});
