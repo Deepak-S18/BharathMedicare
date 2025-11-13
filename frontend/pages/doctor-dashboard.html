@@ -6,6 +6,7 @@
     <title>Doctor Dashboard - BharathMedicare</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="../assets/css/theme.css">
     <link rel="stylesheet" href="../assets/css/dashboard.css">
 </head>
 <body>
@@ -26,27 +27,27 @@
             
             <ul class="sidebar-menu">
                 <li class="sidebar-menu-item">
-                    <a href="#" class="sidebar-menu-link active" onclick="showSection('dashboard')">
+                    <a href="javascript:void(0)" class="sidebar-menu-link active" onclick="showSection('dashboard')">
                         <i class="fas fa-home" style="margin-right: 12px; width: 20px;"></i> Dashboard
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <a href="#" class="sidebar-menu-link" onclick="showSection('appointments')">
+                    <a href="javascript:void(0)" class="sidebar-menu-link" onclick="showSection('appointments')">
                         <i class="fas fa-calendar-check" style="margin-right: 12px; width: 20px;"></i> Appointments
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <a href="#" class="sidebar-menu-link" onclick="showSection('patients')">
+                    <a href="javascript:void(0)" class="sidebar-menu-link" onclick="showSection('patients')">
                         <i class="fas fa-users" style="margin-right: 12px; width: 20px;"></i> My Patients
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <a href="#" class="sidebar-menu-link" onclick="showSection('doctorCard')">
+                    <a href="javascript:void(0)" class="sidebar-menu-link" onclick="showSection('doctorCard')">
                         <i class="fas fa-id-card" style="margin-right: 12px; width: 20px;"></i> My Doctor Card
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <a href="#" class="sidebar-menu-link" onclick="showSection('profile')">
+                    <a href="javascript:void(0)" class="sidebar-menu-link" onclick="showSection('profile')">
                         <i class="fas fa-user-circle" style="margin-right: 12px; width: 20px;"></i> Profile
                     </a>
                 </li>
@@ -64,8 +65,15 @@
             <!-- Dashboard Section -->
             <section id="dashboardSection">
                 <div class="dashboard-header">
-                    <h1><i class="fas fa-stethoscope"></i> Welcome, Dr. <span id="doctorName">Doctor</span>!</h1>
-                    <p>Your patient management dashboard</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <div>
+                            <h1><i class="fas fa-stethoscope"></i> Welcome, Dr. <span id="doctorName">Doctor</span>!</h1>
+                            <p>Your patient management dashboard</p>
+                        </div>
+                        <button id="themeToggle" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark Mode">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="stats-grid">
@@ -464,6 +472,37 @@
                             <label>Member Since</label>
                             <input type="text" id="profileCreated" readonly style="background: var(--bg-secondary);">
                         </div>
+
+                        <div class="form-group">
+                            <label>
+                                RFID Card ID 
+                                <span style="color: var(--text-secondary); font-weight: normal; font-size: 0.85rem;">
+                                    (Optional - For hospital kiosk access)
+                                </span>
+                            </label>
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <input 
+                                    type="text" 
+                                    id="profileRfidId" 
+                                    placeholder="Scan your RFID card to link it"
+                                    style="flex: 1;"
+                                    maxlength="50"
+                                >
+                                <button 
+                                    type="button" 
+                                    class="btn btn-secondary" 
+                                    id="clearRfidBtn"
+                                    onclick="clearDoctorRfidField()"
+                                    style="padding: 12px 20px; display: none;"
+                                >
+                                    <i class="fas fa-times"></i> Clear
+                                </button>
+                            </div>
+                            <small id="rfidHelpText" style="color: var(--text-secondary); display: block; margin-top: 8px;">
+                                <i class="fas fa-info-circle"></i> 
+                                Click in the field above and scan your RFID card. Once linked, only admin can change it.
+                            </small>
+                        </div>
                     </div>
 
                     <!-- Action Buttons -->
@@ -520,9 +559,27 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- Authentication Guard - MUST be loaded first -->
     <script src="../js/config.js"></script>
+    <script src="../js/auth-guard.js"></script>
+    <script>
+        // Protect this page - only doctors can access
+        if (!AuthGuard.protectPage('doctor')) {
+            // User will be redirected to login - stop execution
+            // Don't throw error, just stop the script
+        } else {
+            // Only setup protection if user is authorized
+            // Disable back button to prevent unauthorized access
+            AuthGuard.disableBackButton();
+            // Setup auto-logout on token expiration
+            AuthGuard.setupAutoLogout();
+        }
+    </script>
+    
     <script src="../js/api.js"></script>
     <script src="../js/ui.js"></script>
+    <script src="../js/theme-toggle.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/doctor-dashboard.js"></script>
 </body>

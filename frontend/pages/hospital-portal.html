@@ -6,6 +6,7 @@
     <title>Hospital Portal - Bharath Medicare</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="../assets/css/theme.css">
     <link rel="stylesheet" href="../assets/css/auth-pages.css">
     <style>
         #qr-reader {
@@ -66,6 +67,63 @@
             margin-bottom: 15px;
             text-align: center;
         }
+        
+        /* RFID Status Card Animations */
+        #rfidStatusCard {
+            transition: all 0.3s ease;
+        }
+        
+        #rfidStatusIcon {
+            transition: all 0.3s ease;
+        }
+        
+        #rfidVerificationProgress,
+        #rfidSuccessMessage,
+        #rfidErrorMessage {
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Pulse animation for RFID icon when ready */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+        
+        #rfidStatusIcon.ready {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        /* Success checkmark animation */
+        @keyframes checkmark {
+            0% {
+                transform: scale(0) rotate(0deg);
+            }
+            50% {
+                transform: scale(1.2) rotate(180deg);
+            }
+            100% {
+                transform: scale(1) rotate(360deg);
+            }
+        }
+        
+        .fa-check-circle {
+            animation: checkmark 0.5s ease;
+        }
     </style>
 </head>
 <body>
@@ -84,7 +142,7 @@
                 <div class="sidebar-content">
                     <h2 class="portal-title">Hospital Portal</h2>
                     <p class="portal-description">
-                        Scan patient QR codes for instant, secure access to their medical records and health information.
+                        Scan QR codes or RFID cards for instant, secure access to patient records and doctor credentials.
                     </p>
                     <div class="features">
                         <div class="feature">
@@ -95,15 +153,15 @@
                         </div>
                         <div class="feature">
                             <div class="feature-icon">
-                                <i class="fas fa-shield-alt"></i>
+                                <i class="fas fa-id-card"></i>
                             </div>
-                            <span>Secure Patient Authentication</span>
+                            <span>RFID Card Authentication</span>
                         </div>
                         <div class="feature">
                             <div class="feature-icon">
                                 <i class="fas fa-user-md"></i>
                             </div>
-                            <span>Instant Record Access</span>
+                            <span>Patient & Doctor Access</span>
                         </div>
                     </div>
                 </div>
@@ -112,8 +170,11 @@
             <!-- Scanner Section -->
             <div class="form-section">
                 <div class="form-header">
-                    <h2 class="form-title">Scan Patient QR Code</h2>
-                    <p class="form-subtitle">Position the QR code within the camera frame</p>
+                    <button id="themeToggle" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark Mode" style="position: absolute; top: 20px; right: 20px;">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <h2 class="form-title">Hospital Access Portal</h2>
+                    <p class="form-subtitle">Scan QR code, RFID card, or enter ID manually</p>
                 </div>
 
                 <div class="auth-form">
@@ -141,17 +202,118 @@
                         <span>OR</span>
                     </div>
 
-                    <div class="manual-entry">
-                        <h3 class="manual-entry-title">Manual Patient ID Entry</h3>
+                    <!-- RFID Card Scanner -->
+                    <div class="rfid-entry" style="margin-bottom: 30px;">
+                        <h3 class="manual-entry-title">
+                            <i class="fas fa-id-card-alt"></i> RFID Card Access
+                        </h3>
+                        
+                        <!-- RFID Status Card -->
+                        <div id="rfidStatusCard" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                                        padding: 20px; 
+                                                        border-radius: 12px; 
+                                                        color: white; 
+                                                        margin-bottom: 15px;
+                                                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div style="font-size: 2.5rem;">
+                                    <i class="fas fa-wifi" id="rfidStatusIcon"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">RFID Reader Status</div>
+                                    <div style="font-size: 1.2rem; font-weight: 600;" id="rfidStatusText">
+                                        Ready to Scan
+                                    </div>
+                                    <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 5px;" id="rfidStatusDetail">
+                                        Place your RFID card on the reader
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="form-group">
-                            <label for="manualPatientId">Patient ID</label>
+                            <label for="rfidInput">RFID Card ID</label>
                             <div class="input-wrapper">
                                 <i class="fas fa-id-card input-icon"></i>
-                                <input type="text" id="manualPatientId" placeholder="Enter Patient ID">
+                                <input type="text" id="rfidInput" readonly
+                                       placeholder="Waiting for card scan..."
+                                       style="font-family: 'Courier New', monospace; font-weight: 600;">
+                            </div>
+                        </div>
+                        
+                        <!-- RFID Verification Progress -->
+                        <div id="rfidVerificationProgress" style="display: none; margin-top: 15px;">
+                            <div style="background: #f7fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #667eea;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
+                                    <span style="font-weight: 600; color: #2d3748;">Verifying RFID Card...</span>
+                                </div>
+                                <div style="font-size: 0.85rem; color: #718096;" id="rfidVerificationStep">
+                                    Authenticating with server...
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- RFID Success Message -->
+                        <div id="rfidSuccessMessage" style="display: none; margin-top: 15px;">
+                            <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-check-circle" style="color: #10b981; font-size: 1.5rem;"></i>
+                                    <div>
+                                        <div style="font-weight: 600; color: #065f46;" id="rfidSuccessName">
+                                            Access Granted
+                                        </div>
+                                        <div style="font-size: 0.85rem; color: #047857; margin-top: 3px;">
+                                            Redirecting to patient records...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- RFID Error Message -->
+                        <div id="rfidErrorMessage" style="display: none; margin-top: 15px;">
+                            <div style="background: #fef2f2; padding: 15px; border-radius: 8px; border-left: 4px solid #ef4444;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-exclamation-circle" style="color: #ef4444; font-size: 1.5rem;"></i>
+                                    <div>
+                                        <div style="font-weight: 600; color: #991b1b;" id="rfidErrorTitle">
+                                            Card Not Recognized
+                                        </div>
+                                        <div style="font-size: 0.85rem; color: #b91c1c; margin-top: 3px;" id="rfidErrorDetail">
+                                            Please try again or use another method
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-box" style="margin-top: 15px;">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Place the RFID card on the reader for instant access. The system will automatically detect and verify your card.</span>
+                        </div>
+                        
+                        <!-- Hidden input to capture RFID scan -->
+                        <input type="text" id="rfidCapture" 
+                               style="position: absolute; left: -9999px; opacity: 0;" 
+                               placeholder="RFID capture" />
+                    </div>
+
+                    <div class="divider">
+                        <span>OR</span>
+                    </div>
+
+                    <div class="manual-entry">
+                        <h3 class="manual-entry-title">Manual ID Entry</h3>
+                        <div class="form-group">
+                            <label for="manualPatientId">Patient ID or Doctor ID</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-id-card input-icon"></i>
+                                <input type="text" id="manualPatientId" placeholder="Enter Patient ID (PAT-...) or Doctor ID (DOC-...)">
                             </div>
                         </div>
                         <button class="submit-button" onclick="loginManually()">
-                            <i class="fas fa-sign-in-alt"></i> Access Patient Records
+                            <i class="fas fa-sign-in-alt"></i> Access Information
                         </button>
                     </div>
                 </div>
@@ -174,6 +336,8 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="../js/config.js"></script>
     <script src="../js/api.js"></script>
+    <script src="../js/ui.js"></script>
+    <script src="../js/theme-toggle.js"></script>
     <script src="../js/hospital-portal.js"></script>
 </body>
 </html>

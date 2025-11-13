@@ -140,16 +140,28 @@ function logout() {
     // Also clear any other session data
     localStorage.removeItem('hospital_access');
     
-    // Force a clean redirect with cache busting
-    window.location.href = '../index.html?logout=true';
+    // Clear the trap interval if it exists
+    if (window._authTrapInterval) {
+        clearInterval(window._authTrapInterval);
+    }
+    
+    // Use location.replace() to prevent going back to dashboard
+    // Add timestamp to force full page reload and clear cache
+    window.location.replace('../index.html?logout=true&t=' + Date.now());
 }
 
 // Require authentication
 function requireAuth() {
+    console.log('[requireAuth] Checking authentication...');
+    console.log('[requireAuth] Token:', localStorage.getItem('bharath_medicare_token') ? 'EXISTS' : 'MISSING');
+    console.log('[requireAuth] User:', localStorage.getItem('bharath_medicare_user') ? 'EXISTS' : 'MISSING');
+    
     if (!isAuthenticated()) {
+        console.log('[requireAuth] Not authenticated - redirecting to login');
         window.location.href = '../pages/login.html';
         return false;
     }
+    console.log('[requireAuth] Authentication check passed');
     return true;
 }
 

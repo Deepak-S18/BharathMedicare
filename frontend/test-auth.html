@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Auth Test</title>
+</head>
+<body>
+    <h1>Authentication Test</h1>
+    <div id="results"></div>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth-guard.js"></script>
+    <script>
+        const results = document.getElementById('results');
+        
+        function log(message, color = 'black') {
+            const p = document.createElement('p');
+            p.style.color = color;
+            p.textContent = message;
+            results.appendChild(p);
+        }
+        
+        // Test 1: Check if authenticated
+        log('=== Authentication Test ===', 'blue');
+        log('Is Authenticated: ' + AuthGuard.isAuthenticated(), AuthGuard.isAuthenticated() ? 'green' : 'red');
+        
+        // Test 2: Get current user
+        const user = AuthGuard.getCurrentUser();
+        log('Current User: ' + JSON.stringify(user, null, 2));
+        
+        if (user) {
+            log('User Role: ' + user.role, 'blue');
+            
+            // Test 3: Check roles
+            log('Has Patient Role: ' + AuthGuard.hasRequiredRole('patient'), AuthGuard.hasRequiredRole('patient') ? 'green' : 'red');
+            log('Has Doctor Role: ' + AuthGuard.hasRequiredRole('doctor'), AuthGuard.hasRequiredRole('doctor') ? 'green' : 'red');
+            log('Has Admin Role: ' + AuthGuard.hasRequiredRole('admin'), AuthGuard.hasRequiredRole('admin') ? 'green' : 'red');
+        }
+        
+        // Test 4: Check localStorage
+        log('=== LocalStorage Contents ===', 'blue');
+        log('Token: ' + (localStorage.getItem('bharath_medicare_token') ? 'EXISTS' : 'NOT FOUND'));
+        log('User Data: ' + localStorage.getItem('bharath_medicare_user'));
+    </script>
+</body>
+</html>

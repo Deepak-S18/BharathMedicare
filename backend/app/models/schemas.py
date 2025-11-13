@@ -4,7 +4,7 @@ import re
 
 class UserSchema:
     @staticmethod
-    def create(email, password_hash, role, full_name, phone=None, nmc_uid=None, is_diabetic=False):
+    def create(email, password_hash, role, full_name, phone=None, nmc_uid=None, is_diabetic=False, rfid_id=None):
         """Create a new user document"""
         
         # Determine chronic conditions based on role and is_diabetic flag
@@ -19,6 +19,7 @@ class UserSchema:
             'full_name': full_name,
             'phone': phone,
             'nmc_uid': nmc_uid,
+            'rfid_id': rfid_id,  # Optional RFID card ID
             'patient_id': None,  # Will be set during registration for patients
             'doctor_id': None,   # Will be set during registration for doctors
             'profile_photo': None,

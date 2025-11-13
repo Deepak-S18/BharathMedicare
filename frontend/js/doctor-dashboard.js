@@ -106,6 +106,30 @@ async function loadProfile() {
         document.getElementById('profileDoctorId').value = user.doctor_id || 'N/A';
         document.getElementById('profileCreated').value = formatDate(user.created_at || new Date());
         
+        // RFID info (optional) - lock if already set
+        const rfidInput = document.getElementById('profileRfidId');
+        const clearRfidBtn = document.getElementById('clearRfidBtn');
+        const rfidHelpText = document.getElementById('rfidHelpText');
+        
+        rfidInput.value = user.rfid_id || '';
+        
+        if (user.rfid_id) {
+            // RFID already linked - make it read-only
+            rfidInput.readOnly = true;
+            rfidInput.style.background = 'var(--bg-secondary)';
+            rfidInput.style.cursor = 'not-allowed';
+            rfidInput.placeholder = 'RFID linked - Contact admin to change';
+            clearRfidBtn.style.display = 'none';
+            rfidHelpText.innerHTML = '<i class="fas fa-lock"></i> RFID is locked. Only admin can modify it. Contact your administrator to update.';
+            rfidHelpText.style.color = 'var(--warning-color)';
+        } else {
+            // No RFID yet - allow user to link it
+            rfidInput.readOnly = false;
+            rfidInput.style.background = '';
+            rfidInput.style.cursor = '';
+            clearRfidBtn.style.display = 'inline-flex';
+        }
+        
         console.log('Profile form fields populated successfully');
         
     } catch (error) {
@@ -193,6 +217,15 @@ async function handleUpdateDoctorProfile(event) {
             languages_spoken: parseCommaSeparated(document.getElementById('profileLanguages').value),
             bio: document.getElementById('profileBio').value
         };
+        
+        // Only include RFID if user doesn't have one yet (first-time linking)
+        const user = getUserData();
+        if (!user.rfid_id) {
+            const rfidValue = document.getElementById('profileRfidId').value.trim();
+            if (rfidValue) {
+                profileData.rfid_id = rfidValue;
+            }
+        }
         
         console.log('Update data:', updateData);
         
@@ -1164,5 +1197,17 @@ function showSection(section) {
             document.getElementById('profileSection').style.display = 'block';
             document.querySelector('.sidebar-menu-link[onclick*="profile"]').classList.add('active');
             break;
+    }
+}
+
+
+// Clear RFID field for doctor (only works if not yet linked)
+function clearDoctorRfidField() {
+    const user = getUserData();
+    if (!user.rfid_id) {
+        document.getElementById('profileRfidId').value = '';
+        showSuccess('RFID field cleared');
+    } else {
+        showError('RFID is locked. Contact admin to modify.');
     }
 }

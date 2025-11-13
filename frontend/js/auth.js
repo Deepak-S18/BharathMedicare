@@ -196,6 +196,12 @@ async function handleRegister(event) {
             registerData.is_diabetic = isDiabeticInput ? isDiabeticInput.value === 'true' : false;
         }
         
+        // Add optional RFID ID if scanned
+        const rfidId = document.getElementById('rfidId')?.value;
+        if (rfidId && rfidId.trim()) {
+            registerData.rfid_id = rfidId.trim();
+        }
+        
         const response = await apiCall(API_ENDPOINTS.REGISTER, {
             method: 'POST',
             body: JSON.stringify(registerData)
@@ -317,8 +323,114 @@ function handleLogout() {
         
         // Delay redirect slightly to ensure storage is cleared
         setTimeout(() => {
-            window.location.href = '../index.html?logout=true';
+            // Use replace() to remove from history and add timestamp to force reload
+            window.location.replace('../index.html?logout=true&t=' + Date.now());
         }, 500);
+    }
+}
+
+// ============================================
+// RFID CARD HANDLING (Optional)
+// ============================================
+
+let rfidScanned = false;
+
+function initRFIDCapture() {
+    const rfidCapture = document.getElementById('rfidCapture');
+    const rfidDisplay = document.getElementById('rfidId');
+    
+    if (!rfidCapture || !rfidDisplay) return;
+    
+    let rfidBuffer = '';
+    let rfidTimeout = null;
+    
+    // Listen for input on the hidden capture field
+    rfidCapture.addEventListener('input', function() {
+        clearTimeout(rfidTimeout);
+        rfidBuffer = this.value.trim();
+        
+        // RFID readers typically send data quickly and press Enter
+        // Wait a short time to ensure we have the full ID
+        rfidTimeout = setTimeout(async () => {
+            if (rfidBuffer.length >= 8) { // RFID IDs are typically 10+ characters
+                await handleRFIDScan(rfidBuffer);
+                rfidBuffer = '';
+                this.value = '';
+            }
+        }, 100);
+    });
+    
+    // Also listen for Enter key
+    rfidCapture.addEventListener('keypress', async function(e) {
+        if (e.key === 'Enter') {
+            clearTimeout(rfidTimeout);
+            const rfidId = this.value.trim();
+            if (rfidId.length >= 8) {
+                await handleRFIDScan(rfidId);
+            }
+            this.value = '';
+            rfidBuffer = '';
+        }
+    });
+    
+    // Only focus on RFID capture when user is not actively typing in other fields
+    // This prevents interfering with normal form input
+    let focusInterval = setInterval(() => {
+        // Don't steal focus if user is typing in any input, select, or textarea
+        const activeElement = document.activeElement;
+        const isUserTyping = activeElement && (
+            activeElement.tagName === 'INPUT' || 
+            activeElement.tagName === 'SELECT' || 
+            activeElement.tagName === 'TEXTAREA' ||
+            activeElement.tagName === 'BUTTON'
+        );
+        
+        // Only focus RFID capture if user is not interacting with form
+        if (!isUserTyping && !rfidScanned) {
+            rfidCapture.focus();
+        }
+    }, 1000); // Reduced frequency to 1 second
+    
+    // Stop the interval when RFID is scanned
+    rfidCapture.addEventListener('rfid-scanned', () => {
+        clearInterval(focusInterval);
+    });
+}
+
+async function handleRFIDScan(rfidId) {
+    const rfidDisplay = document.getElementById('rfidId');
+    const rfidCapture = document.getElementById('rfidCapture');
+    
+    if (!rfidDisplay) return;
+    
+    showLoading();
+    
+    try {
+        // Check if RFID is already registered
+        const response = await apiCall(API_ENDPOINTS.CHECK_RFID, {
+            method: 'POST',
+            body: JSON.stringify({ rfid_id: rfidId })
+        });
+        
+        if (response.exists) {
+            showError('This RFID card is already registered to another account');
+            rfidDisplay.value = '';
+        } else {
+            rfidDisplay.value = rfidId;
+            rfidScanned = true;
+            showSuccess('RFID card scanned successfully!');
+            
+            // Trigger event to stop focus interval
+            if (rfidCapture) {
+                rfidCapture.dispatchEvent(new Event('rfid-scanned'));
+            }
+        }
+        
+    } catch (error) {
+        showError('Failed to validate RFID card');
+        rfidDisplay.value = '';
+    } finally {
+        hideLoading();
     }
 }
 
@@ -337,5 +449,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const roleSelect = document.getElementById('role');
     if (roleSelect) {
         toggleNMCField(); 
+    }
+    
+    // Initialize RFID capture if on registration page
+    if (document.getElementById('rfidCapture')) {
+        initRFIDCapture();
     }
 });

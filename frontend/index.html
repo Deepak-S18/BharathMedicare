@@ -6,6 +6,7 @@
   <title>Bharath Medicare - Secure Health Platform</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="assets/css/theme.css">
   <link rel="stylesheet" href="assets/css/landing.css">
 </head>
 <body>
@@ -24,6 +25,9 @@
         <a href="#services" class="nav-link">Services</a>
         <a href="#about" class="nav-link">About</a>
         <a href="#contact" class="nav-link">Contact</a>
+        <button id="themeToggle" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark Mode">
+          <i class="fas fa-moon"></i>
+        </button>
         <a href="pages/login.html" class="btn-primary">Login</a>
         <a href="pages/register.html" class="btn-secondary">Register</a>
       </div>
@@ -37,7 +41,7 @@
       <div class="hero-text-content">
         <div class="hero-badge">
           <i class="fas fa-check-circle"></i>
-          <span>Trusted by 10,000+ Patients</span>
+          <span id="heroBadge">Trusted Healthcare Platform</span>
         </div>
         <h1>Your Health Data, <br/>Secured & Accessible</h1>
         <p class="hero-description">
@@ -102,15 +106,15 @@
 
     <div class="trust-indicators">
       <div class="trust-item">
-        <div class="trust-number">10K+</div>
+        <div class="trust-number" id="heroActiveUsers">Loading...</div>
         <div class="trust-label">Active Users</div>
       </div>
       <div class="trust-item">
-        <div class="trust-number">500+</div>
+        <div class="trust-number" id="heroDoctors">Loading...</div>
         <div class="trust-label">Doctors</div>
       </div>
       <div class="trust-item">
-        <div class="trust-number">99.9%</div>
+        <div class="trust-number" id="heroUptime">Loading...</div>
         <div class="trust-label">Uptime</div>
       </div>
     </div>
@@ -200,26 +204,26 @@
           
           <div class="stats-grid">
             <div class="stat-item">
-              <div class="stat-number">10K+</div>
+              <div class="stat-number" id="aboutPatients">Loading...</div>
               <div class="stat-label">Happy Patients</div>
             </div>
             <div class="stat-item">
-              <div class="stat-number">500+</div>
+              <div class="stat-number" id="aboutDoctors">Loading...</div>
               <div class="stat-label">Healthcare Providers</div>
             </div>
             <div class="stat-item">
-              <div class="stat-number">50K+</div>
+              <div class="stat-number" id="aboutRecords">Loading...</div>
               <div class="stat-label">Records Secured</div>
             </div>
             <div class="stat-item">
-              <div class="stat-number">99.9%</div>
+              <div class="stat-number" id="aboutUptime">Loading...</div>
               <div class="stat-label">System Uptime</div>
             </div>
           </div>
         </div>
 
         <div class="about-image">
-          <i class="fas fa-hospital"></i>
+          <img src="assets/images/logo.png" alt="Bharath Medicare Logo">
         </div>
       </div>
     </div>
@@ -310,7 +314,8 @@
         <p>Real experiences from patients and healthcare professionals</p>
       </div>
 
-      <div class="reviews-grid">
+      <div class="reviews-grid" id="reviewsGrid">
+        <!-- Reviews will be loaded dynamically -->
         <div class="review-card">
           <div class="review-stars">
             <i class="fas fa-star"></i>
@@ -319,60 +324,22 @@
             <i class="fas fa-star"></i>
             <i class="fas fa-star"></i>
           </div>
-          <p class="review-text">
-            "Bharath Medicare has made managing my family's health records so easy. 
-            The security features give me peace of mind."
-          </p>
+          <p class="review-text">Loading testimonials...</p>
           <div class="reviewer-info">
-            <div class="reviewer-avatar">RP</div>
+            <div class="reviewer-avatar">...</div>
             <div class="reviewer-details">
-              <h4>Rajesh Patel</h4>
-              <p>Patient</p>
+              <h4>Loading</h4>
+              <p>Please wait</p>
             </div>
           </div>
         </div>
-
-        <div class="review-card">
-          <div class="review-stars">
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-          </div>
-          <p class="review-text">
-            "As a doctor, having instant access to my patients' medical history has improved 
-            the quality of care I can provide."
-          </p>
-          <div class="reviewer-info">
-            <div class="reviewer-avatar">DS</div>
-            <div class="reviewer-details">
-              <h4>Dr. Sunita Sharma</h4>
-              <p>Cardiologist</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="review-card">
-          <div class="review-stars">
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-star"></i>
-          </div>
-          <p class="review-text">
-            "The audit trail feature helps me track who accessed my records. 
-            It's transparent and gives me complete control."
-          </p>
-          <div class="reviewer-info">
-            <div class="reviewer-avatar">MK</div>
-            <div class="reviewer-details">
-              <h4>Meera Krishnan</h4>
-              <p>Patient</p>
-            </div>
-          </div>
-        </div>
+      </div>
+      
+      <div style="text-align: center; margin-top: 40px;">
+        <p style="color: #666; font-size: 0.9rem;">
+          <i class="fas fa-shield-alt" style="color: #00d084;"></i> 
+          All testimonials are from verified users
+        </p>
       </div>
     </div>
   </section>
@@ -496,8 +463,8 @@
             <li><a href="pages/register.html">Patient Portal</a></li>
             <li><a href="pages/register.html">Doctor Portal</a></li>
             <li><a href="pages/hospital-portal.html">Hospital Portal</a></li>
-            <li><a href="#">Medical Records</a></li>
-            <li><a href="#">Health Analytics</a></li>
+            <li><a href="pages/medical-records.html">Medical Records</a></li>
+            <li><a href="pages/health-analytics.html">Health Analytics</a></li>
           </ul>
         </div>
 
@@ -521,6 +488,7 @@
   <!-- Scripts -->
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
+  <script src="js/theme-toggle.js"></script>
   <script>
     // Mobile menu toggle
     function toggleMobileMenu() {
@@ -546,9 +514,21 @@
       }
     }
     
-    // Clean up URL if logout parameter exists
+    // Clean up URL if logout parameter exists and force reload if needed
     if (justLoggedOut) {
-      window.history.replaceState({}, document.title, window.location.pathname);
+      // Check if this is the first time seeing the logout parameter
+      const hasReloaded = sessionStorage.getItem('logout_reloaded');
+      
+      if (!hasReloaded) {
+        // Mark that we've reloaded once
+        sessionStorage.setItem('logout_reloaded', 'true');
+        // Force a full page reload to clear any cached data
+        window.location.reload(true);
+      } else {
+        // Clean up after reload
+        sessionStorage.removeItem('logout_reloaded');
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
     }
 
     // Smooth scroll for anchor links
@@ -566,6 +546,129 @@
         }
       });
     });
+
+    // Fetch and display real statistics
+    async function loadStatistics() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/stats/public`);
+        if (response.ok) {
+          const data = await response.json();
+          const stats = data.stats;
+          
+          // Format numbers with K suffix
+          const formatNumber = (num) => {
+            if (num >= 1000) {
+              return (num / 1000).toFixed(1).replace('.0', '') + 'K+';
+            }
+            return num + '+';
+          };
+          
+          // Update hero badge with real user count
+          const totalUsers = stats.total_users;
+          if (totalUsers > 0) {
+            document.getElementById('heroBadge').textContent = `Trusted by ${formatNumber(totalUsers)} Users`;
+          }
+          
+          // Update hero section
+          document.getElementById('heroActiveUsers').textContent = formatNumber(stats.total_users);
+          document.getElementById('heroDoctors').textContent = formatNumber(stats.total_doctors);
+          document.getElementById('heroUptime').textContent = stats.uptime;
+          
+          // Update about section
+          document.getElementById('aboutPatients').textContent = formatNumber(stats.total_patients);
+          document.getElementById('aboutDoctors').textContent = formatNumber(stats.total_doctors);
+          document.getElementById('aboutRecords').textContent = formatNumber(stats.total_records);
+          document.getElementById('aboutUptime').textContent = stats.uptime;
+        }
+      } catch (error) {
+        console.log('Could not load statistics from API');
+        // Show fallback message
+        document.getElementById('heroBadge').textContent = 'Trusted Healthcare Platform';
+        document.getElementById('heroActiveUsers').textContent = '0';
+        document.getElementById('heroDoctors').textContent = '0';
+        document.getElementById('heroUptime').textContent = '99.9%';
+        document.getElementById('aboutPatients').textContent = '0';
+        document.getElementById('aboutDoctors').textContent = '0';
+        document.getElementById('aboutRecords').textContent = '0';
+        document.getElementById('aboutUptime').textContent = '99.9%';
+      }
+    }
+
+    // Load statistics on page load
+    loadStatistics();
+
+    // Fetch and display real testimonials
+    async function loadTestimonials() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/stats/testimonials`);
+        if (response.ok) {
+          const data = await response.json();
+          const testimonials = data.testimonials;
+          
+          const reviewsGrid = document.getElementById('reviewsGrid');
+          
+          if (testimonials.length === 0) {
+            reviewsGrid.innerHTML = `
+              <div class="review-card" style="grid-column: 1 / -1; text-align: center;">
+                <p class="review-text" style="color: #666;">
+                  <i class="fas fa-comments" style="font-size: 3rem; color: #00d084; margin-bottom: 20px; display: block;"></i>
+                  Be the first to share your experience with Bharath Medicare!
+                </p>
+              </div>
+            `;
+            return;
+          }
+          
+          // Display testimonials
+          reviewsGrid.innerHTML = testimonials.map(testimonial => {
+            // Generate stars based on rating
+            const stars = Array(testimonial.rating || 5).fill('<i class="fas fa-star"></i>').join('');
+            
+            // Format role display
+            let roleDisplay = testimonial.user_role;
+            if (testimonial.user_role === 'doctor') {
+              roleDisplay = 'Healthcare Professional';
+            } else if (testimonial.user_role === 'patient') {
+              roleDisplay = 'Patient';
+            } else {
+              roleDisplay = 'User';
+            }
+            
+            return `
+              <div class="review-card">
+                <div class="review-stars">
+                  ${stars}
+                </div>
+                <p class="review-text">
+                  "${testimonial.message}"
+                </p>
+                <div class="reviewer-info">
+                  <div class="reviewer-avatar">${testimonial.initials}</div>
+                  <div class="reviewer-details">
+                    <h4>${testimonial.user_name}</h4>
+                    <p>${roleDisplay}</p>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (error) {
+        console.log('Could not load testimonials, showing default message');
+        const reviewsGrid = document.getElementById('reviewsGrid');
+        reviewsGrid.innerHTML = `
+          <div class="review-card" style="grid-column: 1 / -1; text-align: center;">
+            <p class="review-text" style="color: #666;">
+              <i class="fas fa-heart" style="font-size: 3rem; color: #00d084; margin-bottom: 20px; display: block;"></i>
+              Join thousands of satisfied users managing their healthcare records securely
+            </p>
+          </div>
+        `;
+      }
+    }
+
+    // Load testimonials on page load
+    loadTestimonials();
   </script>
 </body>
 </html>

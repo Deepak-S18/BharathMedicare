@@ -6,6 +6,7 @@
     <title>Register - Bharath Medicare</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="../assets/css/theme.css">
     <link rel="stylesheet" href="../assets/css/auth-pages.css">
 </head>
 <body>
@@ -50,6 +51,9 @@
 
             <div class="form-section">
                 <div class="form-header">
+                    <button id="themeToggle" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark Mode" style="position: absolute; top: 20px; right: 20px;">
+                        <i class="fas fa-moon"></i>
+                    </button>
                     <h2 class="form-title">Create Your Account</h2>
                     <p class="form-subtitle">Join thousands of users managing their health securely</p>
                 </div>
@@ -115,6 +119,32 @@
                                 <option value="doctor">Doctor / Healthcare Provider</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- Optional RFID Card Section -->
+                    <div class="form-group">
+                        <label for="rfidId">
+                            RFID Card (Optional)
+                            <span style="color: var(--text-secondary); font-weight: normal; font-size: 0.9rem;">
+                                - For hospital kiosk access
+                            </span>
+                        </label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-id-card input-icon"></i>
+                            <input type="text" id="rfidId" name="rfidId" readonly
+                                   placeholder="Scan your RFID card or skip">
+                        </div>
+                        <div class="info-box" style="margin-top: 8px;">
+                            <i class="fas fa-info-circle"></i>
+                            <span>
+                                Optional: Scan your RFID card for quick hospital check-in. 
+                                You can add this later from your dashboard.
+                            </span>
+                        </div>
+                        <!-- Hidden input to capture RFID scan -->
+                        <input type="text" id="rfidCapture" 
+                               style="position: absolute; left: -9999px; opacity: 0;" 
+                               placeholder="RFID capture" />
                     </div>
 
                     <div class="form-group" id="diabeticField" style="display: none;">
@@ -213,6 +243,7 @@
     <script src="../js/config.js"></script>
     <script src="../js/api.js"></script>
     <script src="../js/ui.js"></script>
+    <script src="../js/theme-toggle.js"></script>
     <script src="../js/auth.js"></script>
 </body>
 </html>

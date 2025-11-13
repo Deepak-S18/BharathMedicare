@@ -7,16 +7,26 @@ let currentPhotoFile = null;
 
 // Initialize dashboard
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('[Patient Dashboard] DOMContentLoaded fired');
+    
+    // Show dashboard container
+    document.querySelector('.dashboard-container').style.display = 'flex';
+    
     // 1. Check if this is hospital access - redirect to hospital view
     if (localStorage.getItem('hospital_access') === 'true') {
+        console.log('[Patient Dashboard] Hospital access detected - redirecting');
         window.location.href = 'hospital-patient-view.html';
         return;
     }
     
     // 2. Authentication and Role Check
-    if (!requireAuth()) return;
+    if (!requireAuth()) {
+        console.log('[Patient Dashboard] requireAuth failed');
+        return;
+    }
     
     const user = getUserData();
+    console.log('[Patient Dashboard] User data:', user);
     
     if (user.role !== 'patient') {
         showError('Access denied. This page is for patients only.');
@@ -82,8 +92,10 @@ function setupEventListeners() {
         deletePhotoBtn.onclick = handleDeletePhoto;
     }
     
-    const profilePhoto = user.profile_photo ? 
-        `<img src="${user.profile_photo}" style="width: 100%; height: 100%; object-fit: cover;">` :
+    // Get user data safely
+    const userData = getUserData();
+    const profilePhoto = userData && userData.profile_photo ? 
+        `<img src="${userData.profile_photo}" style="width: 100%; height: 100%; object-fit: cover;">` :
         '<i class="fas fa-user" style="font-size: 2rem; color: white;"></i>';
 
     const printWindow = window.open('', '_blank');
@@ -631,6 +643,30 @@ async function loadProfile() {
             // Account info
             document.getElementById('profileCreated').value = formatDate(user.created_at || new Date());
             
+            // RFID info (optional) - lock if already set
+            const rfidInput = document.getElementById('profileRfidId');
+            const clearRfidBtn = document.getElementById('clearRfidBtn');
+            const rfidHelpText = document.getElementById('rfidHelpText');
+            
+            rfidInput.value = user.rfid_id || '';
+            
+            if (user.rfid_id) {
+                // RFID already linked - make it read-only
+                rfidInput.readOnly = true;
+                rfidInput.style.background = 'var(--bg-secondary)';
+                rfidInput.style.cursor = 'not-allowed';
+                rfidInput.placeholder = 'RFID linked - Contact admin to change';
+                clearRfidBtn.style.display = 'none';
+                rfidHelpText.innerHTML = '<i class="fas fa-lock"></i> RFID is locked. Only admin can modify it. Contact your administrator to update.';
+                rfidHelpText.style.color = 'var(--warning-color)';
+            } else {
+                // No RFID yet - allow user to link it
+                rfidInput.readOnly = false;
+                rfidInput.style.background = '';
+                rfidInput.style.cursor = '';
+                clearRfidBtn.style.display = 'inline-flex';
+            }
+            
             // Display profile photo
             displayProfilePhoto(user.profile_photo);
         }
@@ -918,6 +954,12 @@ function displayRecentRecords() {
 function displayAuthorizedDoctors() {
     const container = document.getElementById('authorizedDoctorsList');
     
+    // Safety check - element might not exist on all pages
+    if (!container) {
+        console.log('authorizedDoctorsList element not found - skipping display');
+        return;
+    }
+    
     if (myPermissions.length === 0) {
         container.innerHTML = '<p class="text-center" style="padding: 20px; color: var(--text-secondary);">No doctors authorized yet</p>';
         return;
@@ -964,6 +1006,15 @@ async function handleUpdateProfile(event) {
             emergency_contact: document.getElementById('profileEmergency').value,
             emergency_contact_relation: document.getElementById('profileEmergencyRelation').value
         };
+        
+        // Only include RFID if user doesn't have one yet (first-time linking)
+        const user = getUserData();
+        if (!user.rfid_id) {
+            const rfidValue = document.getElementById('profileRfidId').value.trim();
+            if (rfidValue) {
+                profileData.rfid_id = rfidValue;
+            }
+        }
         
         const response = await apiCall(API_ENDPOINTS.UPDATE_PROFILE, {
             method: 'POST',
@@ -1923,5 +1974,17 @@ async function cancelAppointment(appointmentId) {
         showError('Failed to cancel appointment');
     } finally {
         hideLoading();
+    }
+}
+
+
+// Clear RFID field (only works if not yet linked)
+function clearRfidField() {
+    const user = getUserData();
+    if (!user.rfid_id) {
+        document.getElementById('profileRfidId').value = '';
+        showSuccess('RFID field cleared');
+    } else {
+        showError('RFID is locked. Contact admin to modify.');
     }
 }

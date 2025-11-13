@@ -19,6 +19,9 @@ const API_ENDPOINTS = {
     SEND_OTP: '/api/auth/send-otp',
     VERIFY_OTP: '/api/auth/verify-otp', // For SMS login
     VERIFY_OTP_REGISTRATION: '/api/auth/verify-otp-registration', // For registration
+    CHECK_RFID: '/api/auth/check-rfid', // Check if RFID is available
+    RFID_LOGIN: '/api/auth/rfid-login', // Login using RFID card
+    HOSPITAL_LOGIN: '/api/auth/hospital-login', // Hospital portal QR login
     
     // User endpoints
     CURRENT_USER: '/api/users/me',
@@ -62,6 +65,7 @@ const API_ENDPOINTS = {
     AUDIT_LOGS: '/api/admin/audit-logs',
     TOGGLE_USER_STATUS: (userId) => `/api/admin/users/${userId}/toggle-status`,
     DELETE_USER: (userId) => `/api/admin/users/${userId}`,
+    UPDATE_USER_RFID: (userId) => `/api/admin/users/${userId}/rfid`,
     PENDING_DOCTORS: '/api/admin/pending-doctors',
     VERIFY_DOCTOR: (doctorId) => `/api/admin/verify-doctor/${doctorId}`
 };

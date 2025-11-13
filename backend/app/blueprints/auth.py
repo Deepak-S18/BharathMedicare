@@ -127,6 +127,15 @@ def register():
         # Determine diabetic status
         is_diabetic_flag = data.get('is_diabetic', False)
         
+        # Get optional RFID ID
+        rfid_id = data.get('rfid_id')
+        
+        # If RFID provided, check if it's already registered
+        if rfid_id:
+            existing_rfid = users_collection.find_one({'rfid_id': rfid_id})
+            if existing_rfid:
+                return jsonify({'error': 'This RFID card is already registered'}), 409
+        
         # Generate unique random ID for patient or doctor
         from app.utils.id_generator import generate_unique_id
         
@@ -146,7 +155,8 @@ def register():
             full_name=data['full_name'],
             phone=data.get('phone'),
             nmc_uid=data.get('nmc_uid') if data['role'] == 'doctor' else None,
-            is_diabetic=is_diabetic_flag
+            is_diabetic=is_diabetic_flag,
+            rfid_id=rfid_id
         )
         
         # Add unique ID to user document
@@ -496,3 +506,91 @@ def hospital_login():
     except Exception as e:
         print(f"Hospital login error: {e}")
         return jsonify({'error': 'Hospital login failed'}), 500
+
+@bp.route('/check-rfid', methods=['POST'])
+def check_rfid():
+    """Check if RFID card is already registered"""
+    try:
+        users_collection = get_users_collection()
+        if users_collection is None:
+            return jsonify({'error': 'Database connection error'}), 503
+        
+        data = request.get_json()
+        rfid_id = data.get('rfid_id')
+        
+        if not rfid_id:
+            return jsonify({'error': 'RFID ID is required'}), 400
+        
+        # Check if RFID exists
+        existing_user = users_collection.find_one({'rfid_id': rfid_id})
+        
+        return jsonify({
+            'exists': existing_user is not None,
+            'message': 'RFID card already registered' if existing_user else 'RFID card available'
+        }), 200
+    
+    except Exception as e:
+        print(f"Check RFID error: {e}")
+        return jsonify({'error': 'Failed to check RFID'}), 500
+
+@bp.route('/rfid-login', methods=['POST'])
+def rfid_login():
+    """Login using RFID card"""
+    try:
+        users_collection = get_users_collection()
+        if users_collection is None:
+            return jsonify({'error': 'Database connection error'}), 503
+        
+        data = request.get_json()
+        rfid_id = data.get('rfid_id')
+        
+        if not rfid_id:
+            return jsonify({'error': 'RFID ID is required'}), 400
+        
+        # Find user by RFID
+        user = users_collection.find_one({'rfid_id': rfid_id})
+        
+        if not user:
+            return jsonify({'error': 'RFID card not registered'}), 404
+        
+        # Check if user is active
+        if not user.get('is_active', True):
+            return jsonify({'error': 'Account is deactivated'}), 403
+        
+        # Check if doctor is verified
+        if user['role'] == 'doctor' and not user.get('is_verified', False):
+            return jsonify({'error': 'Your account is pending admin approval'}), 403
+        
+        # Check profile completion
+        is_complete = check_profile_completion(user)
+        
+        # Create JWT token
+        token = create_token(
+            user_id=str(user['_id']),
+            email=user['email'],
+            role=user['role']
+        )
+        
+        if not token:
+            return jsonify({'error': 'Failed to create authentication token'}), 500
+        
+        # Log the action
+        log_action(str(user['_id']), 'rfid_login', 'user', str(user['_id']))
+        
+        return jsonify({
+            'message': 'RFID login successful',
+            'token': token,
+            'user': {
+                'id': str(user['_id']),
+                'email': user['email'],
+                'role': user['role'],
+                'full_name': user['full_name'],
+                'patient_id': user.get('patient_id'),
+                'doctor_id': user.get('doctor_id'),
+                'is_profile_complete': is_complete
+            }
+        }), 200
+    
+    except Exception as e:
+        print(f"RFID login error: {e}")
+        return jsonify({'error': 'RFID login failed'}), 500

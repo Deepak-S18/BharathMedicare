@@ -24,7 +24,7 @@ services:
     container_name: bharath_backend
     restart: unless-stopped
     environment:
-      MONGO_URI: mongodb://admin:password123@mongodb:27017/bharathmedicare?authSource=admin
+      MONGO_URI: mongodb://admin:password123@mongodb:27017/bharathmedicare?authSource=admin&tls=false
       FLASK_ENV: development
       FLASK_DEBUG: "True"
     env_file:

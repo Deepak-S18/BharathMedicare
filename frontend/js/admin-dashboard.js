@@ -155,7 +155,7 @@ function displayUsers(users) {
     if (users.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center">No users found</td>
+                <td colspan="9" class="text-center">No users found</td>
             </tr>
         `;
         return;
@@ -187,6 +187,13 @@ function displayUsers(users) {
             </td>
             <td style="text-align: center;">${roleSpecificId}</td>
             <td style="text-align: center;">${user.nmc_uid ? `<span class="nmc-badge">${user.nmc_uid}</span>` : '<span style="color: #999;">N/A</span>'}</td>
+            <td style="text-align: center;">
+                ${user.rfid_id ? 
+                    `<span style="font-family: monospace; background: #fff3cd; padding: 4px 8px; border-radius: 4px; color: #856404; font-weight: 600; font-size: 0.85rem;">
+                        <i class="fas fa-id-card"></i> ${user.rfid_id.substring(0, 8)}...
+                    </span>` : 
+                    '<span style="color: #999;">Not Linked</span>'}
+            </td>
             <td>
                 <span class="badge ${user.is_active ? 'badge-success' : 'badge-warning'}">
                     ${user.is_active ? 'Active' : 'Inactive'}
@@ -196,6 +203,13 @@ function displayUsers(users) {
             </td>
             <td>${formatDate(user.created_at)}</td>
             <td style="white-space: nowrap;">
+                ${(user.role === 'patient' || user.role === 'doctor') ? `
+                <button class="btn btn-secondary" 
+                    style="padding: 6px 12px; font-size: 0.85rem; margin-right: 8px;" 
+                    onclick="openEditRfidModal('${user._id}', '${user.full_name}', '${user.rfid_id || ''}')">
+                    <i class="fas fa-id-card"></i> RFID
+                </button>
+                ` : ''}
                 <button class="btn ${user.is_active ? 'btn-danger' : 'btn-success'}" 
                     style="padding: 6px 12px; font-size: 0.85rem;" 
                     onclick="toggleUserStatus('${user._id}', ${user.is_active})">
@@ -341,3 +355,53 @@ function showSection(section) {
     }
 }
 
+
+// RFID Management Functions
+function openEditRfidModal(userId, userName, currentRfid) {
+    const modal = document.getElementById('rfidModal');
+    document.getElementById('rfidUserName').textContent = userName;
+    document.getElementById('rfidUserId').value = userId;
+    document.getElementById('rfidInput').value = currentRfid || '';
+    modal.style.display = 'flex';
+}
+
+function closeRfidModal() {
+    const modal = document.getElementById('rfidModal');
+    modal.style.display = 'none';
+    document.getElementById('rfidInput').value = '';
+}
+
+async function saveRfidChanges() {
+    const userId = document.getElementById('rfidUserId').value;
+    const rfidValue = document.getElementById('rfidInput').value.trim();
+
+    showLoading();
+
+    try {
+        await apiCall(API_ENDPOINTS.UPDATE_USER_RFID(userId), {
+            method: 'PATCH',
+            body: JSON.stringify({ rfid_id: rfidValue || null })
+        });
+
+        showSuccess('RFID updated successfully');
+        closeRfidModal();
+        await loadUsers();
+
+    } catch (error) {
+        showError('Failed to update RFID');
+    } finally {
+        hideLoading();
+    }
+}
+
+function clearRfidInput() {
+    document.getElementById('rfidInput').value = '';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('rfidModal');
+    if (event.target === modal) {
+        closeRfidModal();
+    }
+}

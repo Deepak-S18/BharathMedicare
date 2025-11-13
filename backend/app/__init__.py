@@ -34,7 +34,7 @@ def create_app(config_class=Config):
          always_send=True)
     
     # Register blueprints
-    from app.blueprints import auth, users, patients, records, access, admin, appointments, doctors
+    from app.blueprints import auth, users, patients, records, access, admin, appointments, doctors, stats, analytics
     
     app.register_blueprint(auth.bp)
     app.register_blueprint(users.bp)
@@ -44,6 +44,8 @@ def create_app(config_class=Config):
     app.register_blueprint(access.bp)
     app.register_blueprint(admin.bp)
     app.register_blueprint(appointments.bp)
+    app.register_blueprint(stats.bp)
+    app.register_blueprint(analytics.bp)
     
     # Health check endpoint
     @app.route('/api/health', methods=['GET'])

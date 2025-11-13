@@ -10,9 +10,9 @@
 body {
   font-family: 'Poppins', sans-serif;
   line-height: 1.6;
-  color: #333;
+  color: var(--text-primary);
   overflow-x: hidden;
-  background: #fff;
+  background: var(--bg-primary);
 }
 
 .container {
@@ -28,14 +28,14 @@ html {
 
 /* Navbar */
 .navbar { 
-  background: #fff; 
-  border-bottom: 1px solid #e5e7eb; 
+  background: var(--bg-primary); 
+  border-bottom: 1px solid var(--border-color); 
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .navbar-content {
@@ -48,7 +48,7 @@ html {
 .navbar-brand {
   font-weight: 800; 
   font-size: 1.3rem; 
-  color: #138808; 
+  color: var(--primary-color); 
   text-decoration: none;
 }
 
@@ -68,13 +68,13 @@ html {
 }
 
 .nav-link {
-  color: #333;
+  color: var(--text-primary);
   background: transparent;
 }
 
 .nav-link:hover {
-  color: #138808;
-  background: rgba(19, 136, 8, 0.1);
+  color: var(--primary-color);
+  background: var(--primary-light);
 }
 
 .btn-primary {
@@ -90,15 +90,15 @@ html {
 }
 
 .btn-secondary {
-  background: #f1f1f1; 
-  color: #138808; 
-  border: 1px solid #00d084;
+  background: var(--bg-secondary); 
+  color: var(--primary-color); 
+  border: 1px solid var(--primary-color);
 }
 
 .btn-secondary:hover { 
-  background: #fff; 
-  color: #138808; 
-  border-color: #138808; 
+  background: var(--bg-primary); 
+  color: var(--secondary-color); 
+  border-color: var(--secondary-color); 
 }
 
 /* Hero Banner Section */
@@ -135,7 +135,7 @@ html {
 }
 
 .hero-text-content { 
-  color: #2d2f31; 
+  color: var(--text-primary); 
 }
 
 .hero-badge {
@@ -168,7 +168,7 @@ html {
   font-size: 1.2rem; 
   line-height: 1.6; 
   margin-bottom: 40px; 
-  color: #555;
+  color: var(--text-secondary);
 }
 
 .hero-actions { 
@@ -219,6 +219,42 @@ html {
   justify-content: center; 
 }
 
+@media (max-width: 1024px) {
+  .hero-visual-section {
+    height: 400px;
+  }
+  
+  .floating-cards {
+    width: 350px;
+    height: 350px;
+  }
+  
+  .health-card {
+    min-width: 160px;
+    padding: 15px;
+  }
+  
+  .card-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+  
+  .card-content h4 {
+    font-size: 0.8rem;
+  }
+  
+  .health-value {
+    font-size: 1rem;
+  }
+  
+  .pulse-center {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+}
+
 .floating-cards { 
   position: relative; 
   width: 400px; 
@@ -227,10 +263,10 @@ html {
 
 .health-card {
   position: absolute; 
-  background: #fff; 
+  background: var(--card-bg); 
   border-radius: 15px; 
   padding: 20px; 
-  box-shadow: 0 10px 30px rgba(0,0,0,.1);
+  box-shadow: var(--shadow-lg);
   display: flex; 
   align-items: center; 
   gap: 15px; 
@@ -271,14 +307,14 @@ html {
 
 .card-content h4 { 
   font-size: 0.9rem; 
-  color: #666; 
+  color: var(--text-secondary); 
   margin-bottom: 5px; 
 }
 
 .health-value { 
   font-size: 1.2rem; 
   font-weight: 700; 
-  color: #333; 
+  color: var(--text-primary); 
 }
 
 .central-pulse { 
@@ -417,6 +453,12 @@ html {
   gap: 30px; 
   max-width: 1200px; 
   margin: 0 auto;
+}
+
+@media (max-width: 640px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .service-card {
@@ -616,10 +658,19 @@ html {
   height: 500px;
   border-radius: 20px;
   overflow: hidden;
-  background: linear-gradient(135deg, #00d084, #138808);
+  background: white;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 60px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.about-image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 .about-image i {
@@ -755,9 +806,15 @@ html {
 
 .reviews-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 30px;
   margin-top: 60px;
+}
+
+@media (max-width: 640px) {
+  .reviews-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .review-card {
@@ -1004,6 +1061,13 @@ footer {
   margin-bottom: 40px;
 }
 
+@media (max-width: 640px) {
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+}
+
 .footer-section h3 {
   margin-bottom: 20px;
   color: #00d084;
@@ -1091,20 +1155,51 @@ footer {
     flex-direction: column;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     padding: 20px;
+    gap: 10px;
   }
   
   .navbar-nav.active {
     display: flex;
   }
   
+  .navbar-nav a {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .hero-banner {
+    min-height: auto;
+    padding: 120px 0 60px;
+  }
+  
   .hero-container {
     grid-template-columns: 1fr;
     gap: 40px;
     text-align: center;
+    padding: 0 15px;
   }
   
   .hero-text-content h1 {
-    font-size: 2.5rem;
+    font-size: 2rem;
+    line-height: 1.3;
+  }
+  
+  .hero-description {
+    font-size: 1rem;
+  }
+  
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .hero-actions a {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .hero-visual-section {
+    display: none;
   }
   
   .trust-indicators {
@@ -1113,16 +1208,53 @@ footer {
     left: auto;
     bottom: auto;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 15px;
     justify-content: center;
     margin-top: 40px;
-    padding: 0 20px;
+    padding: 0 15px;
   }
   
   .trust-item {
     flex: 1;
-    min-width: 120px;
-    max-width: 150px;
+    min-width: 100px;
+  }
+  
+  .trust-number {
+    font-size: 1.5rem;
+  }
+  
+  .trust-label {
+    font-size: 0.8rem;
+  }
+  
+  .container {
+    padding: 0 15px;
+  }
+  
+  .quick-services,
+  .about-us,
+  .why-choose-us,
+  .reviews-section,
+  .contact-section,
+  .cta-section {
+    padding: 60px 0;
+  }
+  
+  .section-header h2 {
+    font-size: 1.8rem;
+  }
+  
+  .section-header p {
+    font-size: 1rem;
+  }
+  
+  .services-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .service-card {
+    padding: 30px 20px;
   }
   
   .about-content,
@@ -1132,13 +1264,169 @@ footer {
     gap: 40px;
   }
   
-  .cta-actions {
-    flex-direction: column;
+  .about-text h2,
+  .why-text h2,
+  .contact-info h2 {
+    font-size: 1.8rem;
   }
   
-  .stats-grid,
+  .about-text p,
+  .why-description,
+  .contact-info p {
+    font-size: 1rem;
+  }
+  
+  .about-image {
+    height: 300px;
+    padding: 40px;
+  }
+  
+  .about-image img {
+    max-width: 90%;
+  }
+  
+  .about-image i {
+    font-size: 5rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+  
+  .stat-item {
+    padding: 20px 15px;
+  }
+  
+  .stat-number {
+    font-size: 1.8rem;
+  }
+  
+  .why-visual {
+    height: 250px;
+  }
+  
+  .float-element {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+  
   .reviews-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .review-card {
+    padding: 30px 20px;
+  }
+  
+  .review-text {
+    font-size: 1rem;
+  }
+  
+  .contact-form {
+    padding: 30px 20px;
+  }
+  
+  .cta-content h2 {
+    font-size: 1.8rem;
+  }
+  
+  .cta-content p {
+    font-size: 1rem;
+  }
+  
+  .cta-actions {
+    flex-direction: column;
+    width: 100%;
+    padding: 0 15px;
+  }
+  
+  .cta-actions a {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+  
+  .navbar-brand img {
+    height: 32px;
+  }
+  
+  .hero-text-content h1 {
+    font-size: 1.75rem;
+  }
+  
+  .hero-badge {
+    font-size: 0.8rem;
+    padding: 8px 15px;
+  }
+  
+  .btn-primary,
+  .btn-outline {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+  
+  .trust-indicators {
+    gap: 10px;
+  }
+  
+  .trust-item {
+    min-width: 80px;
+  }
+  
+  .trust-number {
+    font-size: 1.3rem;
+  }
+  
+  .trust-label {
+    font-size: 0.75rem;
+  }
+  
+  .section-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .service-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+  
+  .service-card h3 {
+    font-size: 1.2rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .reviewer-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+  
+  .contact-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  .about-image {
+    height: 250px;
+    padding: 30px;
   }
 }
 
@@ -1170,3 +1458,211 @@ footer .footer-section h3 i.fas.fa-heartbeat {
     display: none;
 }
 
+
+
+/* ============================================
+   DARK MODE OVERRIDES FOR LANDING PAGE
+   ============================================ */
+
+/* Apply theme variables to all text elements */
+.hero-text-content,
+.section-header h2,
+.section-header p,
+.service-card h3,
+.service-card p,
+.about-text h2,
+.about-text p,
+.why-text h2,
+.why-description,
+.feature-text h4,
+.feature-text p,
+.review-text,
+.reviewer-details h4,
+.reviewer-details p,
+.contact-info h2,
+.contact-info p,
+.contact-text h4,
+.contact-text p,
+.cta-content h2,
+.cta-content p,
+.footer-section h3,
+.footer-section p,
+.footer-section ul li a {
+    color: inherit;
+}
+
+/* Service Cards */
+.service-card {
+    background: var(--card-bg);
+    box-shadow: var(--shadow-md);
+}
+
+.service-card h3 {
+    color: var(--text-primary);
+}
+
+.service-card p {
+    color: var(--text-secondary);
+}
+
+/* About Section */
+.about-us {
+    background: var(--bg-secondary);
+}
+
+.about-text h2,
+.why-text h2,
+.contact-info h2 {
+    color: var(--text-primary);
+}
+
+.about-text p,
+.why-description,
+.contact-info p {
+    color: var(--text-secondary);
+}
+
+/* Stats Cards */
+.stat-item {
+    background: var(--card-bg);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-label {
+    color: var(--text-secondary);
+}
+
+/* Review Cards */
+.review-card {
+    background: var(--card-bg);
+    box-shadow: var(--shadow-lg);
+}
+
+.review-text {
+    color: var(--text-secondary);
+}
+
+.reviewer-details h4 {
+    color: var(--text-primary);
+}
+
+.reviewer-details p {
+    color: var(--text-secondary);
+}
+
+/* Contact Form */
+.contact-form {
+    background: var(--card-bg);
+    box-shadow: var(--shadow-lg);
+}
+
+.form-group label {
+    color: var(--text-primary);
+}
+
+.form-group input,
+.form-group textarea {
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    border-color: var(--input-border);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: var(--input-focus);
+}
+
+/* Footer */
+footer {
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+}
+
+.footer-section h3 {
+    color: var(--primary-color);
+}
+
+.footer-section p {
+    color: var(--sidebar-text);
+}
+
+.footer-section ul li a {
+    color: var(--sidebar-text);
+}
+
+.footer-section ul li a:hover {
+    color: var(--primary-color);
+}
+
+.footer-bottom {
+    border-top-color: var(--border-color);
+    color: var(--sidebar-text);
+}
+
+/* Trust indicators */
+.trust-item {
+    color: var(--text-primary);
+}
+
+.trust-label {
+    color: var(--text-secondary);
+}
+
+/* Feature items */
+.feature-text h4 {
+    color: var(--text-primary);
+}
+
+.feature-text p {
+    color: var(--text-secondary);
+}
+
+/* Section headers */
+.section-header h2 {
+    color: var(--text-primary);
+}
+
+.section-header p {
+    color: var(--text-secondary);
+}
+
+/* Contact items */
+.contact-text h4 {
+    color: var(--text-primary);
+}
+
+.contact-text p {
+    color: var(--text-secondary);
+}
+
+/* Dark mode specific adjustments */
+[data-theme="dark"] .hero-banner {
+    background: linear-gradient(135deg, #1a2f26, #0d1f18, #1a3d2f);
+}
+
+[data-theme="dark"] .quick-services {
+    background: var(--bg-primary);
+}
+
+[data-theme="dark"] .about-us {
+    background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .why-choose-us {
+    background: linear-gradient(135deg, #1a2f26, #0d1f18, #1a3d2f);
+}
+
+[data-theme="dark"] .reviews-section {
+    background: var(--bg-primary);
+}
+
+[data-theme="dark"] .contact-section {
+    background: var(--bg-secondary);
+}
+
+[data-theme="dark"] .about-image {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-color: var(--border-color);
+}
+
+/* Buttons maintain their original gradient colors in both themes */

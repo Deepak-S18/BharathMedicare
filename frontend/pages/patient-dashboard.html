@@ -6,14 +6,15 @@
     <title>Patient Dashboard - BharathMedicare</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="../assets/css/theme.css">
     <link rel="stylesheet" href="../assets/css/dashboard.css">
 </head>
 <body>
-    <div id="loading">
+    <div id="loading" style="display: flex;">
         <div class="spinner"></div>
     </div>
 
-    <div class="dashboard-container">
+    <div class="dashboard-container" style="display: none;">
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div style="display: flex; align-items: center; gap: 12px;">
@@ -25,32 +26,32 @@
             
             <ul class="sidebar-menu">
                 <li class="sidebar-menu-item">
-                    <a href="#" class="sidebar-menu-link active" onclick="showSection('dashboard')">
+                    <a href="javascript:void(0)" class="sidebar-menu-link active" onclick="showSection('dashboard')">
                         <i class="fas fa-home" style="margin-right: 12px; width: 20px;"></i> Dashboard
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <a href="#" class="sidebar-menu-link" onclick="showSection('healthcard')">
+                    <a href="javascript:void(0)" class="sidebar-menu-link" onclick="showSection('healthcard')">
                         <i class="fas fa-id-card" style="margin-right: 12px; width: 20px;"></i> Digital Health Card
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <a href="#" class="sidebar-menu-link" onclick="showSection('records')">
+                    <a href="javascript:void(0)" class="sidebar-menu-link" onclick="showSection('records')">
                         <i class="fas fa-folder-open" style="margin-right: 12px; width: 20px;"></i> My Records
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <a href="#" class="sidebar-menu-link" onclick="showSection('upload')">
+                    <a href="javascript:void(0)" class="sidebar-menu-link" onclick="showSection('upload')">
                         <i class="fas fa-cloud-upload-alt" style="margin-right: 12px; width: 20px;"></i> Upload Record
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <a href="#" class="sidebar-menu-link" onclick="showSection('access')">
+                    <a href="javascript:void(0)" class="sidebar-menu-link" onclick="showSection('access')">
                         <i class="fas fa-calendar-check" style="margin-right: 12px; width: 20px;"></i> Appointments
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <a href="#" class="sidebar-menu-link" onclick="showSection('profile')">
+                    <a href="javascript:void(0)" class="sidebar-menu-link" onclick="showSection('profile')">
                         <i class="fas fa-user-circle" style="margin-right: 12px; width: 20px;"></i> Profile
                     </a>
                 </li>
@@ -66,8 +67,15 @@
         <main class="main-content">
             <section id="dashboardSection">
                 <div class="dashboard-header">
-                    <h1><i class="fas fa-tachometer-alt"></i> Welcome Back, <span id="patientName">Patient</span>!</h1>
-                    <p>Your health records at a glance</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <div>
+                            <h1><i class="fas fa-tachometer-alt"></i> Welcome Back, <span id="patientName">Patient</span>!</h1>
+                            <p>Your health records at a glance</p>
+                        </div>
+                        <button id="themeToggle" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark Mode">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="stats-grid">
@@ -514,6 +522,42 @@
                                 </div>
                             </div>
 
+                            <h3 class="card-header" style="margin-top: 24px;">
+                                <i class="fas fa-id-card"></i> RFID Card (Optional)
+                            </h3>
+                            <div style="margin-top: 16px;">
+                                <div class="form-group">
+                                    <label>
+                                        RFID Card ID 
+                                        <span style="color: var(--text-secondary); font-weight: normal; font-size: 0.85rem;">
+                                            (Optional - For hospital kiosk access)
+                                        </span>
+                                    </label>
+                                    <div style="display: flex; gap: 12px; align-items: center;">
+                                        <input 
+                                            type="text" 
+                                            id="profileRfidId" 
+                                            placeholder="Scan your RFID card to link it"
+                                            style="flex: 1;"
+                                            maxlength="50"
+                                        >
+                                        <button 
+                                            type="button" 
+                                            class="btn btn-secondary" 
+                                            id="clearRfidBtn"
+                                            onclick="clearRfidField()"
+                                            style="padding: 12px 20px; display: none;"
+                                        >
+                                            <i class="fas fa-times"></i> Clear
+                                        </button>
+                                    </div>
+                                    <small id="rfidHelpText" style="color: var(--text-secondary); display: block; margin-top: 8px;">
+                                        <i class="fas fa-info-circle"></i> 
+                                        Click in the field above and scan your RFID card. Once linked, only admin can change it.
+                                    </small>
+                                </div>
+                            </div>
+
                             <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
                                 <button type="button" class="btn btn-secondary" onclick="loadProfile()">
                                     <i class="fas fa-undo"></i> Reset Changes
@@ -530,9 +574,36 @@
         </main>
     </div>
 
+    <!-- Authentication Guard - MUST be loaded first -->
     <script src="../js/config.js"></script>
+    <script src="../js/auth-guard.js"></script>
+    <script>
+        // Protect this page - only patients can access
+        console.log('[Patient Dashboard] Starting auth check...');
+        console.log('[Patient Dashboard] Token:', localStorage.getItem('bharath_medicare_token') ? 'EXISTS' : 'MISSING');
+        console.log('[Patient Dashboard] User:', localStorage.getItem('bharath_medicare_user') ? 'EXISTS' : 'MISSING');
+        
+        try {
+            if (!AuthGuard.protectPage('patient')) {
+                // User will be redirected to login - stop execution
+                console.log('[Patient Dashboard] Auth check failed - redirecting');
+            } else {
+                // Only setup protection if user is authorized
+                console.log('[Patient Dashboard] Auth check passed');
+                // Disable back button to prevent unauthorized access
+                AuthGuard.disableBackButton();
+                // Setup auto-logout on token expiration
+                AuthGuard.setupAutoLogout();
+            }
+        } catch (error) {
+            console.error('[Patient Dashboard] Auth guard error:', error);
+            // Don't redirect on error, let the page load
+        }
+    </script>
+    
     <script src="../js/api.js"></script>
     <script src="../js/ui.js"></script>
+    <script src="../js/theme-toggle.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/patient-dashboard.js"></script>
 </body>

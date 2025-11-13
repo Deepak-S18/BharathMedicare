@@ -19,13 +19,24 @@ class Database:
             try:
                 mongo_uri = os.getenv('MONGO_URI')
                 print(f"Attempting MongoDB connection with URI: {mongo_uri}")
-                cls._client = MongoClient(
-                    mongo_uri,
-                    serverSelectionTimeoutMS=10000,
-                    connectTimeoutMS=10000,
-                    tls=True,
-                    tlsAllowInvalidCertificates=True
-                )
+                
+                # Parse TLS setting from URI or default to False for local/Docker
+                # Only enable TLS for production MongoDB Atlas connections
+                use_tls = 'tls=true' in mongo_uri.lower() or 'ssl=true' in mongo_uri.lower()
+                
+                # Build connection options based on TLS setting
+                connection_options = {
+                    'serverSelectionTimeoutMS': 10000,
+                    'connectTimeoutMS': 10000
+                }
+                
+                # Only add TLS options if TLS is enabled
+                if use_tls:
+                    connection_options['tls'] = True
+                    connection_options['tlsAllowInvalidCertificates'] = True
+                
+                cls._client = MongoClient(mongo_uri, **connection_options)
+                
                 # Test the connection
                 cls._client.admin.command('ping')
                 print("✓ Successfully connected to MongoDB")
