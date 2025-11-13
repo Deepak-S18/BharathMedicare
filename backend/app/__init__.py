@@ -19,18 +19,25 @@ def create_app(config_class=Config):
     # Load configuration
     app.config.from_object(config_class)
     
-    # Enable CORS for all routes
+    # Enable CORS for all routes with explicit Vercel domain
+    allowed_origins = [
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
+        "https://bharath-medicare.vercel.app",
+        "https://*.vercel.app"  # Allow all Vercel preview deployments
+    ]
+    
     CORS(app, 
          resources={r"/api/*": {
-             "origins": "*",
-             # IMPORTANT: Removed "OPTIONS" and rely on automatic_options=True
-             "methods": ["GET", "POST", "PUT", "PATCH", "DELETE"], 
-             "allow_headers": ["Content-Type", "Authorization"],
-             "supports_credentials": False
+             "origins": allowed_origins,
+             "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], 
+             "allow_headers": ["Content-Type", "Authorization", "Accept"],
+             "expose_headers": ["Content-Type", "Authorization"],
+             "supports_credentials": False,
+             "max_age": 3600  # Cache preflight for 1 hour
          }},
-         # CRITICAL FIX: Handles the preflight OPTIONS request outside of view functions/decorators.
          automatic_options=True, 
-         send_wildcard=True,
+         send_wildcard=False,  # Use explicit origins instead
          always_send=True)
     
     # Register blueprints
