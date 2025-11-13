@@ -990,13 +990,21 @@ async function handleUpdateProfile(event) {
     showLoading();
     
     try {
+        // Validate required fields before submitting
+        const bloodGroup = document.getElementById('profileBloodGroup').value;
+        if (!bloodGroup || bloodGroup === '') {
+            showError('Please select your blood group');
+            hideLoading();
+            return;
+        }
+        
         const updateData = {
             full_name: document.getElementById('profileName').value,
             // phone is read-only (verified during registration)
             gender: document.getElementById('profileGender').value,
             date_of_birth: document.getElementById('profileDob').value,
             address: document.getElementById('profileAddress').value,
-            blood_group: document.getElementById('profileBloodGroup').value,
+            blood_group: bloodGroup,
             height: document.getElementById('profileHeight').value,
             weight: document.getElementById('profileWeight').value,
             allergies: parseCommaSeparated(document.getElementById('profileAllergies').value),
