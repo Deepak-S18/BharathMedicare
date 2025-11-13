@@ -112,7 +112,8 @@ body {
     height: 100vh;
     overflow-y: auto;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 100;
+    z-index: 1000;
+    transition: transform 0.3s ease;
 }
 
 /* Custom scrollbar for sidebar */
@@ -701,20 +702,14 @@ tbody tr:hover {
         justify-content: center;
     }
 
-    /* Hide sidebar by default on mobile */
+    /* Hide sidebar by default on mobile using transform */
     .sidebar {
-        position: fixed !important;
-        left: -280px !important;
-        top: 0;
-        height: 100vh;
-        width: 280px;
-        z-index: 1000;
-        transition: left 0.3s ease;
+        transform: translateX(-100%);
     }
 
     /* Show sidebar when active */
     .sidebar.mobile-open {
-        left: 0 !important;
+        transform: translateX(0);
     }
 
     /* Show overlay when sidebar is open */
