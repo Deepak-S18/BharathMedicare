@@ -14,9 +14,14 @@
         <div class="spinner"></div>
     </div>
 
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()" aria-label="Toggle Menu">
+        <i class="fas fa-bars"></i>
+    </button>
+
     <div class="dashboard-container">
         <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                     <img src="../assets/images/logo.png" alt="Logo">
@@ -56,6 +61,9 @@
                 </button>
             </div>
         </aside>
+
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
 
         <!-- Main Content -->
         <main class="main-content">

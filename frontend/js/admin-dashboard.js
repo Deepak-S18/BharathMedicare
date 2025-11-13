@@ -405,3 +405,25 @@ window.onclick = function(event) {
         closeRfidModal();
     }
 }
+
+
+// Mobile sidebar toggle
+function toggleMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    
+    sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('active');
+}
+
+// Close sidebar when clicking on a menu item (mobile only)
+document.addEventListener('DOMContentLoaded', () => {
+    const menuLinks = document.querySelectorAll('.sidebar-menu-link');
+    menuLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                toggleMobileSidebar();
+            }
+        });
+    });
+});
