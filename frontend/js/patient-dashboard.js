@@ -1707,59 +1707,6 @@ function printHealthCardSideBySide() {
     printWindow.document.close();
 }
 
-// Show section
-function showSection(section) {
-    document.getElementById('dashboardSection').style.display = 'none';
-    document.getElementById('healthcardSection').style.display = 'none';
-    document.getElementById('recordsSection').style.display = 'none';
-    document.getElementById('uploadSection').style.display = 'none';
-    document.getElementById('accessSection').style.display = 'none';
-    document.getElementById('profileSection').style.display = 'none';
-    
-    document.querySelectorAll('.sidebar-menu-link').forEach(link => {
-        link.classList.remove('active');
-    });
-    
-    let targetSectionElement;
-    let targetLinkElement;
-    
-    switch(section) {
-        case 'dashboard':
-            targetSectionElement = document.getElementById('dashboardSection');
-            targetLinkElement = document.querySelector('.sidebar-menu-link[onclick*="dashboard"]');
-            break;
-        case 'healthcard':
-            targetSectionElement = document.getElementById('healthcardSection');
-            targetLinkElement = document.querySelector('.sidebar-menu-link[onclick*="healthcard"]');
-            break;
-        case 'records':
-            targetSectionElement = document.getElementById('recordsSection');
-            targetLinkElement = document.querySelector('.sidebar-menu-link[onclick*="records"]');
-            break;
-        case 'upload':
-            targetSectionElement = document.getElementById('uploadSection');
-            targetLinkElement = document.querySelector('.sidebar-menu-link[onclick*="upload"]');
-            break;
-        case 'access':
-            targetSectionElement = document.getElementById('accessSection');
-            targetLinkElement = document.querySelector('.sidebar-menu-link[onclick*="access"]');
-            break;
-        case 'profile':
-            targetSectionElement = document.getElementById('profileSection');
-            targetLinkElement = document.querySelector('.sidebar-menu-link[onclick*="profile"]');
-            break;
-    }
-    
-    if (targetSectionElement) {
-        targetSectionElement.style.display = 'block';
-    }
-    
-    if (targetLinkElement) {
-        targetLinkElement.classList.add('active');
-    }
-}
-
-
 // ============================================
 // APPOINTMENT FUNCTIONS
 // ============================================
