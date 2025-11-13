@@ -4,6 +4,9 @@
 async function apiCall(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
     
+    console.log('[API] Making request to:', url);
+    console.log('[API] Method:', options.method || 'GET');
+    
     const defaultHeaders = {
         'Content-Type': 'application/json'
     };
@@ -24,7 +27,17 @@ async function apiCall(endpoint, options = {}) {
     
     try {
         const response = await fetch(url, config);
+        console.log('[API] Response status:', response.status);
+        
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            console.error('[API] Non-JSON response received:', contentType);
+            throw new Error('Server returned non-JSON response. Backend may be down or misconfigured.');
+        }
+        
         const data = await response.json();
+        console.log('[API] Response data:', data);
         
         if (!response.ok) {
             throw new Error(data.error || `HTTP error! status: ${response.status}`);
@@ -32,7 +45,19 @@ async function apiCall(endpoint, options = {}) {
         
         return data;
     } catch (error) {
-        console.error('API call failed:', error);
+        console.error('[API] Request failed:', error);
+        console.error('[API] URL:', url);
+        console.error('[API] Error details:', {
+            message: error.message,
+            name: error.name,
+            stack: error.stack
+        });
+        
+        // Provide more helpful error messages
+        if (error.message.includes('Failed to fetch')) {
+            throw new Error('Cannot connect to server. Please check:\n1. Backend server is running\n2. CORS is configured\n3. API URL is correct: ' + API_BASE_URL);
+        }
+        
         throw error;
     }
 }

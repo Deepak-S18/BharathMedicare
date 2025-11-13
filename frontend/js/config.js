@@ -3,9 +3,26 @@
 // Configuration JavaScript
 
 // API Base URL - adjust this based on your environment
-const API_BASE_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:5000' 
-    : 'https://bharathmedicare.onrender.com';
+const API_BASE_URL = (() => {
+    const hostname = window.location.hostname;
+    
+    // Local development
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://localhost:5000';
+    }
+    
+    // Vercel deployment - update this with your actual backend URL
+    // Option 1: If backend is on Render
+    if (hostname.includes('vercel.app')) {
+        return 'https://bharathmedicare.onrender.com';
+    }
+    
+    // Option 2: If backend is on same domain (not recommended for Vercel free tier)
+    // return window.location.origin;
+    
+    // Default production URL
+    return 'https://bharathmedicare.onrender.com';
+})();
 
 // API Endpoints
 const API_ENDPOINTS = {
