@@ -694,6 +694,48 @@ tbody tr:hover {
     opacity: 1;
 }
 
+/* Tablet breakpoint (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    /* Show mobile menu button on tablets */
+    .mobile-menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Hide sidebar by default on tablets using transform */
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    /* Show sidebar when active */
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    /* Show overlay when sidebar is open */
+    .sidebar.mobile-open ~ .sidebar-overlay {
+        display: block;
+    }
+
+    /* Adjust main content for tablets */
+    .main-content {
+        padding: 30px 25px;
+        margin-left: 0;
+        width: 100%;
+    }
+
+    /* Tablet-optimized grid */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .records-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile breakpoint (≤768px) */
 @media (max-width: 768px) {
     /* Show mobile menu button */
     .mobile-menu-toggle {
