@@ -53,6 +53,13 @@
                         <i class="fas fa-clipboard-list" style="margin-right: 12px; width: 20px;"></i> Audit Logs
                     </a>
                 </li>
+                <li class="sidebar-menu-item">
+                    <a href="javascript:void(0)" class="sidebar-menu-link" onclick="showSection('contact')">
+                        <i class="fas fa-envelope" style="margin-right: 12px; width: 20px;"></i> 
+                        Contact Messages
+                        <span id="unreadBadge" class="badge badge-danger" style="margin-left: auto;">0</span>
+                    </a>
+                </li>
             </ul>
 
             <div class="sidebar-footer">
@@ -247,6 +254,85 @@
                         <tbody id="auditLogsBody">
                             <tr>
                                 <td colspan="5" class="text-center">Loading audit logs...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Contact Messages Section -->
+            <section id="contactSection" style="display: none;">
+                <div class="dashboard-header">
+                    <h1><i class="fas fa-envelope"></i> Contact Messages</h1>
+                    <p>Messages from website visitors</p>
+                </div>
+
+                <div class="stats-grid" style="margin-bottom: 24px;">
+                    <div class="stat-card">
+                        <div class="stat-icon danger">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="unreadCount">0</div>
+                            <div class="stat-label">Unread</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon info">
+                            <i class="fas fa-envelope-open"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="readCount">0</div>
+                            <div class="stat-label">Read</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-reply"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="repliedCount">0</div>
+                            <div class="stat-label">Replied</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon primary">
+                            <i class="fas fa-inbox"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value" id="totalContactCount">0</div>
+                            <div class="stat-label">Total Messages</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="loadContactMessages()">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                    <button class="btn btn-secondary" onclick="filterContactMessages('unread')">
+                        <i class="fas fa-envelope"></i> Unread Only
+                    </button>
+                    <button class="btn btn-secondary" onclick="filterContactMessages('all')">
+                        <i class="fas fa-inbox"></i> All Messages
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Message</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contactMessagesBody">
+                            <tr>
+                                <td colspan="6" class="text-center">Loading contact messages...</td>
                             </tr>
                         </tbody>
                     </table>
