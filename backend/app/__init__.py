@@ -31,13 +31,21 @@ def create_app(config_class=Config):
         "http://127.0.0.1:3000",
         "http://localhost",
         "http://127.0.0.1",
-        "https://bharath-medicare.vercel.app",
-        "https://*.vercel.app"  # Allow all Vercel preview deployments
+        "https://bharath-medicare.vercel.app"
     ]
+    
+    # Custom origin checker to allow all Vercel preview deployments
+    def check_origin(origin):
+        if origin in allowed_origins:
+            return True
+        # Allow any vercel.app subdomain
+        if origin and origin.endswith('.vercel.app'):
+            return True
+        return False
     
     CORS(app, 
          resources={r"/api/*": {
-             "origins": allowed_origins,
+             "origins": check_origin,
              "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], 
              "allow_headers": ["Content-Type", "Authorization", "Accept"],
              "expose_headers": ["Content-Type", "Authorization"],
