@@ -19,41 +19,18 @@ def create_app(config_class=Config):
     # Load configuration
     app.config.from_object(config_class)
     
-    # Enable CORS for all routes with explicit Vercel domain
-    allowed_origins = [
-        "http://localhost:8080",
-        "http://127.0.0.1:8080",
-        "http://localhost:5080",
-        "http://127.0.0.1:5080",
-        "http://localhost:5500",
-        "http://127.0.0.1:5500",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost",
-        "http://127.0.0.1",
-        "https://bharath-medicare.vercel.app"
-    ]
-    
-    # Custom origin checker to allow all Vercel preview deployments
-    def check_origin(origin):
-        if origin in allowed_origins:
-            return True
-        # Allow any vercel.app subdomain
-        if origin and origin.endswith('.vercel.app'):
-            return True
-        return False
-    
+    # Enable CORS - Allow all origins for now to fix the issue
+    # In production, you should restrict this to specific domains
     CORS(app, 
-         resources={r"/api/*": {
-             "origins": check_origin,
+         resources={r"/*": {
+             "origins": "*",
              "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], 
              "allow_headers": ["Content-Type", "Authorization", "Accept"],
              "expose_headers": ["Content-Type", "Authorization"],
              "supports_credentials": False,
-             "max_age": 3600  # Cache preflight for 1 hour
+             "max_age": 3600
          }},
-         automatic_options=True, 
-         send_wildcard=False,  # Use explicit origins instead
+         automatic_options=True,
          always_send=True)
     
     # Register blueprints
