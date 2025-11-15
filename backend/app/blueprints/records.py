@@ -167,17 +167,17 @@ def download_record(record_id):
         if request.user['role'] == 'patient' and str(record['patient_id']) != request.user['user_id']:
             return jsonify({'error': 'Access denied'}), 403
         
-        # Check if this is a prescription (stored as file) or regular record (encrypted)
-        if record.get('is_prescription', False) and record.get('file_path'):
-            # Prescription PDF - read from file system
+        # Check if this is an old prescription (stored as file) or new/regular record (encrypted)
+        if record.get('is_prescription', False) and record.get('file_path') and not record.get('encrypted_data'):
+            # OLD prescription PDF - read from file system (for backwards compatibility)
             import os
             
             file_path = record['file_path']
-            print(f"📄 Attempting to download prescription PDF: {file_path}")
+            print(f"📄 Attempting to download OLD prescription PDF from file: {file_path}")
             
             if not os.path.exists(file_path):
                 print(f"❌ File not found: {file_path}")
-                return jsonify({'error': 'Prescription file not found'}), 404
+                return jsonify({'error': 'Prescription file not found. This may be an old prescription that was deleted during server restart.'}), 404
             
             print(f"✅ File exists, sending: {file_path}")
             
@@ -191,9 +191,16 @@ def download_record(record_id):
                 mimetype=record['file_type']
             )
         else:
-            # Regular encrypted record
+            # NEW prescription or regular encrypted record - stored in MongoDB
+            if not record.get('encrypted_data'):
+                return jsonify({'error': 'Record data not found'}), 404
+            
+            print(f"📄 Downloading encrypted record from MongoDB: {record['file_name']}")
+            
             # Decrypt file data
             decrypted_data = decrypt_file_data(record['encrypted_data'])
+            
+            print(f"✅ Decrypted {len(decrypted_data)} bytes, sending file")
             
             # Log the action
             log_action(request.user['user_id'], 'download', 'record', record_id)

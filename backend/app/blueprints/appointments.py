@@ -491,31 +491,22 @@ def verify_appointment_otp(appointment_id):
 
 
 def generate_prescription_pdf(prescription_data, patient_data, doctor_data, appointment_data):
-    """Generate a PDF prescription document"""
+    """Generate a PDF prescription document and return as bytes"""
     try:
-        # Create uploads directory if it doesn't exist
-        upload_folder = current_app.config.get('UPLOAD_FOLDER', 'uploads')
-        
-        # Make sure we use absolute path
-        if not os.path.isabs(upload_folder):
-            # Get the app root directory (where run.py is)
-            app_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            upload_folder = os.path.join(app_root, upload_folder)
-        
-        os.makedirs(upload_folder, exist_ok=True)
-        
         # Generate filename based on diagnosis
         safe_diagnosis = "".join(c for c in prescription_data['diagnosis'] if c.isalnum() or c in (' ', '-', '_')).strip()
         safe_diagnosis = safe_diagnosis.replace(' ', '_')[:50]  # Limit length
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f"Prescription_{safe_diagnosis}_{timestamp}.pdf"
-        filepath = os.path.join(upload_folder, filename)
         
-        print(f"📁 Upload folder: {upload_folder}")
-        print(f"📄 Full file path: {filepath}")
+        print(f"📄 Generating PDF: {filename}")
+        
+        # Create PDF in memory using BytesIO
+        from io import BytesIO
+        pdf_buffer = BytesIO()
         
         # Create PDF
-        doc = SimpleDocTemplate(filepath, pagesize=letter)
+        doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
         story = []
         styles = getSampleStyleSheet()
         
@@ -645,7 +636,13 @@ def generate_prescription_pdf(prescription_data, patient_data, doctor_data, appo
         # Build PDF
         doc.build(story)
         
-        return filename, filepath
+        # Get PDF bytes
+        pdf_bytes = pdf_buffer.getvalue()
+        pdf_buffer.close()
+        
+        print(f"✅ PDF generated successfully: {len(pdf_bytes)} bytes")
+        
+        return filename, pdf_bytes
         
     except Exception as e:
         print(f"PDF generation error: {e}")
@@ -710,32 +707,40 @@ def add_prescription(appointment_id):
         }
         
         # Generate PDF
-        filename, filepath = generate_prescription_pdf(
+        filename, pdf_bytes = generate_prescription_pdf(
             prescription, 
             patient, 
             doctor,
             appointment
         )
         
-        # Save prescription PDF as medical record
+        # Encrypt the PDF bytes
+        from app.utils.encryption import encrypt_file_data
+        encryption_result = encrypt_file_data(pdf_bytes)
+        
+        if not encryption_result['success']:
+            return jsonify({'error': 'Failed to encrypt prescription PDF'}), 500
+        
+        # Save prescription PDF as medical record (encrypted in database)
         medical_record = {
             'patient_id': appointment['patient_id'],
             'file_name': filename,
-            'file_path': filepath,
             'file_type': 'application/pdf',
-            'file_size': os.path.getsize(filepath),
+            'file_size': len(pdf_bytes),
             'description': f"Prescription - {diagnosis}",
             'uploaded_at': datetime.utcnow(),
             'uploaded_by': 'system',
             'is_prescription': True,
             'is_deleted': False,
-            'appointment_id': appointment_id
+            'appointment_id': appointment_id,
+            'encrypted_data': encryption_result['encrypted_data'],
+            'encryption_metadata': {'method': encryption_result['encryption_method']}
         }
         
         result = records_collection.insert_one(medical_record)
         print(f"✅ Prescription PDF saved to medical records: {filename}")
         print(f"✅ Record ID: {result.inserted_id}")
-        print(f"✅ File path: {filepath}")
+        print(f"✅ File size: {len(pdf_bytes)} bytes (encrypted and stored in MongoDB)")
         
         # Update appointment with prescription and mark as completed
         appointments_collection.update_one(
