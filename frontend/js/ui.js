@@ -119,20 +119,24 @@ function showToast(message, type = 'info', duration = 3000) {
 
 /**
  * Show success toast
- * @param {string} message - Success message
+ * @param {string} message - Success message (can be translation key)
  * @param {number} duration - Duration in milliseconds
  */
 function showSuccess(message, duration = 3000) {
-    showToast(message, 'success', duration);
+    // Try to translate if I18n is available
+    const translatedMessage = (typeof I18n !== 'undefined') ? I18n.t(message) : message;
+    showToast(translatedMessage, 'success', duration);
 }
 
 /**
  * Show error toast
- * @param {string} message - Error message
+ * @param {string} message - Error message (can be translation key)
  * @param {number} duration - Duration in milliseconds
  */
 function showError(message, duration = 4000) {
-    showToast(message, 'error', duration);
+    // Try to translate if I18n is available
+    const translatedMessage = (typeof I18n !== 'undefined') ? I18n.t(message) : message;
+    showToast(translatedMessage, 'error', duration);
 }
 
 /**

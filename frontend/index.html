@@ -46,15 +46,15 @@
         <i class="fas fa-bars"></i>
       </button>
       <div class="navbar-nav" id="navMenu">
-        <a href="#home" class="nav-link">Home</a>
-        <a href="#services" class="nav-link">Services</a>
-        <a href="#about" class="nav-link">About</a>
-        <a href="#contact" class="nav-link">Contact</a>
+        <a href="#home" class="nav-link" data-i18n="nav.home">Home</a>
+        <a href="#services" class="nav-link" data-i18n="nav.services">Services</a>
+        <a href="#about" class="nav-link" data-i18n="nav.about">About</a>
+        <a href="#contact" class="nav-link" data-i18n="nav.contact">Contact</a>
         <button id="themeToggle" class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark Mode">
           <i class="fas fa-moon"></i>
         </button>
-        <a href="pages/login.html" class="btn-primary">Login</a>
-        <a href="pages/register.html" class="btn-secondary">Register</a>
+        <a href="pages/login.html" class="btn-primary" data-i18n="common.login">Login</a>
+        <a href="pages/register.html" class="btn-secondary" data-i18n="common.register">Register</a>
       </div>
     </div>
   </nav>
@@ -66,19 +66,19 @@
       <div class="hero-text-content">
         <div class="hero-badge">
           <i class="fas fa-check-circle"></i>
-          <span id="heroBadge">Trusted Healthcare Platform</span>
+          <span id="heroBadge" data-i18n="landing.trustedPlatform">Trusted Healthcare Platform</span>
         </div>
-        <h1>Your Health Data, <br/>Secured & Accessible</h1>
-        <p class="hero-description">
+        <h1 data-i18n="landing.heroTitle">Your Health Data, <br/>Secured & Accessible</h1>
+        <p class="hero-description" data-i18n="landing.heroDescription">
           Store, manage, and share your medical records with complete security. 
           Access your health information anytime, anywhere with our encrypted platform.
         </p>
         <div class="hero-actions">
           <a href="pages/register.html" class="btn-primary">
-            Get Started Free <i class="fas fa-arrow-right"></i>
+            <span data-i18n="landing.getStarted">Get Started Free</span> <i class="fas fa-arrow-right"></i>
           </a>
           <a href="#services" class="btn-outline">
-            Learn More <i class="fas fa-play-circle"></i>
+            <span data-i18n="landing.learnMore">Learn More</span> <i class="fas fa-play-circle"></i>
           </a>
         </div>
       </div>
@@ -132,15 +132,15 @@
     <div class="trust-indicators">
       <div class="trust-item">
         <div class="trust-number" id="heroActiveUsers">Loading...</div>
-        <div class="trust-label">Active Users</div>
+        <div class="trust-label" data-i18n="landing.activeUsers">Active Users</div>
       </div>
       <div class="trust-item">
         <div class="trust-number" id="heroDoctors">Loading...</div>
-        <div class="trust-label">Doctors</div>
+        <div class="trust-label" data-i18n="landing.doctors">Doctors</div>
       </div>
       <div class="trust-item">
         <div class="trust-number" id="heroUptime">Loading...</div>
-        <div class="trust-label">Uptime</div>
+        <div class="trust-label" data-i18n="landing.uptime">Uptime</div>
       </div>
     </div>
   </section>
@@ -149,8 +149,8 @@
   <section class="quick-services" id="services">
     <div class="container">
       <div class="section-header">
-        <h2>Our Core Services</h2>
-        <p>Comprehensive healthcare management solutions designed for modern needs</p>
+        <h2 data-i18n="landing.coreServices">Our Core Services</h2>
+        <p data-i18n="landing.servicesDescription">Comprehensive healthcare management solutions designed for modern needs</p>
       </div>
 
       <div class="services-grid">
@@ -158,54 +158,54 @@
           <div class="service-icon">
             <i class="fas fa-file-medical"></i>
           </div>
-          <h3>Medical Records</h3>
-          <p>Store and manage all your medical documents securely in one encrypted cloud platform</p>
-          <a href="pages/register.html" class="service-btn">Get Started</a>
+          <h3 data-i18n="landing.medicalRecords">Medical Records</h3>
+          <p data-i18n="landing.medicalRecordsDesc">Store and manage all your medical documents securely in one encrypted cloud platform</p>
+          <a href="pages/register.html" class="service-btn" data-i18n="landing.getStarted">Get Started</a>
         </div>
 
         <div class="service-card">
           <div class="service-icon">
             <i class="fas fa-user-md"></i>
           </div>
-          <h3>Doctor Access</h3>
-          <p>Grant and revoke doctor access to your records with complete control and transparency</p>
-          <a href="pages/register.html" class="service-btn">Learn More</a>
+          <h3 data-i18n="landing.doctorAccess">Doctor Access</h3>
+          <p data-i18n="landing.doctorAccessDesc">Grant and revoke doctor access to your records with complete control and transparency</p>
+          <a href="pages/register.html" class="service-btn" data-i18n="landing.learnMore">Learn More</a>
         </div>
 
         <div class="service-card">
           <div class="service-icon">
             <i class="fas fa-shield-alt"></i>
           </div>
-          <h3>Data Security</h3>
-          <p>Military-grade encryption ensures your medical data stays private and secure</p>
-          <a href="#about" class="service-btn">View Details</a>
+          <h3 data-i18n="landing.dataSecurity">Data Security</h3>
+          <p data-i18n="landing.dataSecurityDesc">Military-grade encryption ensures your medical data stays private and secure</p>
+          <a href="#about" class="service-btn" data-i18n="landing.learnMore">View Details</a>
         </div>
 
         <div class="service-card">
           <div class="service-icon">
             <i class="fas fa-history"></i>
           </div>
-          <h3>Audit Logs</h3>
-          <p>Track every access to your records with detailed audit trails and timestamps</p>
-          <a href="#about" class="service-btn">Explore</a>
+          <h3 data-i18n="landing.auditLogs">Audit Logs</h3>
+          <p data-i18n="landing.auditLogsDesc">Track every access to your records with detailed audit trails and timestamps</p>
+          <a href="#about" class="service-btn" data-i18n="common.search">Explore</a>
         </div>
 
         <div class="service-card">
           <div class="service-icon">
             <i class="fas fa-mobile-alt"></i>
           </div>
-          <h3>Mobile Access</h3>
-          <p>Access your health records anytime, anywhere from any device securely</p>
-          <a href="pages/register.html" class="service-btn">Download App</a>
+          <h3 data-i18n="landing.mobileAccess">Mobile Access</h3>
+          <p data-i18n="landing.mobileAccessDesc">Access your health records anytime, anywhere from any device securely</p>
+          <a href="pages/register.html" class="service-btn" data-i18n="landing.getStarted">Download App</a>
         </div>
 
         <div class="service-card">
           <div class="service-icon">
             <i class="fas fa-chart-line"></i>
           </div>
-          <h3>Health Analytics</h3>
-          <p>Get insights from your medical history with advanced analytics and reports</p>
-          <a href="#about" class="service-btn">View More</a>
+          <h3 data-i18n="landing.healthAnalytics">Health Analytics</h3>
+          <p data-i18n="landing.healthAnalyticsDesc">Get insights from your medical history with advanced analytics and reports</p>
+          <a href="#about" class="service-btn" data-i18n="landing.learnMore">View More</a>
         </div>
       </div>
     </div>
@@ -216,12 +216,12 @@
     <div class="container">
       <div class="about-content">
         <div class="about-text">
-          <h2>About Bharath Medicare</h2>
-          <p>
+          <h2 data-i18n="landing.aboutTitle">About Bharath Medicare</h2>
+          <p data-i18n="landing.aboutDesc1">
             We're revolutionizing healthcare data management with a secure, patient-centric platform 
             that puts you in complete control of your medical information.
           </p>
-          <p>
+          <p data-i18n="landing.aboutDesc2">
             Our mission is to make healthcare more accessible, transparent, and efficient by providing 
             a unified platform where patients, doctors, and healthcare providers can securely share 
             and access medical records.
@@ -230,19 +230,19 @@
           <div class="stats-grid">
             <div class="stat-item">
               <div class="stat-number" id="aboutPatients">Loading...</div>
-              <div class="stat-label">Happy Patients</div>
+              <div class="stat-label" data-i18n="landing.happyPatients">Happy Patients</div>
             </div>
             <div class="stat-item">
               <div class="stat-number" id="aboutDoctors">Loading...</div>
-              <div class="stat-label">Healthcare Providers</div>
+              <div class="stat-label" data-i18n="landing.healthcareProviders">Healthcare Providers</div>
             </div>
             <div class="stat-item">
               <div class="stat-number" id="aboutRecords">Loading...</div>
-              <div class="stat-label">Records Secured</div>
+              <div class="stat-label" data-i18n="landing.recordsSecured">Records Secured</div>
             </div>
             <div class="stat-item">
               <div class="stat-number" id="aboutUptime">Loading...</div>
-              <div class="stat-label">System Uptime</div>
+              <div class="stat-label" data-i18n="landing.systemUptime">System Uptime</div>
             </div>
           </div>
         </div>
@@ -259,8 +259,8 @@
     <div class="container">
       <div class="why-content">
         <div class="why-text">
-          <h2>Why Choose Bharath Medicare?</h2>
-          <p class="why-description">
+          <h2 data-i18n="landing.whyChooseTitle">Why Choose Bharath Medicare?</h2>
+          <p class="why-description" data-i18n="landing.whyChooseDesc">
             We combine cutting-edge technology with healthcare expertise to deliver 
             a platform that's secure, intuitive, and reliable.
           </p>
@@ -271,8 +271,8 @@
                 <i class="fas fa-lock"></i>
               </div>
               <div class="feature-text">
-                <h4>End-to-End Encryption</h4>
-                <p>Your medical records are encrypted before storage using military-grade encryption standards</p>
+                <h4 data-i18n="landing.endToEndEncryption">End-to-End Encryption</h4>
+                <p data-i18n="landing.endToEndEncryptionDesc">Your medical records are encrypted before storage using military-grade encryption standards</p>
               </div>
             </div>
 
@@ -281,8 +281,8 @@
                 <i class="fas fa-user-shield"></i>
               </div>
               <div class="feature-text">
-                <h4>Complete Privacy Control</h4>
-                <p>You decide who can access your records and can revoke access anytime</p>
+                <h4 data-i18n="landing.completePrivacy">Complete Privacy Control</h4>
+                <p data-i18n="landing.completePrivacyDesc">You decide who can access your records and can revoke access anytime</p>
               </div>
             </div>
 
@@ -291,8 +291,8 @@
                 <i class="fas fa-check-double"></i>
               </div>
               <div class="feature-text">
-                <h4>HIPAA Compliant</h4>
-                <p>Built following healthcare data security standards and regulations</p>
+                <h4 data-i18n="landing.hipaaCompliant">HIPAA Compliant</h4>
+                <p data-i18n="landing.hipaaCompliantDesc">Built following healthcare data security standards and regulations</p>
               </div>
             </div>
 
@@ -301,14 +301,14 @@
                 <i class="fas fa-cloud"></i>
               </div>
               <div class="feature-text">
-                <h4>Cloud-Based Storage</h4>
-                <p>Access your records anywhere with secure cloud storage and backup</p>
+                <h4 data-i18n="landing.cloudBased">Cloud-Based Storage</h4>
+                <p data-i18n="landing.cloudBasedDesc">Access your records anywhere with secure cloud storage and backup</p>
               </div>
             </div>
           </div>
 
           <a href="pages/register.html" class="btn-primary">
-            Start Your Journey <i class="fas fa-arrow-right"></i>
+            <span data-i18n="landing.startJourney">Start Your Journey</span> <i class="fas fa-arrow-right"></i>
           </a>
         </div>
 
@@ -335,8 +335,8 @@
   <section class="reviews-section">
     <div class="container">
       <div class="section-header">
-        <h2>What Our Users Say</h2>
-        <p>Real experiences from patients and healthcare professionals</p>
+        <h2 data-i18n="landing.reviewsTitle">What Our Users Say</h2>
+        <p data-i18n="landing.reviewsDesc">Real experiences from patients and healthcare professionals</p>
       </div>
 
       <div class="reviews-grid" id="reviewsGrid">
@@ -349,11 +349,11 @@
             <i class="fas fa-star"></i>
             <i class="fas fa-star"></i>
           </div>
-          <p class="review-text">Loading testimonials...</p>
+          <p class="review-text" data-i18n="common.loading">Loading testimonials...</p>
           <div class="reviewer-info">
             <div class="reviewer-avatar">...</div>
             <div class="reviewer-details">
-              <h4>Loading</h4>
+              <h4 data-i18n="common.loading">Loading</h4>
               <p>Please wait</p>
             </div>
           </div>
@@ -363,7 +363,7 @@
       <div style="text-align: center; margin-top: 40px;">
         <p style="color: #666; font-size: 0.9rem;">
           <i class="fas fa-shield-alt" style="color: #00d084;"></i> 
-          All testimonials are from verified users
+          <span data-i18n="landing.verifiedUsers">All testimonials are from verified users</span>
         </p>
       </div>
     </div>
@@ -374,8 +374,8 @@
     <div class="container">
       <div class="contact-content">
         <div class="contact-info">
-          <h2>Get In Touch</h2>
-          <p>
+          <h2 data-i18n="landing.contactTitle">Get In Touch</h2>
+          <p data-i18n="landing.contactDesc">
             Have questions? We're here to help. Reach out to our support team 
             and we'll get back to you as soon as possible.
           </p>
@@ -386,7 +386,7 @@
                 <i class="fas fa-envelope"></i>
               </div>
               <div class="contact-text">
-                <h4>Email Us</h4>
+                <h4 data-i18n="landing.emailUs">Email Us</h4>
                 <p>support@bharathmedicare.com</p>
               </div>
             </div>
@@ -396,7 +396,7 @@
                 <i class="fas fa-phone"></i>
               </div>
               <div class="contact-text">
-                <h4>Call Us</h4>
+                <h4 data-i18n="landing.callUs">Call Us</h4>
                 <p>+91 1800-123-4567</p>
               </div>
             </div>
@@ -406,7 +406,7 @@
                 <i class="fas fa-map-marker-alt"></i>
               </div>
               <div class="contact-text">
-                <h4>Visit Us</h4>
+                <h4 data-i18n="landing.visitUs">Visit Us</h4>
                 <p>123 Health Street, Mumbai, India</p>
               </div>
             </div>
@@ -416,22 +416,22 @@
         <div class="contact-form">
           <form id="contactForm" onsubmit="handleContactSubmit(event)">
             <div class="form-group">
-              <label for="name">Your Name</label>
-              <input type="text" id="name" name="name" required placeholder="Enter your name">
+              <label for="name" data-i18n="landing.yourName">Your Name</label>
+              <input type="text" id="name" name="name" required data-i18n-placeholder="landing.yourName" placeholder="Enter your name">
             </div>
 
             <div class="form-group">
-              <label for="email">Email Address</label>
-              <input type="email" id="email" name="email" required placeholder="Enter your email">
+              <label for="email" data-i18n="landing.emailAddress">Email Address</label>
+              <input type="email" id="email" name="email" required data-i18n-placeholder="landing.emailAddress" placeholder="Enter your email">
             </div>
 
             <div class="form-group">
-              <label for="message">Message</label>
-              <textarea id="message" name="message" required placeholder="How can we help you?"></textarea>
+              <label for="message" data-i18n="landing.message">Message</label>
+              <textarea id="message" name="message" required data-i18n-placeholder="landing.howCanWeHelp" placeholder="How can we help you?"></textarea>
             </div>
 
             <button type="submit" class="submit-btn">
-              Send Message <i class="fas fa-paper-plane"></i>
+              <span data-i18n="landing.sendMessage">Send Message</span> <i class="fas fa-paper-plane"></i>
             </button>
           </form>
         </div>
@@ -443,14 +443,14 @@
   <section class="cta-section">
     <div class="container">
       <div class="cta-content">
-        <h2>Ready to Take Control of Your Health Data?</h2>
-        <p>Join thousands of satisfied users managing their healthcare records securely</p>
+        <h2 data-i18n="landing.ctaTitle">Ready to Take Control of Your Health Data?</h2>
+        <p data-i18n="landing.ctaDesc">Join thousands of satisfied users managing their healthcare records securely</p>
         <div class="cta-actions">
           <a href="pages/register.html" class="btn-primary">
-            Create Free Account <i class="fas fa-arrow-right"></i>
+            <span data-i18n="landing.createAccount">Create Free Account</span> <i class="fas fa-arrow-right"></i>
           </a>
           <a href="pages/login.html" class="btn-outline">
-            Sign In <i class="fas fa-sign-in-alt"></i>
+            <span data-i18n="landing.signIn">Sign In</span> <i class="fas fa-sign-in-alt"></i>
           </a>
         </div>
       </div>
@@ -463,7 +463,7 @@
       <div class="footer-content">
         <div class="footer-section">
           <h3><i class="fas fa-heartbeat"></i> Bharath Medicare</h3>
-          <p>Your trusted partner in healthcare data management. Secure, private, and accessible.</p>
+          <p data-i18n="landing.footerDesc">Your trusted partner in healthcare data management. Secure, private, and accessible.</p>
           <div class="social-links">
             <a href="#"><i class="fab fa-facebook-f"></i></a>
             <a href="#"><i class="fab fa-twitter"></i></a>
@@ -473,47 +473,50 @@
         </div>
 
         <div class="footer-section">
-          <h3>Quick Links</h3>
+          <h3 data-i18n="landing.quickLinks">Quick Links</h3>
           <ul>
-            <li><a href="#home">Home</a></li>
-            <li><a href="#services">Services</a></li>
-            <li><a href="#about">About Us</a></li>
-            <li><a href="#contact">Contact</a></li>
+            <li><a href="#home" data-i18n="nav.home">Home</a></li>
+            <li><a href="#services" data-i18n="nav.services">Services</a></li>
+            <li><a href="#about" data-i18n="nav.about">About Us</a></li>
+            <li><a href="#contact" data-i18n="nav.contact">Contact</a></li>
           </ul>
         </div>
 
         <div class="footer-section">
-          <h3>Services</h3>
+          <h3 data-i18n="landing.services">Services</h3>
           <ul>
-            <li><a href="pages/register.html">Patient Portal</a></li>
-            <li><a href="pages/register.html">Doctor Portal</a></li>
-            <li><a href="pages/hospital-portal.html">Hospital Portal</a></li>
-            <li><a href="pages/medical-records.html">Medical Records</a></li>
-            <li><a href="pages/health-analytics.html">Health Analytics</a></li>
+            <li><a href="pages/register.html" data-i18n="landing.patientPortal">Patient Portal</a></li>
+            <li><a href="pages/register.html" data-i18n="landing.doctorPortal">Doctor Portal</a></li>
+            <li><a href="pages/hospital-portal.html" data-i18n="landing.hospitalPortal">Hospital Portal</a></li>
+            <li><a href="pages/medical-records.html" data-i18n="landing.medicalRecordsLink">Medical Records</a></li>
+            <li><a href="pages/health-analytics.html" data-i18n="landing.healthAnalyticsLink">Health Analytics</a></li>
           </ul>
         </div>
 
         <div class="footer-section">
-          <h3>Support</h3>
+          <h3 data-i18n="landing.support">Support</h3>
           <ul>
-            <li><a href="pages/help-center.html">Help Center</a></li>
-            <li><a href="pages/privacy-policy.html">Privacy Policy</a></li>
-            <li><a href="pages/terms-of-service.html">Terms of Service</a></li>
-            <li><a href="pages/faq.html">FAQ</a></li>
+            <li><a href="pages/help-center.html" data-i18n="landing.helpCenter">Help Center</a></li>
+            <li><a href="pages/privacy-policy.html" data-i18n="landing.privacyPolicy">Privacy Policy</a></li>
+            <li><a href="pages/terms-of-service.html" data-i18n="landing.termsOfService">Terms of Service</a></li>
+            <li><a href="pages/faq.html" data-i18n="landing.faq">FAQ</a></li>
           </ul>
         </div>
       </div>
 
       <div class="footer-bottom">
-        <p>&copy; 2025 Bharath Medicare. All rights reserved. | Built with ❤️ for better healthcare</p>
+        <p data-i18n="landing.footerCopyright">&copy; 2025 Bharath Medicare. All rights reserved. | Built with ❤️ for better healthcare</p>
       </div>
     </div>
   </footer>
 
   <!-- Scripts -->
   <script src="js/config.js"></script>
+  <script src="js/translations.js"></script>
+  <script src="js/i18n.js"></script>
   <script src="js/api.js"></script>
   <script src="js/theme-toggle.js"></script>
+  <script src="js/language-selector.js"></script>
   <script>
     // Mobile menu toggle
     function toggleMobileMenu() {

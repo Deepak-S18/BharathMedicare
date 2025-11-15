@@ -1,5 +1,6 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flask_babel import Babel
 import sys
 import os
 
@@ -7,6 +8,19 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config.settings import Config
+
+def get_locale():
+    """Determine the best match for supported languages"""
+    # Check if language is specified in request headers
+    lang = request.headers.get('Accept-Language', 'en')
+    # Extract primary language code
+    if '-' in lang:
+        lang = lang.split('-')[0]
+    if ',' in lang:
+        lang = lang.split(',')[0]
+    # Return if supported, otherwise default to English
+    supported = ['en', 'hi', 'te', 'kn', 'ta']
+    return lang if lang in supported else 'en'
 
 def create_app(config_class=Config):
     """
@@ -18,6 +32,14 @@ def create_app(config_class=Config):
     
     # Load configuration
     app.config.from_object(config_class)
+    
+    # Configure Babel for i18n
+    app.config['BABEL_DEFAULT_LOCALE'] = 'en'
+    app.config['BABEL_SUPPORTED_LOCALES'] = ['en', 'hi', 'te', 'kn', 'ta']
+    app.config['BABEL_TRANSLATION_DIRECTORIES'] = 'translations'
+    
+    # Initialize Babel
+    babel = Babel(app, locale_selector=get_locale)
     
     # Enable CORS - Allow all origins for now to fix the issue
     # In production, you should restrict this to specific domains

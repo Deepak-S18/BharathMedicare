@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>i18n Test - BharathMedicare</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .lang-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .lang-btn {
+            padding: 12px 24px;
+            border: 2px solid #00d084;
+            background: white;
+            color: #00d084;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .lang-btn:hover, .lang-btn.active {
+            background: #00d084;
+            color: white;
+        }
+        .test-text {
+            font-size: 1.2rem;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #00d084;
+        }
+        .current-lang {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #00d084;
+            color: white;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        h1 { color: #333; }
+        h2 { color: #666; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="test-card">
+        <h1>🌐 i18n System Test</h1>
+        <p>Current Language: <span class="current-lang" id="currentLang">Loading...</span></p>
+        
+        <h2>Select Language:</h2>
+        <div class="lang-buttons">
+            <button class="lang-btn active" onclick="switchLang('en')">🇬🇧 English</button>
+            <button class="lang-btn" onclick="switchLang('hi')">🇮🇳 हिंदी</button>
+            <button class="lang-btn" onclick="switchLang('te')">🇮🇳 తెలుగు</button>
+            <button class="lang-btn" onclick="switchLang('kn')">🇮🇳 ಕನ್ನಡ</button>
+            <button class="lang-btn" onclick="switchLang('ta')">🇮🇳 தமிழ்</button>
+        </div>
+    </div>
+
+    <div class="test-card">
+        <h2>Translation Tests:</h2>
+        
+        <div class="test-text">
+            <strong>Common.Welcome:</strong><br>
+            <span data-i18n="common.welcome">Welcome</span>
+        </div>
+        
+        <div class="test-text">
+            <strong>Common.Login:</strong><br>
+            <span data-i18n="common.login">Login</span>
+        </div>
+        
+        <div class="test-text">
+            <strong>Nav.Home:</strong><br>
+            <span data-i18n="nav.home">Home</span>
+        </div>
+        
+        <div class="test-text">
+            <strong>Nav.Services:</strong><br>
+            <span data-i18n="nav.services">Services</span>
+        </div>
+        
+        <div class="test-text">
+            <strong>Dashboard.WelcomeBack:</strong><br>
+            <span data-i18n="dashboard.welcomeBack">Welcome Back</span>
+        </div>
+        
+        <div class="test-text">
+            <strong>Patient.BloodGroup:</strong><br>
+            <span data-i18n="patient.bloodGroup">Blood Group</span>
+        </div>
+        
+        <div class="test-text">
+            <strong>Messages.LoginSuccess:</strong><br>
+            <span data-i18n="messages.loginSuccess">Login successful!</span>
+        </div>
+    </div>
+
+    <div class="test-card">
+        <h2>JavaScript API Test:</h2>
+        <button onclick="testAPI()" style="padding: 12px 24px; background: #00d084; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            Run API Test
+        </button>
+        <pre id="apiResult" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px; overflow-x: auto;"></pre>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/translations.js"></script>
+    <script src="js/i18n.js"></script>
+    
+    <script>
+        function updateCurrentLang() {
+            document.getElementById('currentLang').textContent = I18n.getLanguageName(I18n.currentLocale);
+        }
+        
+        function switchLang(lang) {
+            // Update active button
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Switch language
+            I18n.setLocale(lang);
+            updateCurrentLang();
+            
+            console.log('Switched to:', lang);
+        }
+        
+        function testAPI() {
+            const results = {
+                'Current Locale': I18n.currentLocale,
+                'Supported Locales': I18n.supportedLocales,
+                'common.welcome': I18n.t('common.welcome'),
+                'common.login': I18n.t('common.login'),
+                'nav.home': I18n.t('nav.home'),
+                'dashboard.welcomeBack': I18n.t('dashboard.welcomeBack'),
+                'patient.bloodGroup': I18n.t('patient.bloodGroup'),
+                'messages.loginSuccess': I18n.t('messages.loginSuccess'),
+                'Invalid key test': I18n.t('invalid.key.test')
+            };
+            
+            document.getElementById('apiResult').textContent = JSON.stringify(results, null, 2);
+        }
+        
+        // Initialize
+        updateCurrentLang();
+        
+        // Listen for language changes
+        window.addEventListener('languageChanged', (e) => {
+            console.log('Language changed event:', e.detail.locale);
+            updateCurrentLang();
+        });
+    </script>
+</body>
+</html>

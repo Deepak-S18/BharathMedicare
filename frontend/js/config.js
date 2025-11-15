@@ -90,7 +90,8 @@ const API_ENDPOINTS = {
 // Local storage keys
 const STORAGE_KEYS = {
     AUTH_TOKEN: 'bharath_medicare_token',
-    USER_DATA: 'bharath_medicare_user'
+    USER_DATA: 'bharath_medicare_user',
+    LANGUAGE: 'bharath_medicare_lang'
 };
 
 // Application constants
@@ -110,7 +111,14 @@ const APP_CONFIG = {
         'image/png'
     ],
     PASSWORD_MIN_LENGTH: 8,
-    NMC_UID_LENGTH: 7
+    NMC_UID_LENGTH: 7,
+    SUPPORTED_LANGUAGES: [
+        { code: 'en', name: 'English', nativeName: 'English' },
+        { code: 'hi', name: 'Hindi', nativeName: 'हिंदी' },
+        { code: 'te', name: 'Telugu', nativeName: 'తెలుగు' },
+        { code: 'kn', name: 'Kannada', nativeName: 'ಕನ್ನಡ' },
+        { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்' }
+    ]
 };
 
 // Export for use in other files
