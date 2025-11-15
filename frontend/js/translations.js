@@ -5,6 +5,7 @@ const TRANSLATIONS = {
     en: {
         // Common
         common: {
+            brandName: 'Bharath Medicare',
             welcome: 'Welcome',
             login: 'Login',
             logout: 'Logout',
@@ -256,6 +257,7 @@ const TRANSLATIONS = {
     hi: {
         // Common
         common: {
+            brandName: 'भारत मेडिकेयर',
             welcome: 'स्वागत है',
             login: 'लॉगिन',
             logout: 'लॉगआउट',
@@ -497,6 +499,7 @@ const TRANSLATIONS = {
     
     te: {
         common: {
+            brandName: 'భారత్ మెడికేర్',
             welcome: 'స్వాగతం',
             login: 'లాగిన్',
             logout: 'లాగౌట్',
@@ -732,6 +735,7 @@ const TRANSLATIONS = {
     
     kn: {
         common: {
+            brandName: 'ಭಾರತ್ ಮೆಡಿಕೇರ್',
             welcome: 'ಸ್ವಾಗತ',
             login: 'ಲಾಗಿನ್',
             logout: 'ಲಾಗೌಟ್',
@@ -966,6 +970,7 @@ const TRANSLATIONS = {
     
     ta: {
         common: {
+            brandName: 'பரத் மெடிகேர்',
             welcome: 'வரவேற்கிறோம்',
             login: 'உள்நுழைவு',
             logout: 'வெளியேறு',

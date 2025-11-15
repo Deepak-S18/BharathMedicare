@@ -133,6 +133,11 @@ const I18n = {
             } else {
                 element.textContent = translation;
             }
+            
+            // Update lang attribute for navbar brand text for proper CSS styling
+            if (element.classList.contains('navbar-brand-text')) {
+                element.setAttribute('lang', this.currentLocale);
+            }
         });
         
         // Translate placeholders

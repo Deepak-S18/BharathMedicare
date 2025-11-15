@@ -50,6 +50,22 @@ html {
   font-size: 1.3rem; 
   color: var(--primary-color); 
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.navbar-logo {
+  height: 40px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.navbar-brand-text {
+  display: inline-block;
+  line-height: 1.2;
 }
 
 .navbar-nav {
@@ -1756,4 +1772,76 @@ footer {
         background: var(--bg-secondary);
         box-shadow: -2px 0 10px rgba(0, 0, 0, 0.6);
     }
+}
+
+/* Responsive Navbar Fixes for Regional Languages */
+@media (max-width: 1024px) {
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+  
+  .navbar-logo {
+    height: 35px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-brand {
+    font-size: 1rem;
+    gap: 8px;
+  }
+  
+  .navbar-logo {
+    height: 32px;
+  }
+  
+  .navbar-brand-text {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-brand {
+    font-size: 0.9rem;
+    gap: 6px;
+  }
+  
+  .navbar-logo {
+    height: 28px;
+  }
+  
+  .navbar-brand-text {
+    max-width: 120px;
+  }
+}
+
+/* Special handling for Tamil and other regional scripts in navbar */
+.navbar-brand-text[lang="ta"],
+.navbar-brand-text[lang="te"],
+.navbar-brand-text[lang="kn"],
+.navbar-brand-text[lang="hi"] {
+  font-size: 0.95em; /* Slightly smaller for regional scripts */
+  letter-spacing: -0.3px; /* Tighter letter spacing */
+}
+
+@media (max-width: 768px) {
+  .navbar-brand-text[lang="ta"],
+  .navbar-brand-text[lang="te"],
+  .navbar-brand-text[lang="kn"],
+  .navbar-brand-text[lang="hi"] {
+    font-size: 0.9em;
+    letter-spacing: -0.5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-brand-text[lang="ta"],
+  .navbar-brand-text[lang="te"],
+  .navbar-brand-text[lang="kn"],
+  .navbar-brand-text[lang="hi"] {
+    font-size: 0.85em;
+    letter-spacing: -0.6px;
+  }
 }
