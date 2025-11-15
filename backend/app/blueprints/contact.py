@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 from bson import ObjectId
-from app.database import Database
-from app.middleware import token_required, admin_required
+from app.models.database import Database
+from app.utils.auth import require_auth, require_role
 
 contact_bp = Blueprint('contact', __name__)
 
@@ -54,9 +54,9 @@ def submit_contact():
 
 
 @contact_bp.route('/messages', methods=['GET'])
-@token_required
-@admin_required
-def get_contact_messages(current_user):
+@require_auth
+@require_role('admin')
+def get_contact_messages():
     """Get all contact messages (admin only)"""
     try:
         contact_collection = get_contact_collection()
@@ -103,9 +103,9 @@ def get_contact_messages(current_user):
 
 
 @contact_bp.route('/messages/<message_id>/status', methods=['PUT'])
-@token_required
-@admin_required
-def update_message_status(current_user, message_id):
+@require_auth
+@require_role('admin')
+def update_message_status(message_id):
     """Update contact message status (admin only)"""
     try:
         data = request.get_json()
@@ -135,9 +135,9 @@ def update_message_status(current_user, message_id):
 
 
 @contact_bp.route('/messages/<message_id>', methods=['DELETE'])
-@token_required
-@admin_required
-def delete_message(current_user, message_id):
+@require_auth
+@require_role('admin')
+def delete_message(message_id):
     """Delete a contact message (admin only)"""
     try:
         contact_collection = get_contact_collection()
