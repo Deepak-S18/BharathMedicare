@@ -8,6 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="../assets/css/theme.css">
     <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/contact-messages.css">
 </head>
 <body>
     <div id="loading">
@@ -261,64 +262,64 @@
             </section>
 
             <!-- Contact Messages Section -->
-            <section id="contactSection" style="display: none;">
+            <section id="contactSection" class="contact-messages-section" style="display: none;">
                 <div class="dashboard-header">
                     <h1><i class="fas fa-envelope"></i> Contact Messages</h1>
                     <p>Messages from website visitors</p>
                 </div>
 
-                <div class="stats-grid" style="margin-bottom: 24px;">
-                    <div class="stat-card">
-                        <div class="stat-icon danger">
+                <div class="contact-stats-grid">
+                    <div class="contact-stat-card">
+                        <div class="contact-stat-icon unread">
                             <i class="fas fa-envelope"></i>
                         </div>
-                        <div>
-                            <div class="stat-value" id="unreadCount">0</div>
-                            <div class="stat-label">Unread</div>
+                        <div class="contact-stat-info">
+                            <div class="contact-stat-value" id="unreadCount">0</div>
+                            <div class="contact-stat-label">Unread</div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon info">
+                    <div class="contact-stat-card">
+                        <div class="contact-stat-icon read">
                             <i class="fas fa-envelope-open"></i>
                         </div>
-                        <div>
-                            <div class="stat-value" id="readCount">0</div>
-                            <div class="stat-label">Read</div>
+                        <div class="contact-stat-info">
+                            <div class="contact-stat-value" id="readCount">0</div>
+                            <div class="contact-stat-label">Read</div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon success">
+                    <div class="contact-stat-card">
+                        <div class="contact-stat-icon replied">
                             <i class="fas fa-reply"></i>
                         </div>
-                        <div>
-                            <div class="stat-value" id="repliedCount">0</div>
-                            <div class="stat-label">Replied</div>
+                        <div class="contact-stat-info">
+                            <div class="contact-stat-value" id="repliedCount">0</div>
+                            <div class="contact-stat-label">Replied</div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon primary">
+                    <div class="contact-stat-card">
+                        <div class="contact-stat-icon total">
                             <i class="fas fa-inbox"></i>
                         </div>
-                        <div>
-                            <div class="stat-value" id="totalContactCount">0</div>
-                            <div class="stat-label">Total Messages</div>
+                        <div class="contact-stat-info">
+                            <div class="contact-stat-value" id="totalContactCount">0</div>
+                            <div class="contact-stat-label">Total Messages</div>
                         </div>
                     </div>
                 </div>
 
-                <div style="margin-bottom: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
-                    <button class="btn btn-primary" onclick="loadContactMessages()">
-                        <i class="fas fa-sync"></i> Refresh
+                <div class="contact-filters">
+                    <button class="contact-filter-btn active" onclick="filterContactMessages('all')">
+                        <i class="fas fa-inbox"></i> All Messages
                     </button>
-                    <button class="btn btn-secondary" onclick="filterContactMessages('unread')">
+                    <button class="contact-filter-btn" onclick="filterContactMessages('unread')">
                         <i class="fas fa-envelope"></i> Unread Only
                     </button>
-                    <button class="btn btn-secondary" onclick="filterContactMessages('all')">
-                        <i class="fas fa-inbox"></i> All Messages
+                    <button class="contact-filter-btn" onclick="loadContactMessages()">
+                        <i class="fas fa-sync"></i> Refresh
                     </button>
                 </div>
 
-                <div class="table-container">
+                <div class="contact-messages-table">
                     <table>
                         <thead>
                             <tr>

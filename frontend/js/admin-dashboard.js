@@ -476,46 +476,49 @@ function displayContactMessages() {
     }
     
     tbody.innerHTML = contactMessages.map(msg => {
-        const statusClass = msg.status === 'unread' ? 'danger' : msg.status === 'read' ? 'info' : 'success';
+        const statusClass = msg.status === 'unread' ? 'unread' : msg.status === 'read' ? 'read' : 'replied';
         const statusIcon = msg.status === 'unread' ? 'envelope' : msg.status === 'read' ? 'envelope-open' : 'reply';
+        const rowClass = msg.status === 'unread' ? 'unread-row' : '';
         
         return `
-            <tr style="${msg.status === 'unread' ? 'background: rgba(255, 68, 68, 0.05);' : ''}">
-                <td>${formatDate(msg.submitted_at)}</td>
-                <td><strong>${msg.name}</strong></td>
+            <tr class="${rowClass}">
+                <td class="contact-date">${formatDate(msg.submitted_at)}</td>
+                <td class="contact-name">${msg.name}</td>
                 <td>
-                    <a href="mailto:${msg.email}" style="color: var(--primary-color);">
+                    <a href="mailto:${msg.email}" class="contact-email">
                         ${msg.email}
                     </a>
                 </td>
-                <td style="max-width: 300px;">
-                    <div style="max-height: 60px; overflow: hidden; text-overflow: ellipsis;">
-                        ${msg.message}
+                <td>
+                    <div class="contact-message-preview">
+                        <div class="contact-message-text">
+                            ${msg.message}
+                        </div>
+                        ${msg.message.length > 100 ? `
+                            <button class="contact-view-full-btn" onclick="viewFullMessage('${msg._id}')">
+                                <i class="fas fa-eye"></i> View Full Message
+                            </button>
+                        ` : ''}
                     </div>
-                    ${msg.message.length > 100 ? `
-                        <button class="btn btn-sm btn-secondary" onclick="viewFullMessage('${msg._id}')" style="margin-top: 8px;">
-                            <i class="fas fa-eye"></i> View Full
-                        </button>
-                    ` : ''}
                 </td>
                 <td>
-                    <span class="badge badge-${statusClass}">
+                    <span class="contact-status-badge status-${statusClass}">
                         <i class="fas fa-${statusIcon}"></i> ${msg.status}
                     </span>
                 </td>
                 <td>
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <div class="contact-actions">
                         ${msg.status === 'unread' ? `
-                            <button class="btn btn-sm btn-info" onclick="markAsRead('${msg._id}')" title="Mark as Read">
+                            <button class="contact-action-btn btn-read" onclick="markAsRead('${msg._id}')" title="Mark as Read">
                                 <i class="fas fa-envelope-open"></i>
                             </button>
                         ` : ''}
                         ${msg.status !== 'replied' ? `
-                            <button class="btn btn-sm btn-success" onclick="markAsReplied('${msg._id}')" title="Mark as Replied">
+                            <button class="contact-action-btn btn-reply" onclick="markAsReplied('${msg._id}')" title="Mark as Replied">
                                 <i class="fas fa-reply"></i>
                             </button>
                         ` : ''}
-                        <button class="btn btn-sm btn-danger" onclick="deleteContactMessage('${msg._id}')" title="Delete">
+                        <button class="contact-action-btn btn-delete" onclick="deleteContactMessage('${msg._id}')" title="Delete">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -527,6 +530,13 @@ function displayContactMessages() {
 
 function filterContactMessages(filter) {
     currentContactFilter = filter;
+    
+    // Update active button state
+    document.querySelectorAll('.contact-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
     if (filter === 'all') {
         loadContactMessages();
     } else {
@@ -538,26 +548,29 @@ function viewFullMessage(messageId) {
     const message = contactMessages.find(m => m._id === messageId);
     if (!message) return;
     
+    const statusClass = message.status === 'unread' ? 'unread' : message.status === 'read' ? 'read' : 'replied';
+    
     const modal = `
-        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: flex; align-items: center; justify-content: center;" onclick="this.remove()">
-            <div style="background: var(--card-bg); padding: 32px; border-radius: 16px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;" onclick="event.stopPropagation()">
-                <h2 style="margin-bottom: 24px;">
-                    <i class="fas fa-envelope"></i> Contact Message
-                </h2>
-                <div style="margin-bottom: 16px;">
-                    <strong>From:</strong> ${message.name}<br>
-                    <strong>Email:</strong> <a href="mailto:${message.email}">${message.email}</a><br>
-                    <strong>Date:</strong> ${formatDate(message.submitted_at)}<br>
-                    <strong>Status:</strong> <span class="badge badge-${message.status === 'unread' ? 'danger' : message.status === 'read' ? 'info' : 'success'}">${message.status}</span>
+        <div class="contact-message-modal" onclick="this.remove()">
+            <div class="contact-message-modal-content" onclick="event.stopPropagation()">
+                <div class="contact-modal-header">
+                    <i class="fas fa-envelope"></i>
+                    <h2>Contact Message</h2>
                 </div>
-                <div style="background: var(--bg-color); padding: 16px; border-radius: 8px; margin-bottom: 24px; white-space: pre-wrap; word-wrap: break-word;">
+                <div class="contact-modal-info">
+                    <strong>From:</strong> ${message.name}<br>
+                    <strong>Email:</strong> <a href="mailto:${message.email}" class="contact-email">${message.email}</a><br>
+                    <strong>Date:</strong> ${formatDate(message.submitted_at)}<br>
+                    <strong>Status:</strong> <span class="contact-status-badge status-${statusClass}">${message.status}</span>
+                </div>
+                <div class="contact-modal-message">
                     ${message.message}
                 </div>
-                <div style="display: flex; gap: 12px; justify-content: flex-end;">
-                    <button class="btn btn-secondary" onclick="this.closest('div[style*=fixed]').remove()">
-                        Close
+                <div class="contact-modal-actions">
+                    <button class="contact-modal-btn btn-close" onclick="this.closest('.contact-message-modal').remove()">
+                        <i class="fas fa-times"></i> Close
                     </button>
-                    <a href="mailto:${message.email}?subject=Re: Your message to Bharath Medicare" class="btn btn-primary">
+                    <a href="mailto:${message.email}?subject=Re: Your message to Bharath Medicare" class="contact-modal-btn btn-reply-email">
                         <i class="fas fa-reply"></i> Reply via Email
                     </a>
                 </div>
