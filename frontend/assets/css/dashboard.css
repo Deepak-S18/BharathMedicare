@@ -1114,14 +1114,26 @@ tbody tr:hover {
    APPOINTMENT CARDS - DARK MODE FIX
    ============================================ */
 
-/* Fix prescription section visibility in dark mode */
+/* Fix prescription section visibility in dark mode - targeting all possible light backgrounds */
 [data-theme="dark"] .prescription-section,
 [data-theme="dark"] [style*="background: #e8f5e9"],
 [data-theme="dark"] [style*="background:#e8f5e9"],
 [data-theme="dark"] [style*="background: rgb(232, 245, 233)"],
 [data-theme="dark"] [style*="background-color: #e8f5e9"],
-[data-theme="dark"] [style*="background-color:#e8f5e9"] {
+[data-theme="dark"] [style*="background-color:#e8f5e9"],
+[data-theme="dark"] [style*="background: #f5f5f5"],
+[data-theme="dark"] [style*="background:#f5f5f5"],
+[data-theme="dark"] [style*="background: #fafafa"],
+[data-theme="dark"] [style*="background:#fafafa"],
+[data-theme="dark"] [style*="background: #fff"],
+[data-theme="dark"] [style*="background:#fff"],
+[data-theme="dark"] [style*="background: white"],
+[data-theme="dark"] [style*="background:white"],
+[data-theme="dark"] [style*="background: beige"],
+[data-theme="dark"] [style*="background:beige"],
+[data-theme="dark"] div[style*="padding"][style*="border-radius"][style*="background"] {
     background: var(--bg-tertiary) !important;
+    background-color: var(--bg-tertiary) !important;
     color: var(--text-primary) !important;
     border: 1px solid var(--border-color) !important;
 }
@@ -1132,8 +1144,33 @@ tbody tr:hover {
 [data-theme="dark"] [style*="background:#e8f5e9"] *,
 [data-theme="dark"] [style*="background: rgb(232, 245, 233)"] *,
 [data-theme="dark"] [style*="background-color: #e8f5e9"] *,
-[data-theme="dark"] [style*="background-color:#e8f5e9"] * {
+[data-theme="dark"] [style*="background-color:#e8f5e9"] *,
+[data-theme="dark"] [style*="background: #f5f5f5"] *,
+[data-theme="dark"] [style*="background:#f5f5f5"] *,
+[data-theme="dark"] [style*="background: #fafafa"] *,
+[data-theme="dark"] [style*="background:#fafafa"] *,
+[data-theme="dark"] [style*="background: #fff"] *,
+[data-theme="dark"] [style*="background:#fff"] *,
+[data-theme="dark"] [style*="background: white"] *,
+[data-theme="dark"] [style*="background:white"] *,
+[data-theme="dark"] [style*="background: beige"] *,
+[data-theme="dark"] [style*="background:beige"] *,
+[data-theme="dark"] div[style*="padding"][style*="border-radius"][style*="background"] * {
     color: var(--text-primary) !important;
+}
+
+/* Fix specific text colors that might be hardcoded */
+[data-theme="dark"] [style*="color: #333"],
+[data-theme="dark"] [style*="color:#333"],
+[data-theme="dark"] [style*="color: #666"],
+[data-theme="dark"] [style*="color:#666"],
+[data-theme="dark"] [style*="color: #999"],
+[data-theme="dark"] [style*="color:#999"],
+[data-theme="dark"] [style*="color: black"],
+[data-theme="dark"] [style*="color:black"],
+[data-theme="dark"] [style*="color: #000"],
+[data-theme="dark"] [style*="color:#000"] {
+    color: var(--text-secondary) !important;
 }
 
 /* Fix prescription headings in dark mode */
@@ -1202,4 +1239,28 @@ tbody tr:hover {
 [data-theme="dark"] .appointment-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
     border-color: var(--primary-color);
+}
+
+/* Catch-all for any light backgrounds in appointment sections */
+[data-theme="dark"] #appointmentsSection div[style*="background"],
+[data-theme="dark"] #appointmentsSection div[style*="background-color"],
+[data-theme="dark"] .appointment-card div[style*="background"],
+[data-theme="dark"] .appointment-card div[style*="background-color"] {
+    background: var(--bg-tertiary) !important;
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Force all text in appointments to be visible */
+[data-theme="dark"] #appointmentsSection,
+[data-theme="dark"] #appointmentsSection *,
+[data-theme="dark"] .appointment-card,
+[data-theme="dark"] .appointment-card * {
+    color: var(--text-primary) !important;
+}
+
+/* Override any inline text colors */
+[data-theme="dark"] #appointmentsSection [style*="color"],
+[data-theme="dark"] .appointment-card [style*="color"] {
+    color: var(--text-primary) !important;
 }
