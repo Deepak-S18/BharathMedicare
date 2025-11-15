@@ -132,8 +132,130 @@ async function loadProfile() {
         
         console.log('Profile form fields populated successfully');
         
+        // Display profile photo
+        displayDoctorProfilePhoto(user.profile_photo);
+        
+        // Setup photo upload listeners
+        setupPhotoUploadListeners();
+        
     } catch (error) {
         console.error('Failed to load profile:', error);
+    }
+}
+
+// Setup photo upload event listeners
+function setupPhotoUploadListeners() {
+    const photoInput = document.getElementById('doctorPhotoInput');
+    const deleteBtn = document.getElementById('deleteDoctorPhotoBtn');
+    
+    if (photoInput && !photoInput.hasAttribute('data-listener')) {
+        photoInput.setAttribute('data-listener', 'true');
+        photoInput.onchange = handleDoctorPhotoSelect;
+    }
+    
+    if (deleteBtn && !deleteBtn.hasAttribute('data-listener')) {
+        deleteBtn.setAttribute('data-listener', 'true');
+        deleteBtn.onclick = handleDeleteDoctorPhoto;
+    }
+}
+
+// Display doctor profile photo
+function displayDoctorProfilePhoto(photoUrl) {
+    const preview = document.getElementById('doctorProfilePhotoPreview');
+    const deleteBtn = document.getElementById('deleteDoctorPhotoBtn');
+    
+    if (!preview) return;
+    
+    if (photoUrl) {
+        preview.innerHTML = `<img src="${photoUrl}" style="width: 100%; height: 100%; object-fit: cover;" alt="Profile Photo">`;
+        if (deleteBtn) deleteBtn.style.display = 'inline-flex';
+    } else {
+        preview.innerHTML = '<i class="fas fa-user-md" style="font-size: 4rem;"></i>';
+        if (deleteBtn) deleteBtn.style.display = 'none';
+    }
+}
+
+// Handle doctor photo selection
+function handleDoctorPhotoSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Validate file
+    const validation = validatePhotoFile(file);
+    if (!validation.valid) {
+        showError(validation.error);
+        event.target.value = '';
+        return;
+    }
+    
+    // Preview photo
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const preview = document.getElementById('doctorProfilePhotoPreview');
+        if (preview) {
+            preview.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;" alt="Profile Preview">`;
+        }
+    };
+    reader.readAsDataURL(file);
+    
+    // Upload photo immediately
+    uploadDoctorProfilePhoto(file);
+}
+
+// Upload doctor profile photo
+async function uploadDoctorProfilePhoto(file) {
+    showLoading();
+    
+    try {
+        const response = await apiCallPhoto(API_ENDPOINTS.UPLOAD_PHOTO, file);
+        
+        // Update user data
+        setUserData(response.user);
+        
+        // Display updated photo
+        displayDoctorProfilePhoto(response.photo_url);
+        
+        // Update doctor card if loaded
+        await loadDoctorCard();
+        
+        showSuccess('Profile photo uploaded successfully!');
+        
+    } catch (error) {
+        showError(error.message || 'Failed to upload photo');
+        await loadProfile();
+    } finally {
+        hideLoading();
+    }
+}
+
+// Delete doctor profile photo
+async function handleDeleteDoctorPhoto() {
+    if (!confirmAction('Are you sure you want to remove your profile photo?')) return;
+    
+    showLoading();
+    
+    try {
+        await apiCall(API_ENDPOINTS.DELETE_PHOTO, {
+            method: 'POST'
+        });
+        
+        // Reset preview
+        displayDoctorProfilePhoto(null);
+        
+        // Update user data
+        const user = getUserData();
+        user.profile_photo = null;
+        setUserData(user);
+        
+        // Update doctor card
+        await loadDoctorCard();
+        
+        showSuccess('Profile photo removed successfully');
+        
+    } catch (error) {
+        showError('Failed to delete photo');
+    } finally {
+        hideLoading();
     }
 }
 
@@ -574,7 +696,7 @@ function displayAppointments() {
     if (myAppointments.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="text-center">No appointment requests yet</td>
+                <td colspan="7" class="text-center">No appointment requests yet</td>
             </tr>
         `;
         return;
@@ -603,12 +725,57 @@ function displayAppointments() {
                     <i class="fas fa-times"></i> Reject
                 </button>
             `;
+        } else if (apt.status === 'confirmed' && !apt.otp_verified) {
+            actionButtons = `
+                <button class="btn btn-warning" style="padding: 6px 12px;" 
+                    onclick="verifyAppointmentOTP('${apt._id}')">
+                    <i class="fas fa-key"></i> Verify OTP
+                </button>
+            `;
+        } else if (apt.status === 'confirmed' && apt.otp_verified && !apt.prescription) {
+            actionButtons = `
+                <span style="color: #4caf50; font-size: 0.85rem; margin-right: 8px;">
+                    <i class="fas fa-check-circle"></i> Verified
+                </span>
+                <button class="btn btn-primary" style="padding: 6px 12px;" 
+                    onclick="showPrescriptionForm('${apt._id}', '${apt.patient?.full_name || 'Patient'}')">
+                    <i class="fas fa-prescription"></i> Add Prescription
+                </button>
+            `;
+        } else if (apt.status === 'completed') {
+            actionButtons = `
+                <button class="btn btn-info btn-sm" style="padding: 6px 12px; margin-right: 4px;" 
+                    onclick="viewPrescription('${apt._id}')">
+                    <i class="fas fa-eye"></i> View
+                </button>
+                <button class="btn btn-secondary btn-sm" style="padding: 6px 12px;" 
+                    onclick="deleteAppointmentDoctor('${apt._id}')">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            `;
+        } else if (apt.status === 'cancelled' || apt.status === 'rejected') {
+            actionButtons = `
+                <button class="btn btn-secondary btn-sm" style="padding: 6px 12px;" 
+                    onclick="deleteAppointmentDoctor('${apt._id}')">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            `;
         } else {
             actionButtons = `<span style="color: var(--text-secondary);">No actions</span>`;
         }
         
         return `
             <tr>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-weight: 600; color: var(--primary-color); font-family: monospace;">${apt.appointment_id || 'N/A'}</span>
+                        <button onclick="copyToClipboard('${apt.appointment_id}', 'Appointment ID copied!')" 
+                                style="background: none; border: none; cursor: pointer; padding: 2px 6px; color: var(--primary-color);" 
+                                title="Copy Appointment ID">
+                            <i class="fas fa-copy" style="font-size: 0.85rem;"></i>
+                        </button>
+                    </div>
+                </td>
                 <td>${apt.patient?.full_name || 'N/A'}</td>
                 <td>${formatDate(apt.appointment_date)}</td>
                 <td>${apt.appointment_time}</td>
@@ -671,6 +838,249 @@ async function rejectAppointment(appointmentId) {
         
     } catch (error) {
         showError(error.message || 'Failed to reject appointment');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Verify appointment OTP
+async function verifyAppointmentOTP(appointmentId) {
+    const otp = prompt('Enter the 6-digit OTP provided by the patient:');
+    
+    if (!otp) return;
+    
+    if (otp.length !== 6 || !/^\d+$/.test(otp)) {
+        showError('Please enter a valid 6-digit OTP');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        await apiCall(`/api/appointments/${appointmentId}/verify-otp`, {
+            method: 'POST',
+            body: JSON.stringify({ otp: otp })
+        });
+        
+        showSuccess('OTP verified successfully! You can now add prescription.');
+        
+        // Reload appointments
+        await loadAppointments();
+        
+    } catch (error) {
+        showError(error.message || 'Invalid OTP');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Show prescription form
+function showPrescriptionForm(appointmentId, patientName) {
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000; overflow-y: auto; padding: 20px;';
+    modal.innerHTML = `
+        <div style="background: var(--card-bg); border-radius: 12px; padding: 30px; max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto;">
+            <h3 style="margin: 0 0 20px 0; color: var(--text-primary);">
+                <i class="fas fa-prescription"></i> Add Prescription for ${patientName}
+            </h3>
+            
+            <form id="prescriptionForm">
+                <div class="form-group">
+                    <label><i class="fas fa-stethoscope"></i> Diagnosis *</label>
+                    <textarea id="diagnosis" required rows="3" placeholder="Enter diagnosis" style="width: 100%; padding: 10px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem;"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-pills"></i> Medications *</label>
+                    <div id="medicationsList" style="margin-bottom: 10px;"></div>
+                    <button type="button" class="btn btn-secondary" onclick="addMedicationField()" style="width: 100%;">
+                        <i class="fas fa-plus"></i> Add Medication
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-notes-medical"></i> Instructions</label>
+                    <textarea id="instructions" rows="3" placeholder="Special instructions for the patient" style="width: 100%; padding: 10px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem;"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-calendar-check"></i> Next Checkup Date</label>
+                    <input type="date" id="nextCheckup" style="width: 100%; padding: 10px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem;">
+                </div>
+                
+                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-save"></i> Save Prescription
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="this.closest('div[style*=fixed]').remove()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add initial medication field
+    addMedicationField();
+    
+    // Handle form submission
+    document.getElementById('prescriptionForm').onsubmit = async (e) => {
+        e.preventDefault();
+        await submitPrescription(appointmentId);
+        modal.remove();
+    };
+}
+
+// Add medication input field
+function addMedicationField() {
+    const container = document.getElementById('medicationsList');
+    const fieldId = 'med_' + Date.now();
+    
+    const div = document.createElement('div');
+    div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px;';
+    div.innerHTML = `
+        <input type="text" id="${fieldId}" placeholder="Medicine name, dosage, frequency" 
+               style="flex: 1; padding: 10px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem;" required>
+        <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()" style="padding: 10px 15px;">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    
+    container.appendChild(div);
+}
+
+// Submit prescription
+async function submitPrescription(appointmentId) {
+    showLoading();
+    
+    try {
+        const diagnosis = document.getElementById('diagnosis').value;
+        const instructions = document.getElementById('instructions').value;
+        const nextCheckup = document.getElementById('nextCheckup').value;
+        
+        // Collect all medications
+        const medications = [];
+        document.querySelectorAll('#medicationsList input').forEach(input => {
+            if (input.value.trim()) {
+                medications.push(input.value.trim());
+            }
+        });
+        
+        if (medications.length === 0) {
+            showError('Please add at least one medication');
+            hideLoading();
+            return;
+        }
+        
+        await apiCall(`/api/appointments/${appointmentId}/prescription`, {
+            method: 'POST',
+            body: JSON.stringify({
+                diagnosis,
+                medications,
+                instructions,
+                next_checkup: nextCheckup
+            })
+        });
+        
+        showSuccess('Prescription added successfully and uploaded to patient records!');
+        
+        // Reload appointments
+        await loadAppointments();
+        
+    } catch (error) {
+        showError(error.message || 'Failed to add prescription');
+    } finally {
+        hideLoading();
+    }
+}
+
+// View prescription
+function viewPrescription(appointmentId) {
+    const appointment = myAppointments.find(apt => apt._id === appointmentId);
+    
+    if (!appointment || !appointment.prescription) {
+        showError('Prescription not found');
+        return;
+    }
+    
+    const presc = appointment.prescription;
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px;';
+    modal.innerHTML = `
+        <div style="background: var(--card-bg); border-radius: 12px; padding: 30px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto;">
+            <h3 style="margin: 0 0 20px 0; color: var(--text-primary);">
+                <i class="fas fa-prescription"></i> Prescription Details
+            </h3>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Patient:</strong> ${appointment.patient?.full_name || 'N/A'}
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Diagnosis:</strong><br>
+                <div style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; margin-top: 5px;">
+                    ${presc.diagnosis}
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Medications:</strong><br>
+                <ul style="margin: 5px 0 0 20px;">
+                    ${presc.medications.map(med => `<li>${med}</li>`).join('')}
+                </ul>
+            </div>
+            
+            ${presc.instructions ? `
+            <div style="margin-bottom: 15px;">
+                <strong>Instructions:</strong><br>
+                <div style="padding: 10px; background: var(--bg-secondary); border-radius: 6px; margin-top: 5px;">
+                    ${presc.instructions}
+                </div>
+            </div>
+            ` : ''}
+            
+            ${presc.next_checkup ? `
+            <div style="margin-bottom: 15px;">
+                <strong>Next Checkup:</strong> ${presc.next_checkup}
+            </div>
+            ` : ''}
+            
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--border-color); font-size: 0.9rem; color: var(--text-secondary);">
+                Prescribed on ${new Date(presc.prescribed_at).toLocaleString('en-IN')}
+            </div>
+            
+            <button class="btn btn-secondary" onclick="this.closest('div[style*=fixed]').remove()" style="width: 100%; margin-top: 20px;">
+                <i class="fas fa-times"></i> Close
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// Delete appointment from history (doctor)
+async function deleteAppointmentDoctor(appointmentId) {
+    if (!confirm('Are you sure you want to delete this appointment from your history? This action cannot be undone.')) {
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        await apiCall(`/api/appointments/${appointmentId}`, {
+            method: 'DELETE'
+        });
+        
+        showSuccess('Appointment deleted from history');
+        
+        // Reload appointments
+        await loadAppointments();
+        
+    } catch (error) {
+        showError(error.message || 'Failed to delete appointment');
     } finally {
         hideLoading();
     }
@@ -1200,6 +1610,35 @@ function showSection(section) {
     }
 }
 
+
+// Copy to clipboard utility
+function copyToClipboard(text, successMessage = 'Copied to clipboard!') {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            showSuccess(successMessage);
+        }).catch(() => {
+            fallbackCopyToClipboard(text, successMessage);
+        });
+    } else {
+        fallbackCopyToClipboard(text, successMessage);
+    }
+}
+
+function fallbackCopyToClipboard(text, successMessage) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        showSuccess(successMessage);
+    } catch (err) {
+        showError('Failed to copy');
+    }
+    document.body.removeChild(textArea);
+}
 
 // Clear RFID field for doctor (only works if not yet linked)
 function clearDoctorRfidField() {

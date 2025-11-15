@@ -167,22 +167,50 @@ def download_record(record_id):
         if request.user['role'] == 'patient' and str(record['patient_id']) != request.user['user_id']:
             return jsonify({'error': 'Access denied'}), 403
         
-        # Decrypt file data
-        decrypted_data = decrypt_file_data(record['encrypted_data'])
-        
-        # Log the action
-        log_action(request.user['user_id'], 'download', 'record', record_id)
-        
-        return send_file(
-            BytesIO(decrypted_data),
-            download_name=record['file_name'],
-            as_attachment=True,
-            mimetype=record['file_type']
-        )
+        # Check if this is a prescription (stored as file) or regular record (encrypted)
+        if record.get('is_prescription', False) and record.get('file_path'):
+            # Prescription PDF - read from file system
+            import os
+            
+            file_path = record['file_path']
+            print(f"📄 Attempting to download prescription PDF: {file_path}")
+            
+            if not os.path.exists(file_path):
+                print(f"❌ File not found: {file_path}")
+                return jsonify({'error': 'Prescription file not found'}), 404
+            
+            print(f"✅ File exists, sending: {file_path}")
+            
+            # Log the action
+            log_action(request.user['user_id'], 'download', 'record', record_id)
+            
+            return send_file(
+                file_path,
+                download_name=record['file_name'],
+                as_attachment=True,
+                mimetype=record['file_type']
+            )
+        else:
+            # Regular encrypted record
+            # Decrypt file data
+            decrypted_data = decrypt_file_data(record['encrypted_data'])
+            
+            # Log the action
+            log_action(request.user['user_id'], 'download', 'record', record_id)
+            
+            return send_file(
+                BytesIO(decrypted_data),
+                download_name=record['file_name'],
+                as_attachment=True,
+                mimetype=record['file_type']
+            )
     
     except Exception as e:
-        print(f"Download error: {e}")
-        return jsonify({'error': 'Download failed'}), 500
+        print(f"❌ Download error: {e}")
+        print(f"❌ Error type: {type(e).__name__}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Download failed: {str(e)}'}), 500
 
 @bp.route('/patient/<patient_id>', methods=['GET'])
 @require_auth

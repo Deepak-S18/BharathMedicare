@@ -92,367 +92,29 @@ function setupEventListeners() {
         deletePhotoBtn.onclick = handleDeletePhoto;
     }
     
-    // Get user data safely
-    const userData = getUserData();
-    const profilePhoto = userData && userData.profile_photo ? 
-        `<img src="${userData.profile_photo}" style="width: 100%; height: 100%; object-fit: cover;">` :
-        '<i class="fas fa-user" style="font-size: 2rem; color: white;"></i>';
-
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Health Card Print</title>
-            <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
-            <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
-            <style>
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                    -webkit-print-color-adjust: exact !important;
-                    print-color-adjust: exact !important;
-                    color-adjust: exact !important;
-                }
-                
-                body {
-                    font-family: 'Courier New', monospace;
-                    padding: 15mm;
-                    background: #ffffff;
-                }
-                
-                .card-container {
-                    display: flex;
-                    gap: 15mm;
-                    justify-content: center;
-                    align-items: flex-start;
-                    margin-bottom: 12mm;
-                }
-                
-                .health-card {
-                    width: 85.6mm;
-                    height: 54mm;
-                    border-radius: 16px;
-                    padding: 15px;
-                    position: relative;
-                    overflow: hidden;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                    font-family: 'Courier New', monospace;
-                }
-                
-                .card-front {
-                    background: linear-gradient(135deg, #FF9933, #FFB366);
-                }
-                
-                .card-back {
-                    background: linear-gradient(135deg, #2ecc71, #52c97a);
-                }
-                
-                .card-bg-pattern {
-                    position: absolute;
-                    top: -30%;
-                    right: -10%;
-                    width: 300px;
-                    height: 300px;
-                    background: radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px);
-                    background-size: 20px 20px;
-                    border-radius: 50%;
-                }
-                
-                .card-content {
-                    position: relative;
-                    z-index: 2;
-                    height: 100%;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: space-between;
-                }
-                
-                .front-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-start;
-                    margin-bottom: 10px;
-                }
-                
-                .front-left {
-                    flex: 1;
-                }
-                
-                .logo-section {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    margin-bottom: 10px;
-                }
-                
-                .logo {
-                    height: 32px;
-                    background: white;
-                    border-radius: 6px;
-                    padding: 3px;
-                }
-                
-                .brand-name {
-                    font-size: 0.75rem;
-                    font-weight: 800;
-                    color: white;
-                    line-height: 1.1;
-                }
-                
-                .brand-subtitle {
-                    font-size: 0.5rem;
-                    color: rgba(255,255,255,0.9);
-                }
-                
-                .card-id-section {
-                    margin-left: 40px;
-                }
-                
-                .label {
-                    font-size: 0.5rem;
-                    color: rgba(255,255,255,0.8);
-                    text-transform: uppercase;
-                    font-weight: 600;
-                    margin-bottom: 2px;
-                }
-                
-                .card-number {
-                    font-size: 0.85rem;
-                    font-weight: 800;
-                    color: white;
-                    letter-spacing: 1px;
-                }
-                
-                .front-right {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 8px;
-                }
-                
-                .photo-container {
-                    width: 50px;
-                    height: 50px;
-                    border-radius: 50%;
-                    background: rgba(255,255,255,0.3);
-                    border: 2px solid white;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    overflow: hidden;
-                }
-                
-                .qr-container {
-                    background: white;
-                    border-radius: 8px;
-                    padding: 4px;
-                    width: 60px;
-                    height: 60px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                
-                .qr-container img {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: contain;
-                }
-                
-                .front-details {
-                    display: flex;
-                    gap: 15px;
-                }
-                
-                .detail-item {
-                    min-width: 80px;
-                }
-                
-                .detail-value {
-                    font-size: 0.75rem;
-                    color: white;
-                    font-weight: 700;
-                }
-                
-                .back-header {
-                    text-align: center;
-                    font-size: 0.8rem;
-                    font-weight: 800;
-                    color: white;
-                    text-transform: uppercase;
-                    letter-spacing: 1px;
-                    margin-bottom: 8px;
-                }
-                
-                .info-grid {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 6px;
-                    flex: 1;
-                }
-                
-                .info-row {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 6px;
-                }
-                
-                .info-box {
-                    background: rgba(255,255,255,0.15);
-                    padding: 6px 8px;
-                    border-radius: 6px;
-                    border: 1px solid rgba(255,255,255,0.2);
-                }
-                
-                .info-label {
-                    font-size: 0.5rem;
-                    color: rgba(255,255,255,0.85);
-                    text-transform: uppercase;
-                    font-weight: 600;
-                    margin-bottom: 2px;
-                }
-                
-                .info-value {
-                    font-size: 0.7rem;
-                    color: white;
-                    font-weight: 700;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    max-width: 100%;
-                }
-                
-                .back-footer {
-                    border-top: 1px solid rgba(255,255,255,0.3);
-                    padding-top: 6px;
-                    text-align: center;
-                    font-size: 0.55rem;
-                    color: rgba(255,255,255,0.9);
-                }
-                
-                .instruction {
-                    text-align: center;
-                    font-family: 'Poppins', sans-serif;
-                    font-size: 10pt;
-                    line-height: 1.7;
-                    color: #333;
-                    margin-top: 10mm;
-                }
-                
-                .warning {
-                    background: #fff3cd;
-                    border: 2px solid #ffc107;
-                    padding: 10px;
-                    border-radius: 8px;
-                    margin-bottom: 10px;
-                    color: #856404;
-                    font-weight: bold;
-                }
-                
-                @media print {
-                    body { padding: 10mm; }
-                }
-                
-                @page {
-                    size: A4 landscape;
-                    margin: 10mm;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="card-container">
-                <div class="health-card card-front">
-                    <div class="card-bg-pattern"></div>
-                    <div class="card-content">
-                        <div class="front-header">
-                            <div class="front-left">
-                                <div class="logo-section">
-                                    <img src="../assets/images/logo.png" class="logo" alt="Logo">
-                                    <div>
-                                        <div class="brand-name">BharathMedicare</div>
-                                        <div class="brand-subtitle">Health ID</div>
-                                    </div>
-                                </div>
-                                <div class="card-id-section">
-                                    <div class="label">Card ID</div>
-                                    <div class="card-number">${cardId}</div>
-                                </div>
-                            </div>
-                            <div class="front-right">
-                                <div class="photo-container">${profilePhoto}</div>
-                                <div class="qr-container">
-                                    <img src="${qrImageUrl}" alt="QR Code">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="front-details">
-                            <div class="detail-item">
-                                <div class="label">Name</div>
-                                <div class="detail-value">${user.full_name || 'Patient'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="label">Gender</div>
-                                <div class="detail-value">${user.gender || '--'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="label">DOB</div>
-                                <div class="detail-value">${dobFormatted}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="health-card card-back">
-                    <div class="card-bg-pattern"></div>
-                    <div class="card-content">
-                        <div class="back-header">MEDICAL INFO</div>
-                        <div class="info-grid">
-                            <div class="info-row">
-                                <div class="info-box">
-                                    <div class="info-label">Blood Group</div>
-                                    <div class="info-value">${user.blood_group || 'O+'}</div>
-                                </div>
-                                <div class="info-box">
-                                    <div class="info-label">Diabetics</div>
-                                    <div class="info-value">${isDiabetic}</div>
-                                </div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-box">
-                                    <div class="info-label">Emerg. Name</div>
-                                    <div class="info-value">${user.emergency_contact_name || 'Not Provided'}</div>
-                                </div>
-                                <div class="info-box">
-                                    <div class="info-label">Emerg. Phone</div>
-                                    <div class="info-value">${user.emergency_contact || '+91 --------'}</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="back-footer">Keep Safe</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="instruction">
-                <div class="warning">⚠️ IMPORTANT: Enable "Background graphics" in print settings!</div>
-                <strong>PRINTING INSTRUCTIONS</strong><br>
-                ✓ Print in COLOR on card stock (350 gsm recommended)<br>
-                ✓ <strong>Enable "Background graphics"</strong> checkbox in print options<br>
-                ✓ Print in landscape orientation<br>
-                ✓ Cut each card to size (85.6mm × 54mm)<br>
-                ✓ Laminate for durability and protection
-            </div>
-            <script>
-                window.onload = function() {
-                    setTimeout(() => { window.print(); }, 1000);
-                };
-            </script>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
+    // Profile form submission
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.onsubmit = handleUpdateProfile;
+    }
+    
+    // Upload form submission
+    const uploadForm = document.getElementById('uploadForm');
+    if (uploadForm) {
+        uploadForm.onsubmit = handleUpload;
+    }
+    
+    // File input change
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+        fileInput.onchange = handleFileSelect;
+    }
+    
+    // Grant access form
+    const grantAccessForm = document.getElementById('grantAccessForm');
+    if (grantAccessForm) {
+        grantAccessForm.onsubmit = handleGrantAccess;
+    }
 }
 
 // Show section
@@ -904,18 +566,23 @@ function displayRecords() {
     
     grid.innerHTML = myRecords.map(record => `
         <div class="record-card">
-            <div class="record-icon">
-                <i class="fas fa-file-${record.file_type === 'application/pdf' ? 'pdf' : 'image'}"></i>
+            <div style="flex: 1;">
+                <div class="record-icon">
+                    <i class="fas fa-file-${record.file_type === 'application/pdf' ? 'pdf' : 'image'}"></i>
+                </div>
+                <div class="record-name">${truncateText(record.file_name, 30)}</div>
+                <div class="record-date">${formatDate(record.uploaded_at)}</div>
+                ${record.description ? `<p style="font-size: 0.85rem; color: var(--text-secondary); margin: 8px 0;">${truncateText(record.description, 50)}</p>` : ''}
             </div>
-            <div class="record-name">${truncateText(record.file_name, 30)}</div>
-            <div class="record-date">${formatDate(record.uploaded_at)}</div>
-            ${record.description ? `<p style="font-size: 0.85rem; color: var(--text-secondary); margin: 8px 0;">${truncateText(record.description, 50)}</p>` : ''}
-            <div style="display: flex; gap: 8px; margin-top: 12px;">
-                <button class="btn btn-primary" style="flex: 1; padding: 8px;" onclick="downloadRecord('${record._id}')">
-                    <i class="fas fa-download"></i>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
+                <button class="btn btn-success" style="width: 100%; padding: 10px; font-size: 0.9rem;" onclick="viewRecord('${record._id}')" title="View Record">
+                    <i class="fas fa-eye"></i> View
                 </button>
-                <button class="btn btn-danger" style="flex: 1; padding: 8px;" onclick="deleteRecord('${record._id}')">
-                    <i class="fas fa-trash"></i>
+                <button class="btn btn-primary" style="width: 100%; padding: 10px; font-size: 0.9rem;" onclick="downloadRecord('${record._id}')" title="Download Record">
+                    <i class="fas fa-download"></i> Download
+                </button>
+                <button class="btn btn-danger" style="width: 100%; padding: 10px; font-size: 0.9rem;" onclick="deleteRecord('${record._id}')" title="Delete Record">
+                    <i class="fas fa-trash"></i> Delete
                 </button>
             </div>
         </div>
@@ -935,15 +602,20 @@ function displayRecentRecords() {
     container.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 12px;">
             ${recentRecords.map(record => `
-                <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+                <div style="display: flex; align-items: center; gap: 10px; padding: 14px; background: var(--bg-secondary); border-radius: 8px;">
                     <i class="fas fa-file-${record.file_type === 'application/pdf' ? 'pdf' : 'image'}" style="font-size: 1.5rem; color: var(--primary-color);"></i>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 600;">${truncateText(record.file_name, 40)}</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">${formatDate(record.uploaded_at)}</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 600; font-size: 0.95rem;">${truncateText(record.file_name, 35)}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">${formatDate(record.uploaded_at)}</div>
                     </div>
-                    <button class="btn btn-primary" style="padding: 8px 16px;" onclick="downloadRecord('${record._id}')">
-                        <i class="fas fa-download"></i>
-                    </button>
+                    <div style="display: flex; gap: 6px;">
+                        <button class="btn btn-success" style="padding: 8px 14px; font-size: 0.85rem; white-space: nowrap;" onclick="viewRecord('${record._id}')" title="View Record">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="btn btn-primary" style="padding: 8px 14px; font-size: 0.85rem; white-space: nowrap;" onclick="downloadRecord('${record._id}')" title="Download Record">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                    </div>
                 </div>
             `).join('')}
         </div>
@@ -1100,6 +772,38 @@ async function handleUpload(event) {
 }
 
 // Download record
+async function viewRecord(recordId) {
+    showLoading();
+    
+    try {
+        const url = `${API_BASE_URL}${API_ENDPOINTS.DOWNLOAD_RECORD(recordId)}`;
+        const token = getAuthToken();
+        
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch record');
+        
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        
+        // Open in new tab
+        window.open(blobUrl, '_blank');
+        
+        // Clean up after a delay
+        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+        
+    } catch (error) {
+        showError('Failed to view record');
+        console.error('View record error:', error);
+    } finally {
+        hideLoading();
+    }
+}
+
 async function downloadRecord(recordId) {
     showLoading();
     
@@ -1758,65 +1462,183 @@ function displayDoctorResults(doctors) {
         return;
     }
     
-    container.innerHTML = doctors.map(doctor => `
-        <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; gap: 20px; align-items: start;">
-            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; flex-shrink: 0;">
-                <i class="fas fa-user-md"></i>
-            </div>
-            <div style="flex: 1;">
-                <h4 style="margin: 0 0 8px 0; color: var(--text-primary);">Dr. ${doctor.full_name}</h4>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; margin-bottom: 12px;">
-                    <div><strong>ID:</strong> ${doctor.doctor_id}</div>
-                    <div><strong>Specialization:</strong> ${doctor.specialization}</div>
-                    <div><strong>Experience:</strong> ${doctor.years_of_experience} years</div>
-                    <div><strong>Fee:</strong> ₹${doctor.consultation_fee || 'N/A'}</div>
+    container.innerHTML = doctors.map(doctor => {
+        // Profile picture or default icon
+        const profilePicture = doctor.profile_photo 
+            ? `<img src="${doctor.profile_photo}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" alt="Dr. ${doctor.full_name}">`
+            : `<i class="fas fa-user-md" style="font-size: 2.5rem;"></i>`;
+        
+        return `
+        <div class="doctor-result-card" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 16px; transition: all 0.3s;">
+            <div style="display: flex; gap: 20px; align-items: start; flex-wrap: wrap;">
+                <!-- Profile Picture -->
+                <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                    ${profilePicture}
                 </div>
-                <div style="margin-bottom: 12px;">
-                    <strong>Qualification:</strong> ${doctor.qualification}<br>
-                    ${doctor.hospital_affiliation ? `<strong>Hospital:</strong> ${doctor.hospital_affiliation}<br>` : ''}
-                    <strong>Languages:</strong> ${doctor.languages_spoken.join(', ')}
+                
+                <!-- Doctor Info -->
+                <div style="flex: 1; min-width: 250px;">
+                    <h3 style="margin: 0 0 12px 0; color: var(--text-primary); font-size: 1.3rem;">Dr. ${doctor.full_name}</h3>
+                    
+                    <!-- Key Info Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 16px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-id-card" style="color: var(--primary-color); width: 20px;"></i>
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">ID</div>
+                                <div style="font-weight: 600;">${doctor.doctor_id}</div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-stethoscope" style="color: var(--primary-color); width: 20px;"></i>
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Specialization</div>
+                                <div style="font-weight: 600;">${doctor.specialization}</div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-briefcase-medical" style="color: var(--primary-color); width: 20px;"></i>
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Experience</div>
+                                <div style="font-weight: 600;">${doctor.years_of_experience} years</div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-rupee-sign" style="color: var(--success-color); width: 20px;"></i>
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Consultation Fee</div>
+                                <div style="font-weight: 700; color: var(--success-color); font-size: 1.1rem;">₹${doctor.consultation_fee || 'N/A'}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Clinic Location (Highlighted) -->
+                    ${doctor.address || doctor.hospital_affiliation ? `
+                    <div style="background: linear-gradient(135deg, #e8f5e9, #f1f8e9); border-left: 4px solid var(--success-color); padding: 14px; border-radius: 8px; margin-bottom: 16px;">
+                        <div style="display: flex; align-items: start; gap: 10px;">
+                            <i class="fas fa-map-marker-alt" style="color: var(--success-color); font-size: 1.2rem; margin-top: 2px;"></i>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 700; color: var(--success-color); margin-bottom: 4px; font-size: 0.85rem; text-transform: uppercase;">Clinic Location</div>
+                                ${doctor.hospital_affiliation ? `<div style="font-weight: 600; margin-bottom: 4px;">${doctor.hospital_affiliation}</div>` : ''}
+                                ${doctor.address ? `
+                                <div style="color: var(--text-primary); line-height: 1.5; margin-bottom: 10px;">${doctor.address}</div>
+                                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((doctor.hospital_affiliation || '') + ' ' + (doctor.address || ''))}" 
+                                   target="_blank" 
+                                   class="btn btn-success" 
+                                   style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: 0.9rem; text-decoration: none;">
+                                    <i class="fas fa-map-marked-alt"></i> Open in Google Maps
+                                </a>
+                                ` : '<div style="color: var(--text-secondary); font-style: italic;">Address not provided</div>'}
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- Additional Details -->
+                    <div style="background: var(--bg-secondary); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                        <div style="display: grid; gap: 8px; font-size: 0.9rem;">
+                            <div><i class="fas fa-graduation-cap" style="color: var(--primary-color); width: 20px;"></i> <strong>Qualification:</strong> ${doctor.qualification}</div>
+                            <div><i class="fas fa-language" style="color: var(--primary-color); width: 20px;"></i> <strong>Languages:</strong> ${doctor.languages_spoken.join(', ')}</div>
+                        </div>
+                    </div>
+                    
+                    ${doctor.bio ? `<p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px; line-height: 1.6;"><i class="fas fa-info-circle" style="color: var(--primary-color);"></i> ${doctor.bio}</p>` : ''}
+                    
+                    <!-- Book Button -->
+                    <button class="btn btn-primary" onclick='showBookingForm(${JSON.stringify({
+                        id: doctor._id,
+                        name: doctor.full_name,
+                        specialization: doctor.specialization,
+                        fee: doctor.consultation_fee || 0,
+                        hospital: doctor.hospital_affiliation || '',
+                        address: doctor.address || '',
+                        phone: doctor.phone || ''
+                    })})' style="width: 100%; padding: 12px; font-size: 1rem;">
+                        <i class="fas fa-calendar-plus"></i> Book Appointment
+                    </button>
                 </div>
-                ${doctor.bio ? `<p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 12px;">${doctor.bio}</p>` : ''}
-                <button class="btn btn-primary" onclick="showBookingForm('${doctor._id}', '${doctor.full_name}', '${doctor.specialization}')">
-                    <i class="fas fa-calendar-plus"></i> Book Appointment
-                </button>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // Show booking form
-function showBookingForm(doctorId, doctorName, specialization) {
+function showBookingForm(doctorData) {
+    // Handle both old and new function signatures
+    const doctor = typeof doctorData === 'object' ? doctorData : {
+        id: arguments[0],
+        name: arguments[1],
+        specialization: arguments[2],
+        fee: arguments[3] || 0,
+        hospital: '',
+        address: '',
+        phone: ''
+    };
+    
     const today = new Date().toISOString().split('T')[0];
     
     const modal = document.createElement('div');
-    modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000;';
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000; overflow-y: auto;';
     modal.innerHTML = `
-        <div style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%;">
-            <h3 style="margin: 0 0 20px 0;"><i class="fas fa-calendar-check"></i> Book Appointment</h3>
-            <p style="margin-bottom: 20px; color: var(--text-secondary);">
-                <strong>Doctor:</strong> Dr. ${doctorName}<br>
-                <strong>Specialization:</strong> ${specialization}
-            </p>
+        <div style="background: var(--card-bg); border-radius: 12px; padding: 30px; max-width: 550px; width: 90%; margin: 20px;">
+            <h3 style="margin: 0 0 20px 0; color: var(--text-primary);"><i class="fas fa-calendar-check"></i> Book Appointment</h3>
+            
+            <!-- Doctor Info -->
+            <div style="margin-bottom: 20px; padding: 15px; background: var(--bg-secondary); border-radius: 8px;">
+                <div style="margin-bottom: 8px;"><strong>Doctor:</strong> Dr. ${doctor.name}</div>
+                <div style="margin-bottom: 8px;"><strong>Specialization:</strong> ${doctor.specialization}</div>
+                <div style="font-size: 1.1rem; color: var(--primary-color);"><strong>Consultation Fee:</strong> ₹${doctor.fee}</div>
+            </div>
+            
+            <!-- Clinic Location -->
+            ${doctor.address || doctor.hospital ? `
+            <div style="margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #e8f5e9, #f1f8e9); border-left: 4px solid var(--success-color); border-radius: 8px;">
+                <div style="font-weight: 700; color: var(--success-color); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-map-marker-alt"></i> Clinic Location
+                </div>
+                ${doctor.hospital ? `<div style="font-weight: 600; margin-bottom: 4px;">${doctor.hospital}</div>` : ''}
+                ${doctor.address ? `
+                <div style="color: var(--text-primary); margin-bottom: 12px; line-height: 1.5;">${doctor.address}</div>
+                <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((doctor.hospital || '') + ' ' + (doctor.address || ''))}" 
+                   target="_blank" 
+                   class="btn btn-success" 
+                   style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: 0.9rem; text-decoration: none;">
+                    <i class="fas fa-map-marked-alt"></i> Open in Google Maps
+                </a>
+                ` : ''}
+            </div>
+            ` : ''}
             <form id="bookingForm">
                 <div class="form-group">
-                    <label>Appointment Date *</label>
+                    <label><i class="fas fa-calendar"></i> Appointment Date *</label>
                     <input type="date" id="appointmentDate" required min="${today}">
                 </div>
                 <div class="form-group">
-                    <label>Appointment Time *</label>
+                    <label><i class="fas fa-clock"></i> Appointment Time *</label>
                     <input type="time" id="appointmentTime" required>
                 </div>
                 <div class="form-group">
-                    <label>Reason for Visit</label>
+                    <label><i class="fas fa-notes-medical"></i> Reason for Visit</label>
                     <textarea id="appointmentReason" rows="3" placeholder="Brief description of your health concern"></textarea>
                 </div>
-                <div style="display: flex; gap: 12px;">
+                <div class="form-group">
+                    <label><i class="fas fa-credit-card"></i> Payment Mode *</label>
+                    <select id="paymentMode" required style="width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem;">
+                        <option value="">Select Payment Mode</option>
+                        <option value="online">💳 Online Payment</option>
+                        <option value="offline">💵 Pay at Clinic (Offline)</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 20px;">
                     <button type="submit" class="btn btn-primary" style="flex: 1;">
                         <i class="fas fa-check"></i> Confirm Booking
                     </button>
                     <button type="button" class="btn btn-secondary" onclick="this.closest('div[style*=fixed]').remove()">
-                        Cancel
+                        <i class="fas fa-times"></i> Cancel
                     </button>
                 </div>
             </form>
@@ -1827,7 +1649,7 @@ function showBookingForm(doctorId, doctorName, specialization) {
     
     document.getElementById('bookingForm').onsubmit = async (e) => {
         e.preventDefault();
-        await bookAppointment(doctorId, doctorName);
+        await bookAppointment(doctor.id, doctor.name);
         modal.remove();
     };
 }
@@ -1837,11 +1659,20 @@ async function bookAppointment(doctorId, doctorName) {
     showLoading();
     
     try {
+        const paymentMode = document.getElementById('paymentMode').value;
+        
+        if (!paymentMode) {
+            showError('Please select a payment mode');
+            hideLoading();
+            return;
+        }
+        
         const appointmentData = {
             doctor_id: doctorId,
             appointment_date: document.getElementById('appointmentDate').value,
             appointment_time: document.getElementById('appointmentTime').value,
-            reason: document.getElementById('appointmentReason').value
+            reason: document.getElementById('appointmentReason').value,
+            payment_mode: paymentMode
         };
         
         await apiCall(API_ENDPOINTS.BOOK_APPOINTMENT, {
@@ -1849,7 +1680,8 @@ async function bookAppointment(doctorId, doctorName) {
             body: JSON.stringify(appointmentData)
         });
         
-        showSuccess(`Appointment request sent to Dr. ${doctorName}! Waiting for doctor approval.`);
+        const paymentText = paymentMode === 'online' ? 'Online payment will be processed after doctor approval.' : 'Please pay at the clinic during your visit.';
+        showSuccess(`Appointment request sent to Dr. ${doctorName}! ${paymentText}`);
         
         // Reload appointments
         await loadAppointments();
@@ -1889,23 +1721,124 @@ function displayAppointments(appointments) {
         };
         
         return `
-            <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h4 style="margin: 0 0 8px 0;">Dr. ${apt.doctor.full_name}</h4>
-                    <div style="font-size: 0.9rem; color: var(--text-secondary);">
-                        <i class="fas fa-calendar"></i> ${new Date(apt.appointment_date).toLocaleDateString('en-IN')}
-                        <i class="fas fa-clock" style="margin-left: 15px;"></i> ${apt.appointment_time}
+            <div style="padding: 16px; border-bottom: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                            <h4 style="margin: 0;">Dr. ${apt.doctor.full_name}</h4>
+                            <span class="badge badge-${statusColors[apt.status]}" style="display: inline-block;">
+                                ${apt.status.toUpperCase()}
+                            </span>
+                        </div>
+                        
+                        <!-- Appointment ID -->
+                        <div style="margin-bottom: 8px; padding: 8px 12px; background: linear-gradient(135deg, #e3f2fd, #f3e5f5); border-left: 3px solid var(--primary-color); border-radius: 6px; display: inline-block;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-ticket-alt" style="color: var(--primary-color);"></i>
+                                <span style="font-weight: 700; color: var(--primary-color); font-size: 0.95rem; letter-spacing: 0.5px;">${apt.appointment_id || 'N/A'}</span>
+                                <button onclick="copyToClipboard('${apt.appointment_id}', 'Appointment ID copied!')" 
+                                        style="background: none; border: none; cursor: pointer; padding: 4px 8px; color: var(--primary-color);" 
+                                        title="Copy Appointment ID">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px;">Show this ID to the doctor</div>
+                        </div>
+                        
+                        <!-- Verification OTP (for confirmed appointments) -->
+                        ${apt.status === 'confirmed' && apt.verification_otp && !apt.otp_verified ? `
+                        <div style="margin-bottom: 8px; padding: 10px 14px; background: linear-gradient(135deg, #fff3e0, #ffe0b2); border-left: 3px solid #ff9800; border-radius: 6px; display: inline-block;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-key" style="color: #ff9800;"></i>
+                                <span style="font-weight: 700; color: #ff9800; font-size: 1.2rem; letter-spacing: 2px; font-family: monospace;">${apt.verification_otp}</span>
+                                <button onclick="copyToClipboard('${apt.verification_otp}', 'OTP copied!')" 
+                                        style="background: none; border: none; cursor: pointer; padding: 4px 8px; color: #ff9800;" 
+                                        title="Copy OTP">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <div style="font-size: 0.75rem; color: #e65100; margin-top: 4px; font-weight: 600;">
+                                <i class="fas fa-exclamation-circle"></i> Give this OTP to doctor during consultation
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <!-- OTP Verified Badge -->
+                        ${apt.otp_verified ? `
+                        <div style="margin-bottom: 8px; padding: 6px 12px; background: #e8f5e9; border-left: 3px solid #4caf50; border-radius: 6px; display: inline-block;">
+                            <i class="fas fa-check-circle" style="color: #4caf50;"></i>
+                            <span style="color: #2e7d32; font-weight: 600; font-size: 0.85rem;">OTP Verified</span>
+                        </div>
+                        ` : ''}
+                        
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px;">
+                            ${apt.doctor.specialization ? `<i class="fas fa-stethoscope"></i> ${apt.doctor.specialization}` : ''}
+                            ${apt.doctor.hospital ? ` • ${apt.doctor.hospital}` : ''}
+                        </div>
+                        <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                            <i class="fas fa-calendar"></i> ${new Date(apt.appointment_date).toLocaleDateString('en-IN')}
+                            <i class="fas fa-clock" style="margin-left: 15px;"></i> ${apt.appointment_time}
+                        </div>
+                        ${apt.doctor.address ? `
+                        <div style="margin-top: 8px; font-size: 0.85rem;">
+                            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((apt.doctor.hospital || '') + ' ' + (apt.doctor.address || ''))}" 
+                               target="_blank" 
+                               style="color: var(--success-color); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="fas fa-map-marker-alt"></i> View Location
+                            </a>
+                        </div>
+                        ` : ''}
+                        ${apt.reason ? `<div style="margin-top: 8px; font-size: 0.9rem;"><strong>Reason:</strong> ${apt.reason}</div>` : ''}
+                        
+                        <!-- Prescription (if available) -->
+                        ${apt.prescription ? `
+                        <div style="margin-top: 12px; padding: 12px; background: #f1f8e4; border-left: 3px solid #8bc34a; border-radius: 6px;">
+                            <div style="font-weight: 700; color: #558b2f; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-prescription"></i> Prescription
+                                </div>
+                                <div style="font-size: 0.75rem; padding: 4px 8px; background: #8bc34a; color: white; border-radius: 4px;">
+                                    <i class="fas fa-check-circle"></i> Saved to Medical Records
+                                </div>
+                            </div>
+                            <div style="font-size: 0.9rem; margin-bottom: 6px;"><strong>Diagnosis:</strong> ${apt.prescription.diagnosis}</div>
+                            <div style="font-size: 0.9rem; margin-bottom: 6px;">
+                                <strong>Medications:</strong>
+                                <ul style="margin: 4px 0 0 20px; padding: 0;">
+                                    ${apt.prescription.medications.map(med => `<li>${med}</li>`).join('')}
+                                </ul>
+                            </div>
+                            ${apt.prescription.instructions ? `<div style="font-size: 0.9rem; margin-bottom: 6px;"><strong>Instructions:</strong> ${apt.prescription.instructions}</div>` : ''}
+                            ${apt.prescription.next_checkup ? `<div style="font-size: 0.9rem; margin-bottom: 6px;"><strong>Next Checkup:</strong> ${apt.prescription.next_checkup}</div>` : ''}
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 8px;">
+                                Prescribed by Dr. ${apt.prescription.prescribed_by.doctor_name} on ${new Date(apt.prescription.prescribed_at).toLocaleDateString('en-IN')}
+                            </div>
+                            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #c5e1a5;">
+                                <button class="btn btn-success btn-sm" onclick="viewPrescriptionInRecords()" style="padding: 6px 12px; font-size: 0.85rem;">
+                                    <i class="fas fa-folder-open"></i> View in Medical Records
+                                </button>
+                            </div>
+                        </div>
+                        ` : ''}
                     </div>
-                    ${apt.reason ? `<div style="margin-top: 8px; font-size: 0.9rem;"><strong>Reason:</strong> ${apt.reason}</div>` : ''}
-                    <span class="badge badge-${statusColors[apt.status]}" style="margin-top: 8px; display: inline-block;">
-                        ${apt.status.toUpperCase()}
-                    </span>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                        ${apt.status === 'pending' || apt.status === 'confirmed' ? `
+                            <button class="btn btn-danger btn-sm" style="padding: 6px 12px; font-size: 0.85rem;" onclick="cancelAppointment('${apt._id}')">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        ` : ''}
+                        ${apt.status === 'cancelled' ? `
+                            <button class="btn btn-warning btn-sm" style="padding: 6px 12px; font-size: 0.85rem; margin-bottom: 4px;" onclick="undoCancelAppointment('${apt._id}')">
+                                <i class="fas fa-undo"></i> Undo
+                            </button>
+                        ` : ''}
+                        ${apt.status === 'cancelled' || apt.status === 'completed' || apt.status === 'rejected' ? `
+                            <button class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.85rem;" onclick="deleteAppointment('${apt._id}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        ` : ''}
+                    </div>
                 </div>
-                ${apt.status === 'pending' || apt.status === 'confirmed' ? `
-                    <button class="btn btn-danger" style="padding: 8px 16px;" onclick="cancelAppointment('${apt._id}')">
-                        <i class="fas fa-times"></i> Cancel
-                    </button>
-                ` : ''}
             </div>
         `;
     }).join('');
@@ -1932,6 +1865,93 @@ async function cancelAppointment(appointmentId) {
     }
 }
 
+// Undo cancel appointment (reactivate)
+async function undoCancelAppointment(appointmentId) {
+    if (!confirmAction('Do you want to reactivate this appointment?')) return;
+    
+    showLoading();
+    
+    try {
+        await apiCall(`/api/appointments/${appointmentId}/reactivate`, {
+            method: 'POST'
+        });
+        
+        showSuccess('Appointment reactivated successfully');
+        await loadAppointments();
+        
+    } catch (error) {
+        showError('Failed to reactivate appointment. It may no longer be available.');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Delete appointment from history
+async function deleteAppointment(appointmentId) {
+    if (!confirmAction('Are you sure you want to delete this appointment from your history? This action cannot be undone.')) return;
+    
+    showLoading();
+    
+    try {
+        await apiCall(`/api/appointments/${appointmentId}`, {
+            method: 'DELETE'
+        });
+        
+        showSuccess('Appointment deleted from history');
+        await loadAppointments();
+        
+    } catch (error) {
+        showError('Failed to delete appointment');
+    } finally {
+        hideLoading();
+    }
+}
+
+
+// View prescription in medical records (with refresh)
+async function viewPrescriptionInRecords() {
+    showLoading();
+    try {
+        // Reload records to get the latest prescription PDF
+        await loadRecords();
+        // Navigate to records section
+        showSection('records');
+        showSuccess('Medical records refreshed');
+    } catch (error) {
+        showError('Failed to load records');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Copy to clipboard utility
+function copyToClipboard(text, successMessage = 'Copied to clipboard!') {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            showSuccess(successMessage);
+        }).catch(() => {
+            fallbackCopyToClipboard(text, successMessage);
+        });
+    } else {
+        fallbackCopyToClipboard(text, successMessage);
+    }
+}
+
+function fallbackCopyToClipboard(text, successMessage) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+        document.execCommand('copy');
+        showSuccess(successMessage);
+    } catch (err) {
+        showError('Failed to copy');
+    }
+    document.body.removeChild(textArea);
+}
 
 // Clear RFID field (only works if not yet linked)
 function clearRfidField() {

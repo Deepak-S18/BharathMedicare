@@ -328,13 +328,21 @@
                 <div class="card" style="margin-bottom: 24px;">
                     <h3 class="card-header"><i class="fas fa-search"></i> Find a Doctor</h3>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div class="doctor-search-container">
+                        <!-- Search by Doctor ID -->
                         <div class="form-group">
-                            <label for="searchDoctorId">Search by Doctor ID</label>
+                            <label for="searchDoctorId"><i class="fas fa-id-card"></i> Search by Doctor ID</label>
                             <input type="text" id="searchDoctorId" placeholder="e.g., DOC-A7K9M2X5">
                         </div>
+                        
+                        <!-- OR Divider -->
+                        <div class="search-divider">
+                            <span>OR</span>
+                        </div>
+                        
+                        <!-- Search by Specialization -->
                         <div class="form-group">
-                            <label for="searchSpecialization">Search by Specialization</label>
+                            <label for="searchSpecialization"><i class="fas fa-stethoscope"></i> Search by Specialization</label>
                             <select id="searchSpecialization">
                                 <option value="">All Specializations</option>
                                 <option value="General Physician">General Physician</option>
@@ -353,7 +361,7 @@
                         </div>
                     </div>
                     
-                    <button class="btn btn-primary" onclick="searchDoctors()" style="width: 100%;">
+                    <button class="btn btn-primary" onclick="searchDoctors()" style="width: 100%; margin-top: 20px;">
                         <i class="fas fa-search"></i> Search Doctors
                     </button>
                 </div>

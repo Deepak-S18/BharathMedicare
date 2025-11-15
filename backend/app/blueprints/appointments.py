@@ -3,10 +3,19 @@ Appointments Blueprint
 Handles appointment booking and management
 """
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from bson import ObjectId
 from datetime import datetime
-from app.models.database import Database, get_users_collection, get_access_permissions_collection
+import secrets
+import string
+import os
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from app.models.database import Database, get_users_collection, get_access_permissions_collection, get_records_collection
 from app.utils.auth import require_auth
 from app.utils.audit import log_action
 
@@ -16,6 +25,29 @@ bp = Blueprint('appointments', __name__, url_prefix='/api/appointments')
 def get_appointments_collection():
     """Get appointments collection"""
     return Database.get_collection('appointments')
+
+
+def generate_appointment_id():
+    """
+    Generate a unique appointment ID
+    Format: APT-XXXXXXXX (8 random alphanumeric characters)
+    """
+    appointments_collection = get_appointments_collection()
+    
+    max_attempts = 20
+    for _ in range(max_attempts):
+        # Generate 8-character random alphanumeric string
+        characters = string.ascii_uppercase + string.digits
+        random_part = ''.join(secrets.choice(characters) for _ in range(8))
+        appointment_id = f"APT-{random_part}"
+        
+        # Check if ID already exists
+        existing = appointments_collection.find_one({'appointment_id': appointment_id})
+        if not existing:
+            return appointment_id
+    
+    # If we couldn't generate a unique ID after max_attempts, raise an error
+    raise ValueError(f"Could not generate unique appointment ID after {max_attempts} attempts")
 
 
 @bp.route('/search-doctors', methods=['POST'])
@@ -61,7 +93,10 @@ def search_doctors():
                 'hospital_affiliation': doctor.get('hospital_affiliation'),
                 'consultation_fee': doctor.get('consultation_fee'),
                 'languages_spoken': doctor.get('languages_spoken', []),
-                'bio': doctor.get('bio')
+                'bio': doctor.get('bio'),
+                'profile_photo': doctor.get('profile_photo'),
+                'address': doctor.get('address'),
+                'phone': doctor.get('phone')
             })
         
         return jsonify({
@@ -107,14 +142,24 @@ def book_appointment():
         if not doctor:
             return jsonify({'error': 'Doctor not found or not verified'}), 404
         
+        # Generate unique appointment ID
+        appointment_id = generate_appointment_id()
+        
+        # Generate 6-digit OTP for appointment verification
+        verification_otp = ''.join(secrets.choice(string.digits) for _ in range(6))
+        
         # Create appointment
         appointment = {
+            'appointment_id': appointment_id,
             'patient_id': ObjectId(patient_id),
             'doctor_id': ObjectId(doctor_id),
             'appointment_date': appointment_date,
             'appointment_time': appointment_time,
             'reason': reason,
             'status': 'pending',  # pending, confirmed, completed, cancelled
+            'verification_otp': verification_otp,
+            'otp_verified': False,
+            'prescription': None,
             'created_at': datetime.utcnow(),
             'updated_at': datetime.utcnow()
         }
@@ -129,7 +174,8 @@ def book_appointment():
         
         return jsonify({
             'message': 'Appointment request sent successfully. Waiting for doctor approval.',
-            'appointment_id': str(result.inserted_id)
+            'appointment_id': appointment_id,
+            '_id': str(result.inserted_id)
         }), 201
     
     except Exception as e:
@@ -173,18 +219,33 @@ def get_my_appointments():
                 other_user = users_collection.find_one({'_id': apt['patient_id']})
                 other_key = 'patient'
             
+            user_info = {
+                'full_name': other_user.get('full_name') if other_user else 'Unknown',
+                'email': other_user.get('email') if other_user else ''
+            }
+            
+            # Add extra info for patient viewing doctor
+            if role == 'patient' and other_user:
+                user_info.update({
+                    'specialization': other_user.get('specialization'),
+                    'hospital': other_user.get('hospital_affiliation'),
+                    'address': other_user.get('address')
+                })
+            elif role == 'doctor' and other_user:
+                user_info['specialization'] = None
+            
             results.append({
                 '_id': str(apt['_id']),
+                'appointment_id': apt.get('appointment_id', 'N/A'),
                 'appointment_date': apt['appointment_date'],
                 'appointment_time': apt['appointment_time'],
                 'reason': apt.get('reason', ''),
                 'status': apt['status'],
+                'verification_otp': apt.get('verification_otp') if role == 'patient' else None,
+                'otp_verified': apt.get('otp_verified', False),
+                'prescription': apt.get('prescription'),
                 'created_at': apt['created_at'].isoformat(),
-                other_key: {
-                    'full_name': other_user.get('full_name') if other_user else 'Unknown',
-                    'email': other_user.get('email') if other_user else '',
-                    'specialization': other_user.get('specialization') if role == 'patient' else None
-                }
+                other_key: user_info
             })
         
         return jsonify({
@@ -330,3 +391,412 @@ def cancel_appointment(appointment_id):
     except Exception as e:
         print(f"Cancel appointment error: {e}")
         return jsonify({'error': 'Failed to cancel appointment'}), 500
+
+
+@bp.route('/<appointment_id>/reactivate', methods=['POST'])
+@require_auth
+def reactivate_appointment(appointment_id):
+    """Reactivate a cancelled appointment (patient only)"""
+    try:
+        appointments_collection = get_appointments_collection()
+        if appointments_collection is None:
+            return jsonify({'error': 'Database connection error'}), 503
+        
+        appointment = appointments_collection.find_one({'_id': ObjectId(appointment_id)})
+        
+        if not appointment:
+            return jsonify({'error': 'Appointment not found'}), 404
+        
+        # Only patient can reactivate
+        user_id = request.user['user_id']
+        if str(appointment['patient_id']) != user_id:
+            return jsonify({'error': 'Only patients can reactivate their appointments'}), 403
+        
+        # Can only reactivate cancelled appointments
+        if appointment['status'] != 'cancelled':
+            return jsonify({'error': 'Only cancelled appointments can be reactivated'}), 400
+        
+        # Check if appointment date is still in the future
+        apt_date = datetime.strptime(appointment['appointment_date'], '%Y-%m-%d')
+        if apt_date.date() < datetime.utcnow().date():
+            return jsonify({'error': 'Cannot reactivate past appointments'}), 400
+        
+        # Reactivate to pending status
+        appointments_collection.update_one(
+            {'_id': ObjectId(appointment_id)},
+            {'$set': {'status': 'pending', 'updated_at': datetime.utcnow()}}
+        )
+        
+        # Log the action
+        log_action(user_id, 'reactivate_appointment', 'appointment', appointment_id)
+        
+        return jsonify({'message': 'Appointment reactivated successfully. Waiting for doctor approval.'}), 200
+    
+    except Exception as e:
+        print(f"Reactivate appointment error: {e}")
+        return jsonify({'error': 'Failed to reactivate appointment'}), 500
+
+
+@bp.route('/<appointment_id>/verify-otp', methods=['POST'])
+@require_auth
+def verify_appointment_otp(appointment_id):
+    """Verify appointment OTP (doctor only)"""
+    try:
+        appointments_collection = get_appointments_collection()
+        if appointments_collection is None:
+            return jsonify({'error': 'Database connection error'}), 503
+        
+        # Only doctors can verify OTP
+        if request.user['role'] != 'doctor':
+            return jsonify({'error': 'Only doctors can verify OTP'}), 403
+        
+        data = request.get_json()
+        otp = data.get('otp', '').strip()
+        
+        if not otp:
+            return jsonify({'error': 'OTP is required'}), 400
+        
+        appointment = appointments_collection.find_one({'_id': ObjectId(appointment_id)})
+        
+        if not appointment:
+            return jsonify({'error': 'Appointment not found'}), 404
+        
+        # Check if this is the doctor's appointment
+        user_id = request.user['user_id']
+        if str(appointment['doctor_id']) != user_id:
+            return jsonify({'error': 'Access denied'}), 403
+        
+        # Check if appointment is confirmed
+        if appointment['status'] != 'confirmed':
+            return jsonify({'error': 'Appointment must be confirmed first'}), 400
+        
+        # Verify OTP
+        if appointment.get('verification_otp') != otp:
+            return jsonify({'error': 'Invalid OTP'}), 400
+        
+        # Mark OTP as verified
+        appointments_collection.update_one(
+            {'_id': ObjectId(appointment_id)},
+            {'$set': {'otp_verified': True, 'updated_at': datetime.utcnow()}}
+        )
+        
+        # Log the action
+        log_action(user_id, 'verify_appointment_otp', 'appointment', appointment_id)
+        
+        return jsonify({'message': 'OTP verified successfully. You can now add prescription.'}), 200
+    
+    except Exception as e:
+        print(f"Verify OTP error: {e}")
+        return jsonify({'error': 'Failed to verify OTP'}), 500
+
+
+def generate_prescription_pdf(prescription_data, patient_data, doctor_data, appointment_data):
+    """Generate a PDF prescription document"""
+    try:
+        # Create uploads directory if it doesn't exist
+        upload_folder = current_app.config.get('UPLOAD_FOLDER', 'uploads')
+        
+        # Make sure we use absolute path
+        if not os.path.isabs(upload_folder):
+            # Get the app root directory (where run.py is)
+            app_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            upload_folder = os.path.join(app_root, upload_folder)
+        
+        os.makedirs(upload_folder, exist_ok=True)
+        
+        # Generate filename based on diagnosis
+        safe_diagnosis = "".join(c for c in prescription_data['diagnosis'] if c.isalnum() or c in (' ', '-', '_')).strip()
+        safe_diagnosis = safe_diagnosis.replace(' ', '_')[:50]  # Limit length
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"Prescription_{safe_diagnosis}_{timestamp}.pdf"
+        filepath = os.path.join(upload_folder, filename)
+        
+        print(f"📁 Upload folder: {upload_folder}")
+        print(f"📄 Full file path: {filepath}")
+        
+        # Create PDF
+        doc = SimpleDocTemplate(filepath, pagesize=letter)
+        story = []
+        styles = getSampleStyleSheet()
+        
+        # Custom styles
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=24,
+            textColor=colors.HexColor('#667eea'),
+            spaceAfter=30,
+            alignment=TA_CENTER
+        )
+        
+        heading_style = ParagraphStyle(
+            'CustomHeading',
+            parent=styles['Heading2'],
+            fontSize=14,
+            textColor=colors.HexColor('#667eea'),
+            spaceAfter=12
+        )
+        
+        # Title
+        story.append(Paragraph("MEDICAL PRESCRIPTION", title_style))
+        story.append(Spacer(1, 0.2*inch))
+        
+        # Doctor Information
+        story.append(Paragraph("Prescribed By:", heading_style))
+        doctor_info = [
+            ['Doctor Name:', f"Dr. {doctor_data.get('full_name', 'N/A')}"],
+            ['Specialization:', doctor_data.get('specialization', 'N/A')],
+            ['Hospital:', doctor_data.get('hospital_affiliation', 'N/A')],
+            ['Date:', datetime.fromisoformat(prescription_data['prescribed_at']).strftime('%d %B %Y, %I:%M %p')]
+        ]
+        doctor_table = Table(doctor_info, colWidths=[2*inch, 4*inch])
+        doctor_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f0f0f0')),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+        ]))
+        story.append(doctor_table)
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Patient Information
+        story.append(Paragraph("Patient Information:", heading_style))
+        
+        # Calculate age from date of birth if age is not available
+        age_display = patient_data.get('age', 'N/A')
+        if age_display == 'N/A' or not age_display:
+            dob = patient_data.get('date_of_birth')
+            if dob:
+                try:
+                    if isinstance(dob, str):
+                        dob_date = datetime.fromisoformat(dob.replace('Z', '+00:00'))
+                    else:
+                        dob_date = dob
+                    today = datetime.now()
+                    age_display = today.year - dob_date.year - ((today.month, today.day) < (dob_date.month, dob_date.day))
+                except:
+                    age_display = 'N/A'
+        
+        patient_info = [
+            ['Patient Name:', patient_data.get('full_name', 'N/A')],
+            ['Patient ID:', patient_data.get('patient_id', 'N/A')],
+            ['Age:', f"{age_display} years"],
+            ['Gender:', patient_data.get('gender', 'N/A')]
+        ]
+        patient_table = Table(patient_info, colWidths=[2*inch, 4*inch])
+        patient_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f0f0f0')),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+        ]))
+        story.append(patient_table)
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Diagnosis
+        story.append(Paragraph("Diagnosis:", heading_style))
+        story.append(Paragraph(prescription_data['diagnosis'], styles['Normal']))
+        story.append(Spacer(1, 0.2*inch))
+        
+        # Medications
+        story.append(Paragraph("Medications:", heading_style))
+        med_data = [['S.No', 'Medication Details']]
+        for idx, med in enumerate(prescription_data['medications'], 1):
+            med_data.append([str(idx), med])
+        
+        med_table = Table(med_data, colWidths=[0.7*inch, 5.3*inch])
+        med_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#667eea')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f9f9f9')])
+        ]))
+        story.append(med_table)
+        story.append(Spacer(1, 0.2*inch))
+        
+        # Instructions
+        if prescription_data.get('instructions'):
+            story.append(Paragraph("Instructions:", heading_style))
+            story.append(Paragraph(prescription_data['instructions'], styles['Normal']))
+            story.append(Spacer(1, 0.2*inch))
+        
+        # Next Checkup
+        if prescription_data.get('next_checkup'):
+            story.append(Paragraph("Next Checkup:", heading_style))
+            story.append(Paragraph(prescription_data['next_checkup'], styles['Normal']))
+            story.append(Spacer(1, 0.2*inch))
+        
+        # Footer
+        story.append(Spacer(1, 0.3*inch))
+        footer_style = ParagraphStyle('Footer', parent=styles['Normal'], fontSize=8, textColor=colors.grey, alignment=TA_CENTER)
+        story.append(Paragraph("This is a computer-generated prescription from BharathMedicare", footer_style))
+        story.append(Paragraph(f"Appointment ID: {appointment_data.get('appointment_id', 'N/A')}", footer_style))
+        
+        # Build PDF
+        doc.build(story)
+        
+        return filename, filepath
+        
+    except Exception as e:
+        print(f"PDF generation error: {e}")
+        raise
+
+
+@bp.route('/<appointment_id>/prescription', methods=['POST'])
+@require_auth
+def add_prescription(appointment_id):
+    """Add prescription to appointment (doctor only, after OTP verification)"""
+    try:
+        appointments_collection = get_appointments_collection()
+        users_collection = get_users_collection()
+        records_collection = get_records_collection()
+        
+        if appointments_collection is None or users_collection is None or records_collection is None:
+            return jsonify({'error': 'Database connection error'}), 503
+        
+        # Only doctors can add prescriptions
+        if request.user['role'] != 'doctor':
+            return jsonify({'error': 'Only doctors can add prescriptions'}), 403
+        
+        data = request.get_json()
+        diagnosis = data.get('diagnosis', '').strip()
+        medications = data.get('medications', [])
+        instructions = data.get('instructions', '').strip()
+        next_checkup = data.get('next_checkup', '').strip()
+        
+        if not diagnosis or not medications:
+            return jsonify({'error': 'Diagnosis and medications are required'}), 400
+        
+        appointment = appointments_collection.find_one({'_id': ObjectId(appointment_id)})
+        
+        if not appointment:
+            return jsonify({'error': 'Appointment not found'}), 404
+        
+        # Check if this is the doctor's appointment
+        user_id = request.user['user_id']
+        if str(appointment['doctor_id']) != user_id:
+            return jsonify({'error': 'Access denied'}), 403
+        
+        # Check if OTP is verified
+        if not appointment.get('otp_verified', False):
+            return jsonify({'error': 'Please verify OTP first'}), 400
+        
+        # Get doctor and patient details
+        doctor = users_collection.find_one({'_id': ObjectId(user_id)})
+        patient = users_collection.find_one({'_id': appointment['patient_id']})
+        
+        # Create prescription
+        prescription = {
+            'diagnosis': diagnosis,
+            'medications': medications,
+            'instructions': instructions,
+            'next_checkup': next_checkup,
+            'prescribed_by': {
+                'doctor_id': user_id,
+                'doctor_name': doctor.get('full_name'),
+                'specialization': doctor.get('specialization')
+            },
+            'prescribed_at': datetime.utcnow().isoformat()
+        }
+        
+        # Generate PDF
+        filename, filepath = generate_prescription_pdf(
+            prescription, 
+            patient, 
+            doctor,
+            appointment
+        )
+        
+        # Save prescription PDF as medical record
+        medical_record = {
+            'patient_id': appointment['patient_id'],
+            'file_name': filename,
+            'file_path': filepath,
+            'file_type': 'application/pdf',
+            'file_size': os.path.getsize(filepath),
+            'description': f"Prescription - {diagnosis}",
+            'uploaded_at': datetime.utcnow(),
+            'uploaded_by': 'system',
+            'is_prescription': True,
+            'is_deleted': False,
+            'appointment_id': appointment_id
+        }
+        
+        result = records_collection.insert_one(medical_record)
+        print(f"✅ Prescription PDF saved to medical records: {filename}")
+        print(f"✅ Record ID: {result.inserted_id}")
+        print(f"✅ File path: {filepath}")
+        
+        # Update appointment with prescription and mark as completed
+        appointments_collection.update_one(
+            {'_id': ObjectId(appointment_id)},
+            {
+                '$set': {
+                    'prescription': prescription,
+                    'prescription_file': filename,
+                    'status': 'completed',
+                    'updated_at': datetime.utcnow()
+                }
+            }
+        )
+        
+        # Log the action
+        log_action(user_id, 'add_prescription', 'appointment', appointment_id)
+        
+        return jsonify({
+            'message': 'Prescription added successfully and saved to patient medical records',
+            'prescription': prescription,
+            'prescription_file': filename
+        }), 200
+    
+    except Exception as e:
+        print(f"Add prescription error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': 'Failed to add prescription'}), 500
+
+
+@bp.route('/<appointment_id>', methods=['DELETE'])
+@require_auth
+def delete_appointment(appointment_id):
+    """Delete an appointment from history (only cancelled, rejected, or completed)"""
+    try:
+        appointments_collection = get_appointments_collection()
+        if appointments_collection is None:
+            return jsonify({'error': 'Database connection error'}), 503
+        
+        appointment = appointments_collection.find_one({'_id': ObjectId(appointment_id)})
+        
+        if not appointment:
+            return jsonify({'error': 'Appointment not found'}), 404
+        
+        # Check permissions - only patient or doctor involved can delete
+        user_id = request.user['user_id']
+        if str(appointment['patient_id']) != user_id and str(appointment['doctor_id']) != user_id:
+            return jsonify({'error': 'Access denied'}), 403
+        
+        # Can only delete cancelled, rejected, or completed appointments
+        if appointment['status'] not in ['cancelled', 'rejected', 'completed']:
+            return jsonify({'error': 'Can only delete cancelled, rejected, or completed appointments'}), 400
+        
+        # Delete the appointment
+        appointments_collection.delete_one({'_id': ObjectId(appointment_id)})
+        
+        # Log the action
+        log_action(user_id, 'delete_appointment', 'appointment', appointment_id)
+        
+        return jsonify({'message': 'Appointment deleted successfully'}), 200
+    
+    except Exception as e:
+        print(f"Delete appointment error: {e}")
+        return jsonify({'error': 'Failed to delete appointment'}), 500
