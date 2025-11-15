@@ -47,13 +47,22 @@ def create_app(config_class=Config):
          resources={r"/*": {
              "origins": "*",
              "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], 
-             "allow_headers": ["Content-Type", "Authorization", "Accept"],
+             "allow_headers": ["Content-Type", "Authorization", "Accept", "X-Requested-With"],
              "expose_headers": ["Content-Type", "Authorization"],
              "supports_credentials": False,
              "max_age": 3600
          }},
          automatic_options=True,
          always_send=True)
+    
+    # Add CORS headers to all responses
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,X-Requested-With')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS')
+        response.headers.add('Access-Control-Max-Age', '3600')
+        return response
     
     # Register blueprints
     from app.blueprints import auth, users, patients, records, access, admin, appointments, doctors, stats, analytics, contact
