@@ -60,7 +60,7 @@ async function loadDashboardData() {
             loadDoctorCard()
         ]);
         
-        updateStats();
+        await updateStats();
     } catch (error) {
         showError('Failed to load dashboard data');
         console.error(error);
@@ -273,11 +273,20 @@ async function loadPatients() {
 }
 
 // Update statistics
-function updateStats() {
+async function updateStats() {
     document.getElementById('totalPatients').textContent = myPatients.length;
     
-    // Count total accessible records (simplified - would need separate API call for exact count)
-    document.getElementById('accessibleRecords').textContent = myPatients.length * 5; // Placeholder
+    // Count total accessible records by fetching from each patient
+    let totalRecords = 0;
+    for (const patient of myPatients) {
+        try {
+            const response = await apiCall(`/api/records/patient/${patient.patient_id}`);
+            totalRecords += response.count || 0;
+        } catch (error) {
+            console.error(`Failed to get record count for patient ${patient.patient_id}:`, error);
+        }
+    }
+    document.getElementById('accessibleRecords').textContent = totalRecords;
     
     // Display Doctor ID
     const user = getUserData();
