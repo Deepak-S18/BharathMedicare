@@ -1108,3 +1108,98 @@ tbody tr:hover {
 [data-theme="dark"] img:not(.sidebar-header img):not(.logo img):hover {
     opacity: 1;
 }
+
+
+/* ============================================
+   APPOINTMENT CARDS - DARK MODE FIX
+   ============================================ */
+
+/* Fix prescription section visibility in dark mode */
+[data-theme="dark"] .prescription-section,
+[data-theme="dark"] [style*="background: #e8f5e9"],
+[data-theme="dark"] [style*="background:#e8f5e9"],
+[data-theme="dark"] [style*="background: rgb(232, 245, 233)"],
+[data-theme="dark"] [style*="background-color: #e8f5e9"],
+[data-theme="dark"] [style*="background-color:#e8f5e9"] {
+    background: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* Fix prescription text color in dark mode */
+[data-theme="dark"] .prescription-section *,
+[data-theme="dark"] [style*="background: #e8f5e9"] *,
+[data-theme="dark"] [style*="background:#e8f5e9"] *,
+[data-theme="dark"] [style*="background: rgb(232, 245, 233)"] *,
+[data-theme="dark"] [style*="background-color: #e8f5e9"] *,
+[data-theme="dark"] [style*="background-color:#e8f5e9"] * {
+    color: var(--text-primary) !important;
+}
+
+/* Fix prescription headings in dark mode */
+[data-theme="dark"] .prescription-section h4,
+[data-theme="dark"] .prescription-section h5,
+[data-theme="dark"] [style*="background: #e8f5e9"] h4,
+[data-theme="dark"] [style*="background: #e8f5e9"] h5 {
+    color: var(--secondary-color) !important;
+}
+
+/* Fix prescription labels in dark mode */
+[data-theme="dark"] .prescription-section strong,
+[data-theme="dark"] [style*="background: #e8f5e9"] strong {
+    color: var(--text-primary) !important;
+}
+
+/* Fix appointment card status badges in dark mode */
+[data-theme="dark"] .appointment-card [style*="background: #00d084"],
+[data-theme="dark"] .appointment-card [style*="background:#00d084"] {
+    background: rgba(0, 208, 132, 0.2) !important;
+    color: var(--secondary-color) !important;
+}
+
+[data-theme="dark"] .appointment-card [style*="background: #f59e0b"],
+[data-theme="dark"] .appointment-card [style*="background:#f59e0b"] {
+    background: rgba(245, 158, 11, 0.2) !important;
+    color: var(--warning-color) !important;
+}
+
+[data-theme="dark"] .appointment-card [style*="background: #ef4444"],
+[data-theme="dark"] .appointment-card [style*="background:#ef4444"] {
+    background: rgba(239, 68, 68, 0.2) !important;
+    color: var(--danger-color) !important;
+}
+
+/* Fix appointment card borders in dark mode */
+[data-theme="dark"] .appointment-card {
+    border-color: var(--border-color) !important;
+}
+
+/* Fix appointment card text in dark mode */
+[data-theme="dark"] .appointment-card {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .appointment-card small,
+[data-theme="dark"] .appointment-card [style*="color: #666"],
+[data-theme="dark"] .appointment-card [style*="color:#666"] {
+    color: var(--text-secondary) !important;
+}
+
+/* Fix OTP display in dark mode */
+[data-theme="dark"] [style*="background: #fef3c7"],
+[data-theme="dark"] [style*="background:#fef3c7"] {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: var(--warning-color) !important;
+    border: 1px solid rgba(245, 158, 11, 0.3) !important;
+}
+
+/* Fix appointment buttons in dark mode */
+[data-theme="dark"] .appointment-card .btn {
+    border-color: var(--border-color);
+}
+
+/* Fix appointment card hover in dark mode */
+[data-theme="dark"] .appointment-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    border-color: var(--primary-color);
+}
