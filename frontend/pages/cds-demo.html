@@ -449,7 +449,7 @@ Cough Syrup - 10ml three times daily"></textarea>
         async function loadPatients() {
             try {
                 const token = localStorage.getItem('bharath_medicare_token');
-                const response = await fetch('/api/patients', {
+                const response = await fetch('/api/patients/list', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
