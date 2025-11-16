@@ -47,6 +47,11 @@ A comprehensive, secure, and user-friendly healthcare management platform design
 - 📞 Access patient contact information
 - 🎓 Display credentials and qualifications
 - 🔗 Link RFID card for hospital access
+- 🤖 **AI Clinical Decision Support System**
+- 💊 AI-powered prescription generation
+- 📄 Generate & save prescription PDFs
+- 🔍 Medication safety checking
+- 📊 Differential diagnosis suggestions
 
 #### **Administrators**
 - 👨‍💼 Verify and approve doctor registrations
@@ -63,12 +68,33 @@ A comprehensive, secure, and user-friendly healthcare management platform design
 - 👨‍⚕️ Doctor credential verification
 - 🔒 Read-only secure access
 
+### 🤖 AI Clinical Decision Support (CDS)
+- **Ambient AI Assistant** - Non-intrusive clinical suggestions
+- **Google Gemini AI Integration** - Latest AI model (gemini-2.0-flash)
+- **Differential Diagnosis** - AI-powered diagnosis suggestions
+- **Medication Safety** - Drug interaction checking
+- **Treatment Plan Generation** - Comprehensive care plans
+- **Prescription PDF Generation** - Professional medical documents
+- **Context-Aware Triggers** - Smart activation based on workflow
+- **Learning System** - Adapts to physician preferences
+
+### 💊 Prescription Management
+- **AI-Powered Generation** - Automatic prescription creation
+- **Professional PDF Format** - Medical-grade documents
+- **AES-256 Encryption** - Secure storage in MongoDB
+- **Digital Signatures** - Legitimate medical prescriptions
+- **Patient Record Integration** - Automatic saving to medical records
+- **Medication Safety Checks** - Real-time interaction warnings
+- **Auto-Redirect** - Seamless workflow after saving
+
 ### 🎨 User Experience
 - 🌓 Dark/Light theme toggle
 - 📱 Fully responsive design
 - ♿ Accessibility compliant
 - 🌐 Multi-language support ready
 - ⚡ Fast and intuitive interface
+- 🎯 Clean, professional UI
+- 📊 Real-time updates
 
 ## 🛠 Technology Stack
 
@@ -87,6 +113,9 @@ A comprehensive, secure, and user-friendly healthcare management platform design
 - **PyJWT** - JSON Web Token authentication
 - **Bcrypt** - Password hashing
 - **Twilio** - SMS OTP service
+- **Google Generative AI** - Gemini AI integration
+- **ReportLab** - PDF generation library
+- **Cryptography** - AES-256 encryption
 
 ### Database
 - **MongoDB** - NoSQL document database
@@ -119,7 +148,15 @@ BharathMedicare/
 │   │   │   ├── appointments.py   # Appointment system
 │   │   │   ├── doctors.py        # Doctor operations
 │   │   │   ├── admin.py          # Admin functions
+│   │   │   ├── cds.py            # Clinical Decision Support
 │   │   │   └── analytics.py      # Statistics & analytics
+│   │   ├── ai_cds/               # AI CDS System
+│   │   │   ├── engine.py         # CDS core engine
+│   │   │   ├── gemini_integration.py  # Google Gemini AI
+│   │   │   ├── context_analyzer.py    # Patient context
+│   │   │   ├── knowledge_base.py      # Medical knowledge
+│   │   │   ├── drug_interactions.py   # Drug safety
+│   │   │   └── learning.py       # Learning system
 │   │   ├── models/
 │   │   │   ├── database.py       # MongoDB connection
 │   │   │   └── schemas.py        # Data models
@@ -150,6 +187,7 @@ BharathMedicare/
 │   │   ├── doctor-dashboard.js   # Doctor features
 │   │   ├── admin-dashboard.js    # Admin features
 │   │   ├── hospital-portal.js    # Hospital kiosk
+│   │   ├── cds-ambient.js        # AI CDS sidebar
 │   │   └── hospital-doctor-view.js
 │   └── pages/
 │       ├── index.html            # Landing page
@@ -161,7 +199,8 @@ BharathMedicare/
 │       ├── admin-dashboard.html
 │       ├── hospital-portal.html  # QR/RFID scanner
 │       ├── hospital-patient-view.html
-│       └── hospital-doctor-view.html
+│       ├── hospital-doctor-view.html
+│       └── cds-demo.html         # AI Clinical Assistant
 │
 ├── docker-compose.yml            # Docker orchestration
 ├── .gitignore                    # Git ignore rules
@@ -286,7 +325,12 @@ CORS_ORIGINS=http://localhost:8080,http://127.0.0.1:8080
 
 # Encryption
 ENCRYPTION_KEY=your-32-byte-encryption-key
+
+# Google Gemini AI Configuration (for CDS)
+GEMINI_API_KEY=your-gemini-api-key-here
 ```
+
+**Get Gemini API Key**: Visit [Google AI Studio](https://makersuite.google.com/app/apikey) to get your free API key.
 
 ### Frontend Configuration (js/config.js)
 
@@ -367,6 +411,11 @@ Follow the prompts to create an admin account.
 - ✅ Download patient records
 - ✅ Generate doctor ID card
 - ✅ Link RFID card (one-time, admin can modify)
+- ✅ **AI Clinical Decision Support**
+- ✅ AI-powered prescription generation
+- ✅ Medication safety checking
+- ✅ Generate & save prescription PDFs
+- ✅ Differential diagnosis suggestions
 
 ### Admin Features
 - ✅ Approve/reject doctor registrations
@@ -376,6 +425,110 @@ Follow the prompts to create an admin account.
 - ✅ View audit logs
 - ✅ Monitor system activity
 - ✅ Generate reports
+
+## 🤖 AI Clinical Decision Support System
+
+### Overview
+BharathMedicare includes a state-of-the-art AI Clinical Decision Support (CDS) system powered by Google Gemini AI, designed to assist doctors in making informed clinical decisions.
+
+### Key Features
+
+#### 1. **Ambient AI Assistant**
+- Non-intrusive sidebar interface
+- Context-aware suggestions
+- Real-time analysis
+- No workflow interruption
+
+#### 2. **AI-Powered Diagnosis**
+- Differential diagnosis suggestions
+- Confidence scoring
+- Evidence-based recommendations
+- Patient context integration
+
+#### 3. **Medication Safety**
+- Drug-drug interaction checking
+- Allergy cross-sensitivity alerts
+- Contraindication warnings
+- Dosage recommendations
+
+#### 4. **Treatment Plan Generation**
+- Comprehensive prescription creation
+- Care plan instructions
+- Follow-up recommendations
+- Required tests/scans suggestions
+
+#### 5. **Prescription PDF Generation**
+- Professional medical-grade PDFs
+- AES-256 encrypted storage
+- Automatic saving to patient records
+- Digital signature ready
+- Legitimate medical format
+
+### How to Use AI CDS
+
+1. **Access AI Assistant**
+   - Login as doctor
+   - Navigate to Doctor Dashboard
+   - Click "AI Clinical Assistant" in sidebar
+   - Click "Launch AI Assistant"
+
+2. **Select Patient**
+   - Choose patient from dropdown
+   - AI analyzes patient context automatically
+   - View patient history and risk factors
+
+3. **Enter Clinical Information**
+   - Type symptoms in symptoms field
+   - AI provides differential diagnosis
+   - Enter vital signs
+   - Focus on diagnosis field for suggestions
+
+4. **Generate Treatment Plan**
+   - Click "Generate Plan" button
+   - AI creates comprehensive prescription
+   - Review and edit as needed
+   - Medications auto-populated
+
+5. **Check Medication Safety**
+   - Click "Check Safety" button
+   - AI analyzes drug interactions
+   - View warnings and recommendations
+   - Adjust medications if needed
+
+6. **Save Prescription**
+   - Click "Save to Records" button
+   - Professional PDF generated
+   - Encrypted and saved to patient records
+   - Auto-redirect to dashboard
+
+### AI CDS Architecture
+
+```
+Patient Context → AI Analysis → Suggestions
+     ↓                ↓              ↓
+ Demographics    Gemini AI      Diagnosis
+ Medical History  Knowledge     Medications
+ Current Meds     Base          Safety Checks
+ Allergies        Learning      Care Plans
+```
+
+### Supported Features
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Differential Diagnosis | AI-powered diagnosis suggestions | ✅ Active |
+| Medication Safety | Drug interaction checking | ✅ Active |
+| Treatment Plans | Comprehensive care plans | ✅ Active |
+| Prescription PDFs | Professional PDF generation | ✅ Active |
+| Learning System | Adapts to physician preferences | ✅ Active |
+| Context Analysis | Patient history integration | ✅ Active |
+
+### AI Models Used
+
+- **Google Gemini 2.0 Flash** - Latest AI model for medical queries
+- **Knowledge Base** - Curated medical knowledge
+- **Drug Database** - Comprehensive medication information
+- **Learning System** - Physician preference tracking
 
 ## 🔒 Security Features
 
@@ -388,10 +541,12 @@ Follow the prompts to create an admin account.
 
 ### Data Protection
 - **File Encryption** - AES-256 encryption for medical records
+- **Prescription Encryption** - All prescription PDFs encrypted
 - **HTTPS Ready** - SSL/TLS support
 - **Input Validation** - Prevent XSS and injection attacks
 - **CORS Protection** - Controlled cross-origin access
 - **Audit Logging** - Track all sensitive operations
+- **Secure PDF Storage** - Encrypted in MongoDB, not filesystem
 
 ### RFID Security
 - **One-Time Linking** - Users can link RFID once
@@ -488,6 +643,96 @@ Authorization: Bearer <token>
 ```http
 GET /api/records/:recordId/download
 Authorization: Bearer <token>
+```
+
+### AI Clinical Decision Support Endpoints
+
+#### Analyze Patient Context
+```http
+POST /api/cds/analyze
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "patient_id": "507f1f77bcf86cd799439011",
+  "context": {
+    "symptoms": ["chest pain", "shortness of breath"],
+    "vitals": {
+      "blood_pressure": "140/90",
+      "heart_rate": "95"
+    }
+  },
+  "trigger_type": "passive"
+}
+```
+
+#### Check Medication Safety
+```http
+POST /api/cds/medication-safety
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "patient_id": "507f1f77bcf86cd799439011",
+  "medication": "Warfarin",
+  "dose": "5mg"
+}
+```
+
+#### Generate AI Treatment Plan
+```http
+POST /api/cds/ai-generate-treatment
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "patient_id": "507f1f77bcf86cd799439011",
+  "symptoms": "chest pain, shortness of breath",
+  "diagnosis": "Acute Coronary Syndrome",
+  "vitals": {
+    "blood_pressure": "140/90",
+    "heart_rate": "95",
+    "temperature": "98.6",
+    "spo2": "95"
+  },
+  "chronic_conditions": ["Hypertension", "Diabetes"],
+  "allergies": ["Penicillin"],
+  "current_medications": ["Metformin", "Lisinopril"]
+}
+```
+
+#### Save Prescription as PDF
+```http
+POST /api/cds/save-prescription
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "patient_id": "507f1f77bcf86cd799439011",
+  "prescription": {
+    "diagnosis": "Hypertension with Type 2 Diabetes",
+    "medications": [
+      "Metformin 500mg - 1 tablet twice daily with meals",
+      "Lisinopril 10mg - 1 tablet once daily in the morning"
+    ],
+    "instructions": "Follow diabetic diet, monitor blood glucose regularly",
+    "next_checkup": "Complete HbA1c test in 3 months"
+  }
+}
+```
+
+#### Record Physician Feedback
+```http
+POST /api/cds/feedback
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "suggestion_type": "differential_diagnosis",
+  "suggestion_content": "Acute Coronary Syndrome",
+  "action": "accepted",
+  "reason": "Matches clinical presentation"
+}
 ```
 
 ### Admin Endpoints
@@ -601,7 +846,8 @@ For support, email support@bharathmedicare.com or open an issue on GitHub.
 - [ ] Lab test integration
 - [ ] Insurance claim processing
 - [ ] Multi-language support (Hindi, Tamil, Telugu)
-- [ ] AI-powered health insights
+- [x] **AI-powered Clinical Decision Support (Google Gemini AI)**
+- [x] **Ambient CDS with real-time medical knowledge**
 - [ ] Blockchain for record verification
 
 ### Version 1.1 (In Progress)

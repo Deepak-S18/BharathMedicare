@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-here-change-in-production')
+SECRET_KEY = os.getenv('JWT_SECRET_KEY', os.getenv('SECRET_KEY', 'your-secret-key-here-change-in-production'))
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_HOURS = 24
 
@@ -44,23 +44,36 @@ def require_auth(f):
     """Decorator to require authentication"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # DEBUG: Log all headers
+        print(f"\n=== AUTH DEBUG for {request.path} ===")
+        print(f"All headers: {dict(request.headers)}")
+        
         auth_header = request.headers.get('Authorization')
+        print(f"Authorization header: {auth_header}")
         
         if not auth_header:
+            print("ERROR: No authorization header found")
             return jsonify({'error': 'No authorization header'}), 401
         
         try:
             token = auth_header.split(' ')[1]
+            print(f"Extracted token (first 50 chars): {token[:50]}...")
         except IndexError:
+            print("ERROR: Invalid authorization header format")
             return jsonify({'error': 'Invalid authorization header format'}), 401
         
+        print(f"Using SECRET_KEY (first 20 chars): {SECRET_KEY[:20]}...")
         payload = decode_token(token)
+        print(f"Decode result: {payload}")
         
         if 'error' in payload:
+            print(f"ERROR: Token decode failed: {payload['error']}")
             return jsonify({'error': payload['error']}), 401
         
         # Attach user info to request
         request.user = payload
+        print(f"SUCCESS: User authenticated: {payload.get('email')}")
+        print("=== END AUTH DEBUG ===\n")
         
         return f(*args, **kwargs)
     

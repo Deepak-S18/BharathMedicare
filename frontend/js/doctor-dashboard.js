@@ -1586,6 +1586,7 @@ function showSection(section) {
     document.getElementById('dashboardSection').style.display = 'none';
     document.getElementById('appointmentsSection').style.display = 'none';
     document.getElementById('patientsSection').style.display = 'none';
+    document.getElementById('aiAssistantSection').style.display = 'none';
     document.getElementById('doctorCardSection').style.display = 'none';
     document.getElementById('profileSection').style.display = 'none';
     
@@ -1607,6 +1608,10 @@ function showSection(section) {
         case 'patients':
             document.getElementById('patientsSection').style.display = 'block';
             document.querySelector('.sidebar-menu-link[onclick*="patients"]').classList.add('active');
+            break;
+        case 'aiAssistant':
+            document.getElementById('aiAssistantSection').style.display = 'block';
+            document.querySelector('.sidebar-menu-link[onclick*="aiAssistant"]').classList.add('active');
             break;
         case 'doctorCard':
             document.getElementById('doctorCardSection').style.display = 'block';

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Authentication Token</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        .success {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .secondary {
+            background: #6c757d;
+        }
+        .secondary:hover {
+            background: #5a6268;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        .token-info {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix Authentication Issue</h1>
+        
+        <div class="info">
+            <strong>Why am I seeing this page?</strong><br>
+            Your browser has an old authentication token that was created with a different secret key. 
+            The backend has been updated and restarted, so you need a fresh token.
+        </div>
+
+        <div id="currentToken"></div>
+
+        <h3>Step 1: Clear Old Token</h3>
+        <button onclick="clearToken()">Clear Token & Logout</button>
+
+        <h3 style="margin-top: 30px;">Step 2: Log In Again</h3>
+        <button class="secondary" onclick="goToLogin()">Go to Login Page</button>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // Show current token info
+        function showCurrentToken() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            const container = document.getElementById('currentToken');
+            
+            if (token) {
+                container.innerHTML = `
+                    <div class="token-info">
+                        <strong>Current Token (first 50 chars):</strong><br>
+                        ${token.substring(0, 50)}...
+                        <br><br>
+                        <strong>User:</strong> ${user ? JSON.parse(user).email : 'Unknown'}
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="info success">
+                        ✅ No token found - you're ready to log in!
+                    </div>
+                `;
+            }
+        }
+
+        function clearToken() {
+            // Clear all authentication data
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            sessionStorage.clear();
+            
+            // Show success message
+            const status = document.getElementById('status');
+            status.style.display = 'block';
+            status.className = 'info success';
+            status.innerHTML = `
+                <strong>✅ Success!</strong><br>
+                Old token has been cleared. Now click "Go to Login Page" to log in again.
+            `;
+            
+            // Update token display
+            showCurrentToken();
+        }
+
+        function goToLogin() {
+            window.location.href = '/pages/login.html';
+        }
+
+        // Show current token on load
+        showCurrentToken();
+    </script>
+</body>
+</html>

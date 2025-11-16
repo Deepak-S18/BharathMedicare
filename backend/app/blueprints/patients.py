@@ -41,6 +41,7 @@ def get_patient_profile():
         return jsonify({'error': 'Failed to fetch profile'}), 500
 
 @bp.route('/list', methods=['GET'])
+@bp.route('/', methods=['GET'])
 @require_auth
 @require_role(['admin', 'doctor'])
 def list_patients():

@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambient AI Clinical Decision Support - Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            padding-right: 420px; /* Make room for CDS sidebar */
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: #666;
+        }
+        
+        .patient-chart {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .chart-section {
+            margin-bottom: 32px;
+        }
+        
+        .chart-section h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .info-card {
+            background: #f9f9f9;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .info-card h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .info-card p {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .demo-instructions {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .demo-instructions h3 {
+            color: #1976d2;
+            margin-bottom: 12px;
+        }
+        
+        .demo-instructions ul {
+            margin-left: 20px;
+            color: #333;
+        }
+        
+        .demo-instructions li {
+            margin-bottom: 8px;
+        }
+        
+        /* Notification animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    </style>
+    <script src="../js/config.js"></script>
+    <script src="../js/auth-guard.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/ui.js"></script>
+    <script src="../js/auth.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Ambient AI Clinical Decision Support</h1>
+            <p>Experience non-intrusive, context-aware clinical suggestions</p>
+        </div>
+        
+        <div class="demo-instructions">
+            <h3>💡 How to Use This Demo</h3>
+            <ul>
+                <li>The AI assistant sidebar appears on the right side of your screen</li>
+                <li>As you enter patient information, the AI analyzes context in the background</li>
+                <li>Suggestions appear automatically without interrupting your workflow</li>
+                <li>Try entering symptoms like "chest pain" or "fever" to see differential diagnosis</li>
+                <li>Focus on the diagnosis or prescription fields to get targeted suggestions</li>
+                <li>Accept or dismiss suggestions - the AI learns from your preferences</li>
+            </ul>
+        </div>
+        
+        <div class="patient-chart">
+            <div class="chart-section">
+                <h2>Patient Information</h2>
+                
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="patient-selector"><strong>Select Patient:</strong></label>
+                    <select id="patient-selector" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <option value="">Loading patients...</option>
+                    </select>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3>Patient ID</h3>
+                        <p id="demo-patient-id">Select a patient</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Age</h3>
+                        <p id="patient-age">-</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Gender</h3>
+                        <p id="patient-gender">-</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Blood Group</h3>
+                        <p id="patient-blood">-</p>
+                    </div>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3>Chronic Conditions</h3>
+                        <p id="patient-conditions">-</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Current Medications</h3>
+                        <p id="patient-medications">-</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Allergies</h3>
+                        <p id="patient-allergies">-</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <h2>Chief Complaint & Symptoms</h2>
+                <div class="form-group">
+                    <label for="symptoms">Presenting Symptoms</label>
+                    <textarea id="symptoms" name="symptoms" placeholder="Enter patient symptoms (e.g., chest pain, shortness of breath, fever)..."></textarea>
+                    <small style="color: #666; display: block; margin-top: 4px;">
+                        💡 Try typing "chest pain" or "fever" and pause - watch the AI sidebar for suggestions
+                    </small>
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <h2>Vital Signs</h2>
+                <div class="info-grid">
+                    <div class="form-group">
+                        <label for="bp">Blood Pressure</label>
+                        <input type="text" id="bp" name="bp" placeholder="120/80">
+                    </div>
+                    <div class="form-group">
+                        <label for="hr">Heart Rate</label>
+                        <input type="text" id="hr" name="hr" placeholder="72">
+                    </div>
+                    <div class="form-group">
+                        <label for="temp">Temperature (°F)</label>
+                        <input type="text" id="temp" name="temp" placeholder="98.6">
+                    </div>
+                    <div class="form-group">
+                        <label for="spo2">SpO2 (%)</label>
+                        <input type="text" id="spo2" name="spo2" placeholder="98">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <h2>Assessment & Diagnosis</h2>
+                <div class="form-group">
+                    <label for="diagnosis">Diagnosis</label>
+                    <input 
+                        type="text" 
+                        id="diagnosis" 
+                        name="diagnosis" 
+                        placeholder="Click here to see AI diagnosis suggestions...">
+                    <small style="color: #666; display: block; margin-top: 4px;">
+                        💡 Focus on this field to trigger differential diagnosis suggestions
+                    </small>
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <h2>Treatment Plan</h2>
+                
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; color: white;">
+                        <div>
+                            <h3 style="margin: 0 0 8px 0; font-size: 16px;">🤖 AI-Powered Treatment Generator</h3>
+                            <p style="margin: 0; font-size: 14px; opacity: 0.9;">Generate comprehensive treatment plan using Google Gemini AI</p>
+                        </div>
+                        <button 
+                            onclick="generateAITreatmentPlan()" 
+                            style="background: white; color: #667eea; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; white-space: nowrap;">
+                            ✨ Generate Plan
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="prescription">Prescription</label>
+                    <textarea id="prescription" name="prescription" rows="6" placeholder="Click 'Generate Plan' to get AI-powered prescription recommendations..."></textarea>
+                    <small style="color: #666; display: block; margin-top: 4px;">
+                        💡 Or focus on this field to see medication recommendations with safety checks
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="care-plan">Care Plan & Instructions</label>
+                    <textarea id="care-plan" name="care-plan" rows="8" placeholder="Click 'Generate Plan' to get comprehensive care plan and follow-up instructions..."></textarea>
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <h2>📋 Prescription Details</h2>
+                <p style="color: #666; font-size: 14px; margin-bottom: 16px;">
+                    Editable prescription details - modify as needed
+                </p>
+                
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label for="medications" style="margin: 0;">💊 Medications (Tablets, Syrups, Injections)</label>
+                        <button 
+                            onclick="checkMedicationSafety()" 
+                            style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                            <span>🔍</span>
+                            <span>Check Safety</span>
+                        </button>
+                    </div>
+                    <textarea id="medications" name="medications" rows="6" placeholder="Enter all medications with dosage (one per line):
+Example:
+Paracetamol 500mg - 1 tablet twice daily for 5 days
+Amoxicillin 250mg - 1 capsule three times daily for 7 days
+Cough Syrup - 10ml three times daily"></textarea>
+                    <small style="color: #666; display: block; margin-top: 4px;">
+                        One medication per line with dosage and frequency (tablets, syrups, injections, etc.)
+                    </small>
+                </div>
+                
+                <!-- Safety Check Results -->
+                <div id="safety-results" style="display: none; background: #f0fdf4; border: 2px solid #10b981; border-radius: 8px; padding: 16px; margin-top: 16px;">
+                    <h3 style="margin: 0 0 12px 0; color: #065f46; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                        <span>✅</span>
+                        <span>Medication Safety Check Results</span>
+                    </h3>
+                    <div id="safety-content" style="color: #065f46; font-size: 14px; line-height: 1.6;"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="scans">🔬 Required Scans / Tests</label>
+                    <textarea id="scans" name="scans" rows="3" placeholder="Enter required scans or lab tests (e.g., Blood Test - CBC, X-Ray Chest)"></textarea>
+                    <small style="color: #666; display: block; margin-top: 4px;">
+                        List all required diagnostic tests and scans
+                    </small>
+                </div>
+                
+                <div style="background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 12px; border-radius: 4px; margin-top: 16px;">
+                    <p style="margin: 0; font-size: 14px; color: #1e40af;">
+                        💡 <strong>Tip:</strong> These fields are automatically populated when you click "Generate Plan" but you can edit them anytime.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="chart-section">
+                <h2>💾 Save Prescription</h2>
+                <p style="color: #666; font-size: 14px; margin-bottom: 16px;">
+                    Save this prescription as a legitimate PDF document to the patient's medical records
+                </p>
+                
+                <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; color: white;">
+                        <div style="flex: 1;">
+                            <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700;">📄 Generate & Save Prescription PDF</h3>
+                            <p style="margin: 0; font-size: 14px; opacity: 0.95; line-height: 1.5;">
+                                Creates a professional, legitimate prescription document with doctor details, patient information, medications, and care plan. The PDF will be encrypted and saved to the patient's medical records for future access.
+                            </p>
+                            <div style="margin-top: 12px; padding: 10px; background: rgba(255,255,255,0.15); border-radius: 6px; font-size: 13px;">
+                                <strong>✓</strong> Professional medical format &nbsp;&nbsp;
+                                <strong>✓</strong> AES-256 encrypted &nbsp;&nbsp;
+                                <strong>✓</strong> Permanent record &nbsp;&nbsp;
+                                <strong>✓</strong> Accessible anytime
+                            </div>
+                        </div>
+                        <button 
+                            onclick="savePrescriptionToPDF()" 
+                            style="background: white; color: #10b981; border: none; padding: 16px 32px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 16px; white-space: nowrap; margin-left: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.2s;">
+                            <span style="font-size: 20px;">💾</span><br>
+                            Save to Records
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Save Status Message -->
+                <div id="save-status" style="display: none; margin-top: 16px; padding: 16px; border-radius: 8px;"></div>
+            </div>
+            
+        </div>
+    </div>
+    
+    <script src="../js/cds-ambient.js"></script>
+    <script>
+        // Check authentication on page load
+        if (!requireAuth()) {
+            // requireAuth() will redirect to login if not authenticated
+            throw new Error('Authentication required');
+        }
+
+        // Check if user is a doctor (CDS is only for doctors)
+        const user = getUserData();
+        if (!user || user.role !== 'doctor') {
+            alert('Access Denied: AI Clinical Assistant is only available for doctors.');
+            window.location.href = '/pages/login.html';
+            throw new Error('Access denied: Doctor role required');
+        }
+
+        let selectedPatient = null;
+
+        // Load real patients from database
+        async function loadPatients() {
+            try {
+                const token = localStorage.getItem('bharath_medicare_token');
+                const response = await fetch('/api/patients', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                const selector = document.getElementById('patient-selector');
+                
+                if (data.patients && data.patients.length > 0) {
+                    selector.innerHTML = '<option value="">-- Select a patient --</option>';
+                    data.patients.forEach(patient => {
+                        const option = document.createElement('option');
+                        option.value = patient._id;
+                        option.textContent = `${patient.full_name} (${patient.patient_id || patient._id})`;
+                        option.dataset.patient = JSON.stringify(patient);
+                        selector.appendChild(option);
+                    });
+                } else {
+                    selector.innerHTML = '<option value="">No patients found</option>';
+                }
+            } catch (error) {
+                console.error('Failed to load patients:', error);
+                document.getElementById('patient-selector').innerHTML = '<option value="">Error loading patients</option>';
+            }
+        }
+
+        // Handle patient selection
+        document.getElementById('patient-selector').addEventListener('change', function(e) {
+            const option = e.target.selectedOptions[0];
+            if (option.dataset.patient) {
+                selectedPatient = JSON.parse(option.dataset.patient);
+                updatePatientDisplay(selectedPatient);
+                simulatePatientOpen();
+            }
+        });
+
+        // Update patient display
+        function updatePatientDisplay(patient) {
+            // Show BharathMedicare patient_id if available, otherwise MongoDB _id
+            const displayId = patient.patient_id || patient._id;
+            document.getElementById('demo-patient-id').textContent = displayId;
+            
+            // Calculate age
+            let age = '-';
+            if (patient.date_of_birth) {
+                const dob = new Date(patient.date_of_birth);
+                const today = new Date();
+                age = Math.floor((today - dob) / (365.25 * 24 * 60 * 60 * 1000)) + ' years';
+            }
+            document.getElementById('patient-age').textContent = age;
+            
+            document.getElementById('patient-gender').textContent = patient.gender || '-';
+            document.getElementById('patient-blood').textContent = patient.blood_group || '-';
+            document.getElementById('patient-conditions').textContent = 
+                (patient.chronic_conditions && patient.chronic_conditions.length > 0) 
+                    ? patient.chronic_conditions.join(', ') 
+                    : 'None';
+            document.getElementById('patient-medications').textContent = 
+                (patient.current_medications && patient.current_medications.length > 0) 
+                    ? patient.current_medications.join(', ') 
+                    : 'None';
+            document.getElementById('patient-allergies').textContent = 
+                (patient.allergies && patient.allergies.length > 0) 
+                    ? patient.allergies.join(', ') 
+                    : 'None';
+        }
+
+        // Load patients on page load
+        loadPatients();
+
+        // Simulate opening a patient chart
+        function simulatePatientOpen() {
+            // Use the MongoDB _id for CDS activation (not the display patient_id)
+            if (!selectedPatient || !selectedPatient._id) {
+                console.log('No patient selected yet');
+                return;
+            }
+            
+            const patientId = selectedPatient._id;
+            
+            // Validate it's a valid MongoDB ObjectId (24 hex characters)
+            if (!/^[0-9a-fA-F]{24}$/.test(patientId)) {
+                console.log('Invalid patient ID format:', patientId);
+                return;
+            }
+            
+            // Dispatch custom event that CDS listens for
+            const event = new CustomEvent('patientChartOpened', {
+                detail: { patientId: patientId }
+            });
+            document.dispatchEvent(event);
+            
+            // Show subtle notification in sidebar instead of alert
+            console.log('AI Assistant activated for patient:', patientId);
+        }
+        
+        // Check medication safety for all medications
+        async function checkMedicationSafety() {
+            if (!selectedPatient) {
+                alert('Please select a patient first!');
+                return;
+            }
+            
+            // Get medications from the medications field
+            const medicationsText = document.getElementById('medications').value;
+            
+            console.log('Medications field content:', medicationsText);
+            
+            if (!medicationsText || !medicationsText.trim()) {
+                alert('Please enter medications in the Medications field first!');
+                return;
+            }
+            
+            // Extract medication names
+            const medications = extractMedicationNames(medicationsText);
+            
+            console.log('Extracted medications:', medications);
+            
+            if (medications.length === 0) {
+                alert('No medications detected. Please check the format:\n\nExample:\nParacetamol 500mg - 1 tablet twice daily\nAmoxicillin 250mg - 1 capsule three times daily');
+                return;
+            }
+            
+            // Show loading state
+            const safetyResults = document.getElementById('safety-results');
+            const safetyContent = document.getElementById('safety-content');
+            safetyResults.style.display = 'block';
+            safetyContent.innerHTML = '⏳ Checking medication safety with AI...';
+            
+            try {
+                const token = localStorage.getItem('bharath_medicare_token');
+                
+                // Check each medication
+                let allResults = [];
+                
+                for (const medication of medications) {
+                    const response = await fetch('/api/cds/medication-safety', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            patient_id: selectedPatient._id,
+                            medication: medication
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        allResults.push({
+                            medication: medication,
+                            report: data.safety_report
+                        });
+                    }
+                }
+                
+                // Display results
+                displaySafetyResults(allResults);
+                
+            } catch (error) {
+                safetyContent.innerHTML = `<span style="color: #dc2626;">❌ Error: ${error.message}</span>`;
+            }
+        }
+        
+        // Extract medication names from text
+        function extractMedicationNames(text) {
+            if (!text) return [];
+            
+            console.log('=== EXTRACTION DEBUG ===');
+            console.log('Raw text:', text);
+            
+            const lines = text.split('\n').filter(line => line.trim());
+            const medications = [];
+            
+            // Common words to exclude (including labels)
+            const excludeWords = ['tablet', 'tablets', 'capsule', 'capsules', 'syrup', 'syrups', 'liquid', 'liquids', 'injection', 'injections', 'take', 'daily', 'times', 'for', 'days', 'with', 'without', 'food', 'morning', 'evening', 'night', 'monitoring', 'reason', 'observe', 'one', 'medication', 'medications', 'per', 'line', 'drug', 'drugs', 'liver', 'function', 'used', 'more', 'than'];
+            
+            lines.forEach((line, index) => {
+                console.log(`Line ${index}:`, line);
+                
+                // Skip empty lines, headers, and instruction lines
+                if (!line.trim() || 
+                    line.includes('PRESCRIPTION:') || 
+                    line.includes('CARE PLAN:') ||
+                    line.includes('Medications (') ||
+                    line.includes('One medication per line') ||
+                    line.toLowerCase().includes('monitoring:') ||
+                    line.toLowerCase().includes('reason:') ||
+                    line.toLowerCase().includes('observe for')) {
+                    console.log('  -> Skipped (header/instruction)');
+                    return;
+                }
+                
+                let medName = null;
+                
+                // Try to extract medication name using multiple patterns
+                const patterns = [
+                    // Pattern 1: Everything before " - " (most common format) - GREEDY to capture full names
+                    /^([A-Za-z][A-Za-z\s\(\)and]+)\s+-\s+/,
+                    // Pattern 2: **Medication** (markdown bold)
+                    /\*\*([A-Za-z][A-Za-z\s\(\)and]+?)\*\*/,
+                    // Pattern 3: *Medication* (markdown italic)
+                    /\*([A-Za-z][A-Za-z\s\(\)and]+?)\*/,
+                    // Pattern 4: "Medication:" format
+                    /^[\*\s]*([A-Za-z][A-Za-z\s\(\)and]+?):/,
+                    // Pattern 5: Starts with * (markdown list)
+                    /^\*+\s*([A-Za-z][A-Za-z\s\(\)and]+?)(?:\s+-)/,
+                    // Pattern 6: "1. Medication" or "- Medication"
+                    /^[\d\.\-\s]+([A-Za-z][A-Za-z\s\(\)and]+?)(?:\s+-)/,
+                    // Pattern 7: Just medication name at start
+                    /^([A-Za-z][A-Za-z\s\(\)and]+?)(?:\s+\d+)/,
+                    // Pattern 8: Quoted medication
+                    /"([A-Za-z][A-Za-z\s\(\)and]+?)"/,
+                    // Pattern 9: Any word followed by dosage
+                    /([A-Za-z][A-Za-z\s\(\)and]+?)\s+\d+\s*(?:mg|ml|mcg|g)/i
+                ];
+                
+                for (const pattern of patterns) {
+                    const match = line.match(pattern);
+                    if (match && match[1]) {
+                        medName = match[1].trim();
+                        console.log(`  -> Matched pattern: ${pattern}, extracted: "${medName}"`);
+                        break;
+                    }
+                }
+                
+                // Clean up and validate
+                if (medName) {
+                    // Remove common suffixes and prefixes
+                    medName = medName
+                        .replace(/\s+(tablet|capsule|syrup|liquid|mg|ml|mcg|g)s?$/i, '')
+                        .replace(/^(the|a|an)\s+/i, '')
+                        .trim();
+                    
+                    // Check if valid
+                    const isValid = medName.length > 2 && 
+                                  !medications.includes(medName) && 
+                                  !excludeWords.includes(medName.toLowerCase());
+                    
+                    console.log(`  -> After cleanup: "${medName}", valid: ${isValid}`);
+                    
+                    if (isValid) {
+                        medications.push(medName);
+                        console.log(`  -> ✅ Added to list`);
+                    }
+                } else {
+                    console.log('  -> No match found');
+                }
+            });
+            
+            console.log('=== FINAL RESULT ===');
+            console.log('Extracted medications:', medications);
+            console.log('====================');
+            
+            return medications;
+        }
+        
+        // Display safety check results
+        function displaySafetyResults(results) {
+            const safetyContent = document.getElementById('safety-content');
+            
+            if (results.length === 0) {
+                safetyContent.innerHTML = '<span style="color: #dc2626;">No results found.</span>';
+                return;
+            }
+            
+            let html = '';
+            
+            results.forEach((result, index) => {
+                const report = result.report;
+                const isSafe = report.safe_to_prescribe;
+                const bgColor = isSafe ? '#f0fdf4' : '#fef2f2';
+                const borderColor = isSafe ? '#10b981' : '#ef4444';
+                const textColor = isSafe ? '#065f46' : '#991b1b';
+                
+                html += `
+                    <div style="background: ${bgColor}; border-left: 4px solid ${borderColor}; padding: 12px; margin-bottom: 12px; border-radius: 4px;">
+                        <h4 style="margin: 0 0 8px 0; color: ${textColor}; font-size: 15px; font-weight: 600;">
+                            ${isSafe ? '✅' : '⚠️'} ${result.medication}
+                        </h4>
+                        <p style="margin: 0 0 8px 0; color: ${textColor}; font-weight: 600;">
+                            ${isSafe ? 'Safe to Prescribe' : 'Caution Required'}
+                        </p>
+                        ${report.warnings && report.warnings.length > 0 ? `
+                            <div style="margin-top: 8px;">
+                                <strong style="color: ${textColor};">Warnings:</strong>
+                                <ul style="margin: 4px 0 0 20px; color: ${textColor};">
+                                    ${report.warnings.map(w => `<li>${w}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        ${report.recommendations && report.recommendations.length > 0 ? `
+                            <div style="margin-top: 8px;">
+                                <strong style="color: ${textColor};">Recommendations:</strong>
+                                <ul style="margin: 4px 0 0 20px; color: ${textColor};">
+                                    ${report.recommendations.map(r => `<li>${r}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        ${report.ai_safety_assessment ? `
+                            <div style="margin-top: 8px; padding: 8px; background: rgba(255,255,255,0.5); border-radius: 4px;">
+                                <strong style="color: ${textColor};">AI Analysis:</strong>
+                                <p style="margin: 4px 0 0 0; color: ${textColor}; font-size: 13px; white-space: pre-wrap;">${report.ai_safety_assessment}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            safetyContent.innerHTML = html;
+        }
+        
+        // Parse prescription text and populate individual fields
+        function parsePrescriptionDetails(prescriptionText) {
+            console.log('=== PARSING PRESCRIPTION ===');
+            console.log('Prescription text:', prescriptionText);
+            
+            if (!prescriptionText) {
+                console.log('No prescription text provided');
+                return;
+            }
+            
+            const medicationsField = document.getElementById('medications');
+            const scansField = document.getElementById('scans');
+            
+            if (!medicationsField) {
+                console.error('Medications field not found!');
+                return;
+            }
+            
+            // Split prescription into lines
+            const lines = prescriptionText.split('\n');
+            console.log('Total lines:', lines.length);
+            
+            let medications = [];
+            let scans = [];
+            
+            // Parse each line
+            lines.forEach((line, index) => {
+                const lowerLine = line.toLowerCase();
+                const trimmedLine = line.trim();
+                
+                console.log(`Processing line ${index}: "${line}"`);
+                
+                // Skip empty lines
+                if (!trimmedLine) {
+                    console.log('  -> Empty line, skipped');
+                    return;
+                }
+                
+                // Check if line contains medication info (has dosage)
+                const hasDosage = lowerLine.includes('mg') || lowerLine.includes('ml') || lowerLine.includes('mcg');
+                const hasMedKeyword = lowerLine.includes('tablet') || lowerLine.includes('capsule') || 
+                                     lowerLine.includes('syrup') || lowerLine.includes('liquid') ||
+                                     lowerLine.includes('suspension') || lowerLine.includes('injection');
+                
+                // Skip pure section headers (but not lines with medication info)
+                if (trimmedLine === 'PRESCRIPTION:' || trimmedLine === 'CARE PLAN:') {
+                    console.log('  -> Section header, skipped');
+                    return;
+                }
+                
+                // Skip header-only lines like "**TABLETS:**" or "SYRUPS/LIQUIDS:" if they don't have dosage info
+                if (!hasDosage && (trimmedLine.match(/^\*\*[A-Z\s\/]+:\*\*$/) || trimmedLine.match(/^[A-Z\s\/]+:$/))) {
+                    console.log('  -> Section header only (no dosage), skipped');
+                    return;
+                }
+                
+                if (hasDosage || hasMedKeyword) {
+                    console.log('  -> Contains medication info');
+                    
+                    // Clean up the line
+                    let cleaned = line
+                        .replace(/^\d+\.\s*/, '')      // Remove "1. "
+                        .replace(/^[\-\*]+\s*/, '')    // Remove "- " or "* " or "** "
+                        .replace(/\*\*/g, '')          // Remove all **
+                        .replace(/\*/g, '')            // Remove all *
+                        .replace(/^[A-Z\s\/]+:\s*/,'') // Remove headers like "SYRUPS/LIQUIDS:" or "TABLETS:"
+                        .trim();
+                    
+                    // Remove "Duration:" and everything after it
+                    if (cleaned.includes('Duration:')) {
+                        cleaned = cleaned.split('Duration:')[0].trim();
+                    }
+                    
+                    // Remove "Contraindications:" and everything after it
+                    if (cleaned.includes('Contraindications:')) {
+                        cleaned = cleaned.split('Contraindications:')[0].trim();
+                    }
+                    
+                    // Final validation
+                    if (cleaned.length > 10) {  // At least 10 characters for a valid medication line
+                        medications.push(cleaned);
+                        console.log(`  -> ✅ Added: "${cleaned}"`);
+                    } else {
+                        console.log(`  -> Too short (${cleaned.length} chars): "${cleaned}"`);
+                    }
+                }
+                
+                // Check for tests/scans
+                if (lowerLine.includes('test') || lowerLine.includes('scan') || 
+                    lowerLine.includes('x-ray') || lowerLine.includes('blood') ||
+                    lowerLine.includes('ecg') || lowerLine.includes('ultrasound') ||
+                    lowerLine.includes('mri') || lowerLine.includes('ct') ||
+                    lowerLine.includes('lab')) {
+                    
+                    let cleaned = line
+                        .replace(/^\d+\.\s*/, '')
+                        .replace(/^[\-\*]+\s*/, '')
+                        .replace(/\*\*/g, '')
+                        .replace(/\*/g, '')
+                        .trim();
+                    
+                    if (cleaned.length > 3) {
+                        scans.push(cleaned);
+                        console.log(`  -> ✅ Added scan: "${cleaned}"`);
+                    }
+                }
+            });
+            
+            console.log('Extracted medications:', medications);
+            console.log('Extracted scans:', scans);
+            
+            // Populate fields
+            if (medications.length > 0) {
+                medicationsField.value = medications.join('\n');
+                console.log('✅ Populated medications field');
+            } else {
+                console.log('⚠️ No medications found, trying common extraction...');
+                // If no specific items found, try to extract common medications
+                const commonMeds = extractCommonMedications(prescriptionText);
+                console.log('Common meds extracted:', commonMeds);
+                if (commonMeds.length > 0) {
+                    medicationsField.value = commonMeds.join('\n');
+                    console.log('✅ Populated medications field with common meds');
+                } else {
+                    console.log('❌ No medications could be extracted');
+                }
+            }
+            
+            if (scans.length > 0) {
+                scansField.value = scans.join('\n');
+                console.log('✅ Populated scans field');
+            }
+            
+            console.log('=== PARSING COMPLETE ===');
+        }
+        
+        // Extract common medication names
+        function extractCommonMedications(text) {
+            const medications = [];
+            
+            // Common medication patterns
+            const medPatterns = [
+                /([A-Z][a-z]+(?:cillin|mycin|pril|olol|statin|zole|pam|done|ine))\s+\d+\s*(?:mg|ml)/gi,
+                /(Paracetamol|Ibuprofen|Aspirin|Metformin|Lisinopril|Amoxicillin)\s+\d+\s*(?:mg|ml)/gi
+            ];
+            
+            medPatterns.forEach(pattern => {
+                const matches = text.match(pattern);
+                if (matches) {
+                    matches.forEach(match => {
+                        if (!medications.includes(match)) {
+                            medications.push(match);
+                        }
+                    });
+                }
+            });
+            
+            return medications;
+        }
+        
+        // Generate AI-powered treatment plan using Gemini AI
+        async function generateAITreatmentPlan() {
+            if (!selectedPatient) {
+                alert('Please select a patient first!');
+                return;
+            }
+            
+            // Get current form data
+            const symptoms = document.getElementById('symptoms').value;
+            const diagnosis = document.getElementById('diagnosis').value;
+            const bp = document.getElementById('bp').value;
+            const hr = document.getElementById('hr').value;
+            const temp = document.getElementById('temp').value;
+            const spo2 = document.getElementById('spo2').value;
+            
+            if (!symptoms && !diagnosis) {
+                alert('Please enter symptoms or diagnosis first!');
+                return;
+            }
+            
+            // Show loading state
+            const prescriptionField = document.getElementById('prescription');
+            const carePlanField = document.getElementById('care-plan');
+            prescriptionField.value = '⏳ Generating AI-powered prescription...';
+            carePlanField.value = '⏳ Generating comprehensive care plan...';
+            
+            try {
+                const token = localStorage.getItem('bharath_medicare_token');
+                
+                // Build patient context
+                const patientContext = {
+                    patient_id: selectedPatient._id,
+                    age: document.getElementById('patient-age').textContent,
+                    gender: document.getElementById('patient-gender').textContent,
+                    blood_group: document.getElementById('patient-blood').textContent,
+                    chronic_conditions: selectedPatient.chronic_conditions || [],
+                    allergies: selectedPatient.allergies || [],
+                    current_medications: selectedPatient.current_medications || [],
+                    symptoms: symptoms,
+                    diagnosis: diagnosis,
+                    vitals: {
+                        blood_pressure: bp,
+                        heart_rate: hr,
+                        temperature: temp,
+                        spo2: spo2
+                    }
+                };
+                
+                // Call AI endpoint to generate treatment plan
+                const response = await fetch('/api/cds/ai-generate-treatment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(patientContext)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Populate prescription field
+                    prescriptionField.value = data.treatment_plan.prescription || 'No prescription generated';
+                    
+                    // Populate care plan field
+                    carePlanField.value = data.treatment_plan.care_plan || 'No care plan generated';
+                    
+                    // Parse and populate prescription details
+                    parsePrescriptionDetails(data.treatment_plan.prescription);
+                    
+                    // Show success message
+                    alert('✅ AI Treatment Plan Generated Successfully!\n\nReview and edit the prescription details below.');
+                } else {
+                    prescriptionField.value = '';
+                    carePlanField.value = '';
+                    alert('Failed to generate treatment plan: ' + (data.error || 'Unknown error'));
+                }
+                
+            } catch (error) {
+                prescriptionField.value = '';
+                carePlanField.value = '';
+                alert('Error generating treatment plan: ' + error.message);
+            }
+        }
+        
+        // Save prescription to patient medical records as PDF
+        async function savePrescriptionToPDF() {
+            if (!selectedPatient) {
+                alert('Please select a patient first!');
+                return;
+            }
+            
+            // Get prescription details
+            const diagnosis = document.getElementById('diagnosis').value.trim();
+            const medicationsText = document.getElementById('medications').value.trim();
+            const instructions = document.getElementById('care-plan').value.trim();
+            const scansText = document.getElementById('scans').value.trim();
+            
+            // Validate required fields
+            if (!diagnosis) {
+                alert('Please enter a diagnosis before saving the prescription!');
+                document.getElementById('diagnosis').focus();
+                return;
+            }
+            
+            if (!medicationsText) {
+                alert('Please enter medications before saving the prescription!');
+                document.getElementById('medications').focus();
+                return;
+            }
+            
+            // Parse medications into array
+            const medications = medicationsText.split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0);
+            
+            if (medications.length === 0) {
+                alert('Please enter at least one medication!');
+                return;
+            }
+            
+            // Show loading state
+            const saveStatus = document.getElementById('save-status');
+            saveStatus.style.display = 'block';
+            saveStatus.style.background = '#e0f2fe';
+            saveStatus.style.border = '2px solid #0284c7';
+            saveStatus.style.color = '#0c4a6e';
+            saveStatus.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 24px; height: 24px; border: 3px solid #0284c7; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <div>
+                        <strong>Generating Prescription PDF...</strong><br>
+                        <span style="font-size: 13px;">Creating professional medical document and encrypting for secure storage</span>
+                    </div>
+                </div>
+            `;
+            
+            try {
+                const token = localStorage.getItem('bharath_medicare_token');
+                
+                // Prepare prescription data
+                const prescriptionData = {
+                    diagnosis: diagnosis,
+                    medications: medications,
+                    instructions: instructions || 'Follow the prescribed medications as directed.',
+                    next_checkup: scansText ? `Complete the following tests/scans: ${scansText}` : 'Schedule follow-up as needed'
+                };
+                
+                console.log('Saving prescription:', prescriptionData);
+                
+                // Call backend API to save prescription
+                const response = await fetch('/api/cds/save-prescription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        patient_id: selectedPatient._id,
+                        prescription: prescriptionData
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success message
+                    saveStatus.style.background = '#f0fdf4';
+                    saveStatus.style.border = '2px solid #10b981';
+                    saveStatus.style.color = '#065f46';
+                    saveStatus.innerHTML = `
+                        <div style="display: flex; align-items: start; gap: 12px;">
+                            <span style="font-size: 32px;">✅</span>
+                            <div style="flex: 1;">
+                                <strong style="font-size: 16px;">Prescription Saved Successfully!</strong><br>
+                                <span style="font-size: 14px; margin-top: 4px; display: block;">
+                                    PDF document "${data.filename}" has been encrypted and saved to ${selectedPatient.full_name}'s medical records.
+                                </span>
+                                <div style="margin-top: 12px; padding: 10px; background: rgba(16, 185, 129, 0.1); border-radius: 6px; font-size: 13px;">
+                                    <strong>Record Details:</strong><br>
+                                    • File: ${data.filename}<br>
+                                    • Size: ${(data.file_size / 1024).toFixed(2)} KB<br>
+                                    • Encryption: AES-256<br>
+                                    • Saved: ${new Date().toLocaleString()}<br>
+                                    • Redirecting to Doctor Portal in 3 seconds...
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Redirect to doctor portal after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = '/pages/doctor-dashboard.html';
+                    }, 3000);
+                    
+                } else {
+                    // Show error message
+                    saveStatus.style.background = '#fef2f2';
+                    saveStatus.style.border = '2px solid #ef4444';
+                    saveStatus.style.color = '#991b1b';
+                    saveStatus.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 32px;">❌</span>
+                            <div>
+                                <strong>Failed to Save Prescription</strong><br>
+                                <span style="font-size: 13px;">${data.error || 'Unknown error occurred'}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Save prescription error:', error);
+                saveStatus.style.background = '#fef2f2';
+                saveStatus.style.border = '2px solid #ef4444';
+                saveStatus.style.color = '#991b1b';
+                saveStatus.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 32px;">❌</span>
+                        <div>
+                            <strong>Error Saving Prescription</strong><br>
+                            <span style="font-size: 13px;">${error.message}</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Prevent browser from restoring scroll position
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        
+        // Scroll to top on page load
+        window.addEventListener('load', () => {
+            window.scrollTo(0, 0);
+            setTimeout(() => {
+                simulatePatientOpen();
+            }, 1000);
+        });
+        
+        // Also scroll to top immediately (before load event)
+        window.scrollTo(0, 0);
+    </script>
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</body>
+</html>

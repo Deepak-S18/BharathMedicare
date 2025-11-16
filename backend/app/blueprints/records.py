@@ -94,11 +94,14 @@ def get_my_records():
             'is_deleted': False
         }).sort('uploaded_at', -1))
         
-        # Format records
+        # Format records - convert all ObjectId fields to strings
         for record in records:
             record['_id'] = str(record['_id'])
             record['patient_id'] = str(record['patient_id'])
-            record['uploaded_by'] = str(record['uploaded_by'])
+            if 'uploaded_by' in record:
+                record['uploaded_by'] = str(record['uploaded_by'])
+            if 'doctor_id' in record:
+                record['doctor_id'] = str(record['doctor_id'])
             # Don't send encrypted data in list view
             record.pop('encrypted_data', None)
         
@@ -132,7 +135,10 @@ def get_record(record_id):
         
         record['_id'] = str(record['_id'])
         record['patient_id'] = str(record['patient_id'])
-        record['uploaded_by'] = str(record['uploaded_by'])
+        if 'uploaded_by' in record:
+            record['uploaded_by'] = str(record['uploaded_by'])
+        if 'doctor_id' in record:
+            record['doctor_id'] = str(record['doctor_id'])
         # Don't send encrypted data
         record.pop('encrypted_data', None)
         
@@ -261,11 +267,14 @@ def get_patient_records(patient_id):
         else:
             return jsonify({'error': 'Access denied'}), 403
         
-        # Format records
+        # Format records - convert all ObjectId fields to strings
         for record in records:
             record['_id'] = str(record['_id'])
             record['patient_id'] = str(record['patient_id'])
-            record['uploaded_by'] = str(record['uploaded_by'])
+            if 'uploaded_by' in record:
+                record['uploaded_by'] = str(record['uploaded_by'])
+            if 'doctor_id' in record:
+                record['doctor_id'] = str(record['doctor_id'])
             # Don't send encrypted data in list view
             record.pop('encrypted_data', None)
         

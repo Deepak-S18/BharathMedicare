@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="../assets/css/theme.css">
-    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css?v=AI-ADDED">
 </head>
 <body>
     <div id="loading">
@@ -44,6 +44,12 @@
                 <li class="sidebar-menu-item">
                     <a href="javascript:void(0)" class="sidebar-menu-link" onclick="showSection('patients')">
                         <i class="fas fa-users" style="margin-right: 12px; width: 20px;"></i> My Patients
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="javascript:void(0)" class="sidebar-menu-link" onclick="showSection('aiAssistant')">
+                        <i class="fas fa-robot" style="margin-right: 12px; width: 20px;"></i> AI Clinical Assistant
+                        <span class="badge-new">AI</span>
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
@@ -214,6 +220,80 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </section>
+
+            <!-- AI Clinical Assistant Section -->
+            <section id="aiAssistantSection" style="display: none;">
+                <div class="dashboard-header">
+                    <h1><i class="fas fa-robot"></i> AI Clinical Assistant</h1>
+                    <p>Ambient AI-powered clinical decision support with real-time medical knowledge</p>
+                </div>
+
+                <!-- Hero Card -->
+                <div class="card" style="text-align: center; padding: 60px 40px; margin-bottom: 30px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); border: 2px solid rgba(102, 126, 234, 0.2);">
+                    <div style="font-size: 5rem; color: #667eea; margin-bottom: 30px;">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h2 style="font-size: 2.5rem; margin-bottom: 20px; color: var(--text-primary);">Welcome to AI Clinical Assistant</h2>
+                    <p style="font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+                        Experience the future of clinical decision support with AI-powered differential diagnosis, medication safety checks, treatment guidelines, and medical literature search.
+                    </p>
+                    <button class="btn btn-primary" onclick="window.location.href='cds-demo.html'" style="padding: 20px 40px; font-size: 1.3rem; font-weight: 600; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+                        <i class="fas fa-rocket" style="margin-right: 12px;"></i> Launch AI Assistant
+                    </button>
+                </div>
+
+                <!-- Feature Cards -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                    <div class="card" style="padding: 30px; text-align: center;">
+                        <div style="font-size: 3rem; color: #10b981; margin-bottom: 15px;">
+                            <i class="fas fa-diagnoses"></i>
+                        </div>
+                        <h3 style="margin-bottom: 10px;">Differential Diagnosis</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">AI-enhanced diagnosis with latest medical research</p>
+                    </div>
+                    <div class="card" style="padding: 30px; text-align: center;">
+                        <div style="font-size: 3rem; color: #f59e0b; margin-bottom: 15px;">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <h3 style="margin-bottom: 10px;">Medication Safety</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Real-time drug interaction checks</p>
+                    </div>
+                    <div class="card" style="padding: 30px; text-align: center;">
+                        <div style="font-size: 3rem; color: #3b82f6; margin-bottom: 15px;">
+                            <i class="fas fa-book-medical"></i>
+                        </div>
+                        <h3 style="margin-bottom: 10px;">Treatment Guidelines</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Up-to-date clinical protocols</p>
+                    </div>
+                    <div class="card" style="padding: 30px; text-align: center;">
+                        <div style="font-size: 3rem; color: #8b5cf6; margin-bottom: 15px;">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3 style="margin-bottom: 10px;">Literature Search</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Recent medical publications</p>
+                    </div>
+                </div>
+
+                <!-- Info Card -->
+                <div class="card">
+                    <h3 class="card-header"><i class="fas fa-info-circle"></i> How It Works</h3>
+                    <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px; margin-top: 12px;">
+                        <ol style="padding-left: 24px; line-height: 2; color: var(--text-primary);">
+                            <li><strong>Launch the Assistant:</strong> Click the button above to open the AI Clinical Assistant interface</li>
+                            <li><strong>Select a Patient:</strong> Choose from your patient list to analyze their medical context</li>
+                            <li><strong>Enter Clinical Data:</strong> Input symptoms, vitals, or clinical questions</li>
+                            <li><strong>Get AI Suggestions:</strong> Receive evidence-based recommendations with citations</li>
+                            <li><strong>Review & Apply:</strong> Accept, modify, or dismiss suggestions based on your clinical judgment</li>
+                        </ol>
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--success-color); border-radius: 8px;">
+                            <p style="color: var(--text-secondary); margin: 0;">
+                                <i class="fas fa-shield-alt" style="color: var(--success-color); margin-right: 8px;"></i>
+                                <strong>Privacy & Security:</strong> All patient data is anonymized before AI processing. No PHI is transmitted to external services.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -578,6 +658,99 @@
         </div>
     </div>
 
+            <!-- AI Clinical Assistant Section -->
+            <section id="aiAssistantSection" style="display: none;">
+                <div class="dashboard-header">
+                    <h1><i class="fas fa-robot"></i> AI Clinical Assistant</h1>
+                    <p>Ambient AI-powered clinical decision support with real-time medical knowledge</p>
+                </div>
+
+                <!-- Hero Card -->
+                <div class="card ai-hero-card">
+                    <div class="ai-hero-content">
+                        <div class="ai-hero-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h2 class="ai-hero-title">Welcome to AI Clinical Assistant</h2>
+                        <p class="ai-hero-description">
+                            Get real-time clinical decision support powered by Google Gemini AI. Access differential diagnosis, medication safety checks, treatment guidelines, and evidence-based recommendations.
+                        </p>
+                        <button class="btn btn-primary btn-lg ai-launch-btn" onclick="openAIClinicalAssistant()">
+                            <i class="fas fa-rocket"></i> Launch AI Assistant
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feature Cards Grid -->
+                <div class="ai-features-grid" style="width: 100%; max-width: 100%; box-sizing: border-box;">
+                    <div class="card ai-feature-card">
+                        <div class="ai-feature-content">
+                            <div class="ai-feature-icon ai-icon-primary">
+                                <i class="fas fa-diagnoses"></i>
+                            </div>
+                            <h3 class="ai-feature-title">Differential Diagnosis</h3>
+                            <p class="ai-feature-description">
+                                AI-enhanced diagnosis with latest medical research and evidence-based recommendations
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card ai-feature-card">
+                        <div class="ai-feature-content">
+                            <div class="ai-feature-icon ai-icon-success">
+                                <i class="fas fa-pills"></i>
+                            </div>
+                            <h3 class="ai-feature-title">Medication Safety</h3>
+                            <p class="ai-feature-description">
+                                Real-time drug interaction checks with latest FDA warnings and guidelines
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card ai-feature-card">
+                        <div class="ai-feature-content">
+                            <div class="ai-feature-icon ai-icon-warning">
+                                <i class="fas fa-book-medical"></i>
+                            </div>
+                            <h3 class="ai-feature-title">Treatment Guidelines</h3>
+                            <p class="ai-feature-description">
+                                Up-to-date protocols from AHA, ACC, ADA, NICE and other authorities
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card ai-feature-card">
+                        <div class="ai-feature-content">
+                            <div class="ai-feature-icon ai-icon-info">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h3 class="ai-feature-title">Literature Search</h3>
+                            <p class="ai-feature-description">
+                                Search recent peer-reviewed publications and clinical trials
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- How It Works Card -->
+                <div class="card ai-info-card">
+                    <h3 class="card-header"><i class="fas fa-info-circle"></i> How It Works</h3>
+                    <div class="ai-info-content">
+                        <ol class="ai-steps-list">
+                            <li><strong>Launch the Assistant:</strong> Click the button above to open the AI Clinical Assistant interface</li>
+                            <li><strong>Select a Patient:</strong> Choose from your patient list to analyze their medical context</li>
+                            <li><strong>Enter Clinical Data:</strong> Input symptoms, vitals, or clinical questions</li>
+                            <li><strong>Get AI Suggestions:</strong> Receive evidence-based recommendations with citations</li>
+                            <li><strong>Review & Apply:</strong> Accept, modify, or dismiss suggestions based on your clinical judgment</li>
+                        </ol>
+                        <div class="ai-security-notice">
+                            <i class="fas fa-shield-alt"></i>
+                            <span><strong>Privacy & Security:</strong> All patient data is anonymized before AI processing. No PHI is transmitted to external services.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
     <!-- Record Viewer Modal -->
     <div id="recordViewerModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; align-items: center; justify-content: center;">
         <div style="background: white; border-radius: 12px; max-width: 95%; width: 1200px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
@@ -624,5 +797,14 @@
     <script src="../js/theme-toggle.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/doctor-dashboard.js"></script>
+    
+    <!-- AI Clinical Assistant Integration - Only load when needed -->
+    <script>
+        // Function to open AI Clinical Assistant
+        function openAIClinicalAssistant() {
+            // Redirect to CDS demo page (already authenticated)
+            window.location.href = 'cds-demo.html';
+        }
+    </script>
 </body>
 </html>

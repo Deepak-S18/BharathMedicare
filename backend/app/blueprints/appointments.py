@@ -491,7 +491,7 @@ def verify_appointment_otp(appointment_id):
 
 
 def generate_prescription_pdf(prescription_data, patient_data, doctor_data, appointment_data):
-    """Generate a PDF prescription document and return as bytes"""
+    """Generate a professional PDF prescription document and return as bytes"""
     try:
         # Generate filename based on diagnosis
         safe_diagnosis = "".join(c for c in prescription_data['diagnosis'] if c.isalnum() or c in (' ', '-', '_')).strip()
@@ -505,56 +505,89 @@ def generate_prescription_pdf(prescription_data, patient_data, doctor_data, appo
         from io import BytesIO
         pdf_buffer = BytesIO()
         
-        # Create PDF
-        doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
+        # Create PDF with margins
+        doc = SimpleDocTemplate(
+            pdf_buffer, 
+            pagesize=letter,
+            rightMargin=0.75*inch,
+            leftMargin=0.75*inch,
+            topMargin=0.75*inch,
+            bottomMargin=0.75*inch
+        )
         story = []
         styles = getSampleStyleSheet()
         
-        # Custom styles
+        # Custom styles with better formatting
         title_style = ParagraphStyle(
             'CustomTitle',
             parent=styles['Heading1'],
-            fontSize=24,
-            textColor=colors.HexColor('#667eea'),
-            spaceAfter=30,
-            alignment=TA_CENTER
+            fontSize=22,
+            textColor=colors.HexColor('#2563eb'),
+            spaceAfter=20,
+            spaceBefore=10,
+            alignment=TA_CENTER,
+            fontName='Helvetica-Bold'
         )
         
         heading_style = ParagraphStyle(
             'CustomHeading',
             parent=styles['Heading2'],
-            fontSize=14,
-            textColor=colors.HexColor('#667eea'),
-            spaceAfter=12
+            fontSize=13,
+            textColor=colors.HexColor('#1e40af'),
+            spaceAfter=10,
+            spaceBefore=15,
+            fontName='Helvetica-Bold',
+            borderWidth=0,
+            borderPadding=5,
+            borderColor=colors.HexColor('#3b82f6'),
+            borderRadius=3,
+            backColor=colors.HexColor('#eff6ff')
         )
         
-        # Title
-        story.append(Paragraph("MEDICAL PRESCRIPTION", title_style))
-        story.append(Spacer(1, 0.2*inch))
+        normal_style = ParagraphStyle(
+            'CustomNormal',
+            parent=styles['Normal'],
+            fontSize=10,
+            leading=14,
+            spaceAfter=8
+        )
         
-        # Doctor Information
-        story.append(Paragraph("Prescribed By:", heading_style))
+        # Header with title
+        story.append(Paragraph("℞ MEDICAL PRESCRIPTION", title_style))
+        story.append(Spacer(1, 0.15*inch))
+        
+        # Horizontal line
+        from reportlab.platypus import HRFlowable
+        story.append(HRFlowable(width="100%", thickness=2, color=colors.HexColor('#3b82f6'), spaceAfter=15))
+        
+        # Doctor Information Section
+        story.append(Paragraph("PRESCRIBED BY", heading_style))
         doctor_info = [
-            ['Doctor Name:', f"Dr. {doctor_data.get('full_name', 'N/A')}"],
-            ['Specialization:', doctor_data.get('specialization', 'N/A')],
-            ['Hospital:', doctor_data.get('hospital_affiliation', 'N/A')],
-            ['Date:', datetime.fromisoformat(prescription_data['prescribed_at']).strftime('%d %B %Y, %I:%M %p')]
+            ['Doctor:', f"Dr. {doctor_data.get('full_name', 'N/A')}"],
+            ['Specialization:', doctor_data.get('specialization', 'General Physician')],
+            ['Hospital/Clinic:', doctor_data.get('hospital_affiliation', 'N/A')],
+            ['Date:', datetime.fromisoformat(prescription_data['prescribed_at']).strftime('%d %B %Y')]
         ]
-        doctor_table = Table(doctor_info, colWidths=[2*inch, 4*inch])
+        doctor_table = Table(doctor_info, colWidths=[1.5*inch, 4.5*inch])
         doctor_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f0f0f0')),
+            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f8fafc')),
             ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+            ('ALIGN', (1, 0), (1, -1), 'LEFT'),
             ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('LEFTPADDING', (0, 0), (-1, -1), 10),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e2e8f0'))
         ]))
         story.append(doctor_table)
-        story.append(Spacer(1, 0.3*inch))
+        story.append(Spacer(1, 0.2*inch))
         
-        # Patient Information
-        story.append(Paragraph("Patient Information:", heading_style))
+        # Patient Information Section
+        story.append(Paragraph("PATIENT INFORMATION", heading_style))
         
         # Calculate age from date of birth if age is not available
         age_display = patient_data.get('age', 'N/A')
@@ -573,65 +606,128 @@ def generate_prescription_pdf(prescription_data, patient_data, doctor_data, appo
         
         patient_info = [
             ['Patient Name:', patient_data.get('full_name', 'N/A')],
-            ['Patient ID:', patient_data.get('patient_id', 'N/A')],
-            ['Age:', f"{age_display} years"],
-            ['Gender:', patient_data.get('gender', 'N/A')]
+            ['Patient ID:', patient_data.get('patient_id', patient_data.get('_id', 'N/A'))],
+            ['Age / Gender:', f"{age_display} years / {patient_data.get('gender', 'N/A')}"],
+            ['Blood Group:', patient_data.get('blood_group', 'N/A')]
         ]
-        patient_table = Table(patient_info, colWidths=[2*inch, 4*inch])
+        patient_table = Table(patient_info, colWidths=[1.5*inch, 4.5*inch])
         patient_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f0f0f0')),
+            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#f8fafc')),
             ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+            ('ALIGN', (1, 0), (1, -1), 'LEFT'),
             ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('LEFTPADDING', (0, 0), (-1, -1), 10),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e2e8f0'))
         ]))
         story.append(patient_table)
-        story.append(Spacer(1, 0.3*inch))
-        
-        # Diagnosis
-        story.append(Paragraph("Diagnosis:", heading_style))
-        story.append(Paragraph(prescription_data['diagnosis'], styles['Normal']))
         story.append(Spacer(1, 0.2*inch))
         
-        # Medications
-        story.append(Paragraph("Medications:", heading_style))
-        med_data = [['S.No', 'Medication Details']]
-        for idx, med in enumerate(prescription_data['medications'], 1):
-            med_data.append([str(idx), med])
+        # Diagnosis Section
+        story.append(Paragraph("DIAGNOSIS", heading_style))
+        diagnosis_text = prescription_data['diagnosis'].replace('\n', '<br/>')
+        story.append(Paragraph(diagnosis_text, normal_style))
+        story.append(Spacer(1, 0.15*inch))
         
-        med_table = Table(med_data, colWidths=[0.7*inch, 5.3*inch])
+        # Medications Section
+        story.append(Paragraph("PRESCRIBED MEDICATIONS", heading_style))
+        med_data = [['#', 'Medication & Dosage Instructions']]
+        
+        for idx, med in enumerate(prescription_data['medications'], 1):
+            # Clean up medication text
+            med_clean = med.strip()
+            # Remove markdown formatting
+            med_clean = med_clean.replace('**', '').replace('*', '')
+            med_data.append([str(idx), med_clean])
+        
+        med_table = Table(med_data, colWidths=[0.4*inch, 5.6*inch])
         med_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#667eea')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            # Header row
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2563eb')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('FONTSIZE', (0, 0), (-1, 0), 11),
+            ('ALIGN', (0, 0), (0, 0), 'CENTER'),
+            ('ALIGN', (1, 0), (1, 0), 'LEFT'),
+            # Data rows
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
+            ('ALIGN', (0, 1), (0, -1), 'CENTER'),
+            ('ALIGN', (1, 1), (1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            # Padding
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f9f9f9')])
+            ('LEFTPADDING', (0, 0), (-1, -1), 8),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+            # Grid and colors
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f8fafc')])
         ]))
         story.append(med_table)
         story.append(Spacer(1, 0.2*inch))
         
-        # Instructions
+        # Instructions Section
         if prescription_data.get('instructions'):
-            story.append(Paragraph("Instructions:", heading_style))
-            story.append(Paragraph(prescription_data['instructions'], styles['Normal']))
-            story.append(Spacer(1, 0.2*inch))
+            story.append(Paragraph("CARE INSTRUCTIONS", heading_style))
+            # Clean up instructions text
+            instructions_text = prescription_data['instructions']
+            # Remove excessive asterisks and clean formatting
+            instructions_text = instructions_text.replace('**', '').replace('* *', '')
+            # Split into bullet points if it contains line breaks
+            if '\n' in instructions_text:
+                instructions_lines = [line.strip() for line in instructions_text.split('\n') if line.strip()]
+                for line in instructions_lines:
+                    # Remove leading asterisks or dashes
+                    line = line.lstrip('*-• ').strip()
+                    if line:
+                        story.append(Paragraph(f"• {line}", normal_style))
+            else:
+                story.append(Paragraph(instructions_text, normal_style))
+            story.append(Spacer(1, 0.15*inch))
         
-        # Next Checkup
+        # Next Checkup / Follow-up Section
         if prescription_data.get('next_checkup'):
-            story.append(Paragraph("Next Checkup:", heading_style))
-            story.append(Paragraph(prescription_data['next_checkup'], styles['Normal']))
-            story.append(Spacer(1, 0.2*inch))
+            story.append(Paragraph("FOLLOW-UP & TESTS", heading_style))
+            checkup_text = prescription_data['next_checkup'].replace('\n', '<br/>')
+            story.append(Paragraph(checkup_text, normal_style))
+            story.append(Spacer(1, 0.15*inch))
+        
+        # Important Notes Box
+        notes_style = ParagraphStyle(
+            'Notes',
+            parent=styles['Normal'],
+            fontSize=9,
+            leading=12,
+            textColor=colors.HexColor('#dc2626'),
+            backColor=colors.HexColor('#fef2f2'),
+            borderWidth=1,
+            borderColor=colors.HexColor('#dc2626'),
+            borderPadding=8,
+            borderRadius=3
+        )
+        story.append(Paragraph("<b>⚠ IMPORTANT:</b> Take medications as prescribed. Do not stop or change dosage without consulting your doctor. Contact immediately if you experience any adverse reactions.", notes_style))
         
         # Footer
         story.append(Spacer(1, 0.3*inch))
-        footer_style = ParagraphStyle('Footer', parent=styles['Normal'], fontSize=8, textColor=colors.grey, alignment=TA_CENTER)
-        story.append(Paragraph("This is a computer-generated prescription from BharathMedicare", footer_style))
-        story.append(Paragraph(f"Appointment ID: {appointment_data.get('appointment_id', 'N/A')}", footer_style))
+        story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#cbd5e1'), spaceBefore=10, spaceAfter=10))
+        
+        footer_style = ParagraphStyle(
+            'Footer', 
+            parent=styles['Normal'], 
+            fontSize=8, 
+            textColor=colors.HexColor('#64748b'), 
+            alignment=TA_CENTER,
+            leading=10
+        )
+        story.append(Paragraph("This is a digitally generated prescription from BharathMedicare Healthcare System", footer_style))
+        story.append(Paragraph(f"Prescription ID: {appointment_data.get('appointment_id', 'N/A')} | Generated: {datetime.now().strftime('%d %B %Y, %I:%M %p')}", footer_style))
+        story.append(Paragraph("For verification, contact the prescribing doctor or hospital", footer_style))
         
         # Build PDF
         doc.build(story)
@@ -646,6 +742,8 @@ def generate_prescription_pdf(prescription_data, patient_data, doctor_data, appo
         
     except Exception as e:
         print(f"PDF generation error: {e}")
+        import traceback
+        traceback.print_exc()
         raise
 
 
