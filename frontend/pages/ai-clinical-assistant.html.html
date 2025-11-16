@@ -449,7 +449,7 @@ Cough Syrup - 10ml three times daily"></textarea>
         async function loadPatients() {
             try {
                 const token = localStorage.getItem('bharath_medicare_token');
-                const response = await fetch('/api/patients/list', {
+                const response = await fetch(`${API_BASE_URL}/api/patients/list`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -586,7 +586,7 @@ Cough Syrup - 10ml three times daily"></textarea>
                 let allResults = [];
                 
                 for (const medication of medications) {
-                    const response = await fetch('/api/cds/medication-safety', {
+                    const response = await fetch(`${API_BASE_URL}/api/cds/medication-safety`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -973,7 +973,7 @@ Cough Syrup - 10ml three times daily"></textarea>
                 };
                 
                 // Call AI endpoint to generate treatment plan
-                const response = await fetch('/api/cds/ai-generate-treatment', {
+                const response = await fetch(`${API_BASE_URL}/api/cds/ai-generate-treatment`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1075,7 +1075,7 @@ Cough Syrup - 10ml three times daily"></textarea>
                 console.log('Saving prescription:', prescriptionData);
                 
                 // Call backend API to save prescription
-                const response = await fetch('/api/cds/save-prescription', {
+                const response = await fetch(`${API_BASE_URL}/api/cds/save-prescription`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

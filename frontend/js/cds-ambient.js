@@ -5,8 +5,8 @@
 
 class AmbientCDS {
     constructor() {
-        // Use relative URL to work with nginx proxy in Docker
-        this.apiBase = '/api/cds';
+        // Use API_BASE_URL from config.js for cross-origin requests
+        this.apiBase = `${API_BASE_URL}/api/cds`;
         this.currentPatientId = null;
         this.debounceTimer = null;
         this.isActive = false;
