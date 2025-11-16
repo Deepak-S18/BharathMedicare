@@ -429,6 +429,9 @@ Cough Syrup - 10ml three times daily"></textarea>
     
     <script src="../js/cds-ambient.js"></script>
     <script>
+        // Initialize Ambient CDS
+        const cds = new AmbientCDS();
+        
         // Check authentication on page load
         if (!requireAuth()) {
             // requireAuth() will redirect to login if not authenticated
