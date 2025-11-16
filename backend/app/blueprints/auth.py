@@ -221,18 +221,7 @@ def login():
         if user['role'] == 'doctor' and not user.get('is_verified', False):
             return jsonify({'error': 'Your account is pending admin approval. Please wait for verification.'}), 403
         
-        # NEW: Check and update profile completion status
-        is_complete = check_profile_completion(user)
-        
-        # Update the user document if completion status has changed
-        if user.get('is_profile_complete') != is_complete:
-            users_collection.update_one(
-                {'_id': user['_id']},
-                {'$set': {'is_profile_complete': is_complete}}
-            )
-            user['is_profile_complete'] = is_complete
-        
-        # Create JWT token
+        # Create JWT token immediately (don't wait for profile check)
         token = create_token(
             user_id=str(user['_id']),
             email=user['email'],
@@ -242,8 +231,40 @@ def login():
         if not token:
             return jsonify({'error': 'Failed to create authentication token'}), 500
         
-        # Log the action
-        log_action(str(user['_id']), 'login', 'user', str(user['_id']))
+        # Check profile completion status (use cached value if available)
+        is_complete = user.get('is_profile_complete', False)
+        
+        # Async operations (don't block response)
+        # These will happen in background after response is sent
+        try:
+            # Only update profile completion if it's been more than 1 hour since last check
+            from datetime import datetime, timedelta
+            last_check = user.get('profile_last_checked')
+            should_check = True
+            
+            if last_check:
+                if isinstance(last_check, str):
+                    last_check = datetime.fromisoformat(last_check)
+                if datetime.utcnow() - last_check < timedelta(hours=1):
+                    should_check = False
+            
+            if should_check:
+                is_complete_new = check_profile_completion(user)
+                if user.get('is_profile_complete') != is_complete_new:
+                    users_collection.update_one(
+                        {'_id': user['_id']},
+                        {'$set': {
+                            'is_profile_complete': is_complete_new,
+                            'profile_last_checked': datetime.utcnow()
+                        }}
+                    )
+                    is_complete = is_complete_new
+            
+            # Log the action (non-blocking)
+            log_action(str(user['_id']), 'login', 'user', str(user['_id']))
+        except Exception as e:
+            # Don't fail login if background tasks fail
+            print(f"Background task error: {e}")
         
         return jsonify({
             'message': 'Login successful',
