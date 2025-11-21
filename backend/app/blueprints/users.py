@@ -193,6 +193,25 @@ def update_profile():
         if 'current_medications' in data:
             update_fields['current_medications'] = data['current_medications'] if isinstance(data['current_medications'], list) else []
         
+        # RFID Card handling
+        if 'rfid_id' in data:
+            rfid_value = data['rfid_id']
+            if rfid_value:  # Only set if not empty
+                # Check if RFID is already used by another user
+                existing_rfid_user = users_collection.find_one({
+                    'rfid_id': rfid_value,
+                    '_id': {'$ne': ObjectId(user_id)}
+                })
+                if existing_rfid_user:
+                    return jsonify({'error': 'This RFID card is already registered to another user'}), 400
+                
+                update_fields['rfid_id'] = rfid_value
+                print(f"Setting RFID for user {user_id}: {rfid_value}")
+            else:
+                # Allow clearing RFID (set to None/null)
+                update_fields['rfid_id'] = None
+                print(f"Clearing RFID for user {user_id}")
+        
         # Doctor-specific fields
         if 'specialization' in data:
             update_fields['specialization'] = data['specialization']
@@ -274,6 +293,10 @@ def update_profile():
         updated_user = users_collection.find_one({'_id': ObjectId(user_id)})
         updated_user.pop('password_hash', None)
         updated_user['_id'] = str(updated_user['_id'])
+        
+        # Debug logging for RFID
+        if 'rfid_id' in update_fields:
+            print(f"RFID update successful. User now has RFID: {updated_user.get('rfid_id')}")
         
         log_action(user_id, 'update_profile', 'user', user_id)
         

@@ -178,133 +178,55 @@
                 </div>
 
                 <div class="auth-form">
-                    <!-- Start Scan Button -->
-                    <div id="scanButtonContainer" style="text-align: center; margin-bottom: 20px;">
-                        <button class="submit-button" onclick="startScanner()" style="width: 100%;">
-                            <i class="fas fa-camera"></i> Start QR Code Scanner
-                        </button>
-                    </div>
+                    <!-- Three Main Options -->
                     
-                    <div id="qr-reader" style="display: none;"></div>
-                    
-                    <div id="scanner-status" class="scanner-status status-waiting" style="display: none;">
-                        Scanning for QR code...
-                    </div>
-                    
-                    <!-- Stop Scan Button -->
-                    <div id="stopButtonContainer" style="text-align: center; margin-bottom: 20px; display: none;">
-                        <button class="submit-button" onclick="stopScanner()" style="width: 100%; background: #e53e3e;">
-                            <i class="fas fa-stop"></i> Stop Scanner
-                        </button>
-                    </div>
-
-                    <div class="divider">
-                        <span>OR</span>
-                    </div>
-
-                    <!-- RFID Card Scanner -->
-                    <div class="rfid-entry" style="margin-bottom: 30px;">
-                        <h3 class="manual-entry-title">
-                            <i class="fas fa-id-card-alt"></i> RFID Card Access
+                    <!-- Option 1: RFID Scan -->
+                    <div style="margin-bottom: 25px;">
+                        <h3 style="color: var(--primary-color); margin-bottom: 15px; display: flex; align-items: center;">
+                            <i class="fas fa-id-card" style="margin-right: 10px;"></i> RFID Card Scan
                         </h3>
+                        <button class="submit-button" onclick="activateRFIDScan()" style="width: 100%; padding: 15px;">
+                            <i class="fas fa-wifi" style="margin-right: 8px;"></i> Click to Scan RFID Card
+                        </button>
                         
-                        <!-- RFID Status Card -->
-                        <div id="rfidStatusCard" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                                        padding: 20px; 
-                                                        border-radius: 12px; 
-                                                        color: white; 
-                                                        margin-bottom: 15px;
-                                                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                            <div style="display: flex; align-items: center; gap: 15px;">
-                                <div style="font-size: 2.5rem;">
-                                    <i class="fas fa-wifi" id="rfidStatusIcon"></i>
-                                </div>
-                                <div style="flex: 1;">
-                                    <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">RFID Reader Status</div>
-                                    <div style="font-size: 1.2rem; font-weight: 600;" id="rfidStatusText">
-                                        Ready to Scan
-                                    </div>
-                                    <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 5px;" id="rfidStatusDetail">
-                                        Place your RFID card on the reader
-                                    </div>
-                                </div>
+                        <!-- RFID Status Display (appears right below button) -->
+                        <div id="rfidStatus" style="margin-top: 15px; display: none;">
+                            <div style="padding: 15px; border-radius: 8px; background: #e3f2fd; color: #1976d2;">
+                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                <span id="rfidStatusText">Ready...</span>
                             </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="rfidInput">RFID Card ID</label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-id-card input-icon"></i>
-                                <input type="text" id="rfidInput" readonly
-                                       placeholder="Waiting for card scan..."
-                                       style="font-family: 'Courier New', monospace; font-weight: 600;">
-                            </div>
-                        </div>
-                        
-                        <!-- RFID Verification Progress -->
-                        <div id="rfidVerificationProgress" style="display: none; margin-top: 15px;">
-                            <div style="background: #f7fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #667eea;">
-                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                    <div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>
-                                    <span style="font-weight: 600; color: #2d3748;">Verifying RFID Card...</span>
-                                </div>
-                                <div style="font-size: 0.85rem; color: #718096;" id="rfidVerificationStep">
-                                    Authenticating with server...
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- RFID Success Message -->
-                        <div id="rfidSuccessMessage" style="display: none; margin-top: 15px;">
-                            <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <i class="fas fa-check-circle" style="color: #10b981; font-size: 1.5rem;"></i>
-                                    <div>
-                                        <div style="font-weight: 600; color: #065f46;" id="rfidSuccessName">
-                                            Access Granted
-                                        </div>
-                                        <div style="font-size: 0.85rem; color: #047857; margin-top: 3px;">
-                                            Redirecting to patient records...
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- RFID Error Message -->
-                        <div id="rfidErrorMessage" style="display: none; margin-top: 15px;">
-                            <div style="background: #fef2f2; padding: 15px; border-radius: 8px; border-left: 4px solid #ef4444;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <i class="fas fa-exclamation-circle" style="color: #ef4444; font-size: 1.5rem;"></i>
-                                    <div>
-                                        <div style="font-weight: 600; color: #991b1b;" id="rfidErrorTitle">
-                                            Card Not Recognized
-                                        </div>
-                                        <div style="font-size: 0.85rem; color: #b91c1c; margin-top: 3px;" id="rfidErrorDetail">
-                                            Please try again or use another method
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="info-box" style="margin-top: 15px;">
-                            <i class="fas fa-info-circle"></i>
-                            <span>Place the RFID card on the reader for instant access. The system will automatically detect and verify your card.</span>
-                        </div>
-                        
-                        <!-- Hidden input to capture RFID scan -->
-                        <input type="text" id="rfidCapture" 
-                               style="position: absolute; left: -9999px; opacity: 0;" 
-                               placeholder="RFID capture" />
                     </div>
 
                     <div class="divider">
                         <span>OR</span>
                     </div>
 
-                    <div class="manual-entry">
-                        <h3 class="manual-entry-title">Manual ID Entry</h3>
+                    <!-- Option 2: QR Code Scan -->
+                    <div style="margin-bottom: 25px;">
+                        <h3 style="color: var(--primary-color); margin-bottom: 15px; display: flex; align-items: center;">
+                            <i class="fas fa-qrcode" style="margin-right: 10px;"></i> QR Code Scan
+                        </h3>
+                        <div id="qrScanSection">
+                            <button class="submit-button" onclick="startScanner()" id="startQRBtn" style="width: 100%; padding: 15px;">
+                                <i class="fas fa-camera" style="margin-right: 8px;"></i> Start QR Code Scanner
+                            </button>
+                            <button class="submit-button" onclick="stopScanner()" id="stopQRBtn" style="width: 100%; padding: 15px; background: #e53e3e; display: none;">
+                                <i class="fas fa-stop" style="margin-right: 8px;"></i> Stop Scanner
+                            </button>
+                        </div>
+                        <div id="qr-reader" style="display: none; margin-top: 15px; border: 2px solid var(--primary-color); border-radius: 8px;"></div>
+                    </div>
+
+                    <div class="divider">
+                        <span>OR</span>
+                    </div>
+
+                    <!-- Option 3: Manual ID Search -->
+                    <div style="margin-bottom: 25px;">
+                        <h3 style="color: var(--primary-color); margin-bottom: 15px; display: flex; align-items: center;">
+                            <i class="fas fa-search" style="margin-right: 10px;"></i> Search by ID
+                        </h3>
                         <div class="form-group">
                             <label for="manualPatientId">Patient ID or Doctor ID</label>
                             <div class="input-wrapper">
@@ -312,10 +234,17 @@
                                 <input type="text" id="manualPatientId" placeholder="Enter Patient ID (PAT-...) or Doctor ID (DOC-...)">
                             </div>
                         </div>
-                        <button class="submit-button" onclick="loginManually()">
-                            <i class="fas fa-sign-in-alt"></i> Access Information
+                        <button class="submit-button" onclick="searchById()" style="width: 100%; padding: 15px;">
+                            <i class="fas fa-search" style="margin-right: 8px;"></i> Search & Access
                         </button>
                     </div>
+
+
+                    
+                    <!-- Hidden input to capture RFID scan -->
+                    <input type="text" id="rfidCapture" 
+                           style="position: absolute; left: -9999px; opacity: 0;" 
+                           placeholder="RFID capture" />
                 </div>
 
                 <div class="form-footer">

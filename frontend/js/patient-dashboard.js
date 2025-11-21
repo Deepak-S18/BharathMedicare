@@ -305,6 +305,13 @@ async function loadProfile() {
             // Account info
             document.getElementById('profileCreated').value = formatDate(user.created_at || new Date());
             
+            // RFID Status in Account Information
+            console.log('=== PROFILE LOAD DEBUG ===');
+            console.log('Loaded user data:', user);
+            console.log('User RFID from server:', user.rfid_id);
+            console.log('=== END LOAD DEBUG ===');
+            updateRfidStatusDisplay(user);
+            
             // RFID info (optional) - lock if already set
             const rfidInput = document.getElementById('profileRfidId');
             const clearRfidBtn = document.getElementById('clearRfidBtn');
@@ -692,29 +699,60 @@ async function handleUpdateProfile(event) {
         if (!user.rfid_id) {
             const rfidValue = document.getElementById('profileRfidId').value.trim();
             if (rfidValue) {
-                profileData.rfid_id = rfidValue;
+                updateData.rfid_id = rfidValue;
             }
         }
+        
+        // Debug what we're sending
+        console.log('=== RFID UPDATE DEBUG ===');
+        console.log('Sending update data:', updateData);
+        console.log('RFID being sent:', updateData.rfid_id);
         
         const response = await apiCall(API_ENDPOINTS.UPDATE_PROFILE, {
             method: 'POST',
             body: JSON.stringify(updateData)
         });
         
+        // Debug what we got back
+        console.log('Profile update response:', response);
+        console.log('Response user:', response.user);
+        console.log('RFID in response:', response.user?.rfid_id);
+        console.log('=== END DEBUG ===');
+        
         // Update stored user data
         setUserData(response.user);
+        
+        // Update RFID status display immediately
+        updateRfidStatusDisplay(response.user);
         
         showSuccess('Profile updated successfully!');
         
         // Reload health card with updated data
         await loadHealthCard();
         
-        // Check and reload if profile is now complete
-        if (response.user && response.user.is_profile_complete === true) {
+        // Check if profile is now complete (but don't reload for RFID-only updates)
+        const isRfidOnlyUpdate = Object.keys(updateData).length === 1 && updateData.rfid_id;
+        
+        if (response.user && response.user.is_profile_complete === true && !isRfidOnlyUpdate) {
             showSuccess('Profile complete! Accessing full dashboard...', 2000);
             setTimeout(() => {
                 window.location.reload(); 
             }, 2000);
+        } else if (updateData.rfid_id) {
+            // For RFID updates, also update the input field to be read-only
+            const rfidInput = document.getElementById('profileRfidId');
+            const clearRfidBtn = document.getElementById('clearRfidBtn');
+            const rfidHelpText = document.getElementById('rfidHelpText');
+            
+            if (response.user.rfid_id) {
+                rfidInput.readOnly = true;
+                rfidInput.style.background = 'var(--bg-secondary)';
+                rfidInput.style.cursor = 'not-allowed';
+                rfidInput.placeholder = 'RFID linked - Contact admin to change';
+                clearRfidBtn.style.display = 'none';
+                rfidHelpText.innerHTML = '<i class="fas fa-lock"></i> RFID is locked. Only admin can modify it. Contact your administrator to update.';
+                rfidHelpText.style.color = 'var(--warning-color)';
+            }
         }
         
     } catch (error) {
@@ -1964,6 +2002,29 @@ function clearRfidField() {
     }
 }
 
+// Update RFID status display in Account Information section
+function updateRfidStatusDisplay(user) {
+    console.log('updateRfidStatusDisplay called with user:', user);
+    console.log('User RFID ID:', user.rfid_id);
+    
+    const rfidStatusField = document.getElementById('profileRfidStatus');
+    if (!rfidStatusField) {
+        console.log('profileRfidStatus field not found');
+        return; // Field might not exist yet
+    }
+    
+    if (user.rfid_id) {
+        console.log('Setting RFID status to linked:', user.rfid_id);
+        rfidStatusField.value = `✓ Linked: ${user.rfid_id}`;
+        rfidStatusField.style.color = 'var(--success-color)';
+        rfidStatusField.style.fontWeight = '600';
+    } else {
+        console.log('Setting RFID status to not linked');
+        rfidStatusField.value = '⚠ No RFID card linked';
+        rfidStatusField.style.color = 'var(--warning-color)';
+        rfidStatusField.style.fontWeight = 'normal';
+    }
+}
 
 // Mobile sidebar toggle
 function toggleMobileSidebar() {
