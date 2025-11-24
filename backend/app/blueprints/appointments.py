@@ -903,3 +903,110 @@ def delete_appointment(appointment_id):
     except Exception as e:
         print(f"Delete appointment error: {e}")
         return jsonify({'error': 'Failed to delete appointment'}), 500
+
+
+@bp.route('/prescription/direct', methods=['POST'])
+@require_auth
+def add_direct_prescription():
+    """Add prescription directly to patient (walk-in, no appointment required)"""
+    try:
+        users_collection = get_users_collection()
+        records_collection = get_records_collection()
+        
+        if users_collection is None or records_collection is None:
+            return jsonify({'error': 'Database connection error'}), 503
+        
+        # Only doctors can add prescriptions
+        if request.user['role'] != 'doctor':
+            return jsonify({'error': 'Only doctors can add prescriptions'}), 403
+        
+        data = request.get_json()
+        patient_id = data.get('patient_id')
+        diagnosis = data.get('diagnosis')
+        medications = data.get('medications', [])
+        instructions = data.get('instructions', '')
+        next_checkup = data.get('next_checkup', '')
+        
+        if not patient_id or not diagnosis or not medications:
+            return jsonify({'error': 'Patient ID, diagnosis, and medications are required'}), 400
+        
+        user_id = request.user['user_id']
+        
+        # Get patient and doctor info
+        patient = users_collection.find_one({'_id': ObjectId(patient_id)})
+        doctor = users_collection.find_one({'_id': ObjectId(user_id)})
+        
+        if not patient or patient['role'] != 'patient':
+            return jsonify({'error': 'Patient not found'}), 404
+        
+        if not doctor or doctor['role'] != 'doctor':
+            return jsonify({'error': 'Doctor not found'}), 404
+        
+        # Create prescription object
+        prescription = {
+            'diagnosis': diagnosis,
+            'medications': medications,
+            'instructions': instructions,
+            'next_checkup': next_checkup,
+            'prescribed_by': {
+                'doctor_id': user_id,
+                'doctor_name': doctor.get('full_name', 'Doctor')
+            },
+            'prescribed_at': datetime.utcnow().isoformat()
+        }
+        
+        # Generate PDF
+        appointment_data = {
+            'appointment_id': f"WALKIN-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            'appointment_type': 'walk-in'
+        }
+        
+        filename, pdf_bytes = generate_prescription_pdf(
+            prescription,
+            patient,
+            doctor,
+            appointment_data
+        )
+        
+        # Encrypt PDF
+        from app.utils.encryption import encrypt_file_data
+        encryption_result = encrypt_file_data(pdf_bytes)
+        
+        if not encryption_result['success']:
+            return jsonify({'error': 'Failed to encrypt prescription PDF'}), 500
+        
+        # Save prescription PDF as medical record (encrypted in database)
+        medical_record = {
+            'patient_id': ObjectId(patient_id),
+            'file_name': filename,
+            'file_type': 'application/pdf',
+            'file_size': len(pdf_bytes),
+            'description': f"Prescription - {diagnosis}",
+            'uploaded_at': datetime.utcnow(),
+            'uploaded_by': 'system',
+            'is_prescription': True,
+            'is_deleted': False,
+            'prescription_type': 'walk-in',
+            'encrypted_data': encryption_result['encrypted_data'],
+            'encryption_method': encryption_result['encryption_method']
+        }
+        
+        result = records_collection.insert_one(medical_record)
+        print(f"✅ Walk-in Prescription PDF saved to medical records: {filename}")
+        print(f"✅ Record ID: {result.inserted_id}")
+        
+        # Log the action
+        log_action(user_id, 'add_direct_prescription', 'prescription', str(result.inserted_id))
+        
+        return jsonify({
+            'message': 'Prescription added successfully and saved to patient medical records',
+            'prescription': prescription,
+            'prescription_file': filename,
+            'record_id': str(result.inserted_id)
+        }), 200
+    
+    except Exception as e:
+        print(f"Add direct prescription error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': 'Failed to add prescription'}), 500

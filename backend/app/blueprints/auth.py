@@ -615,3 +615,75 @@ def rfid_login():
     except Exception as e:
         print(f"RFID login error: {e}")
         return jsonify({'error': 'RFID login failed'}), 500
+
+@bp.route('/change-password', methods=['POST'])
+def change_password():
+    """Change user password"""
+    try:
+        from app.utils.auth import decode_token
+        
+        # Get token from header
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return jsonify({'error': 'No token provided'}), 401
+        
+        try:
+            token = auth_header.split(" ")[1]
+        except IndexError:
+            return jsonify({'error': 'Invalid token format'}), 401
+        
+        # Decode token
+        payload = decode_token(token)
+        if 'error' in payload:
+            return jsonify({'error': payload['error']}), 401
+        
+        user_id = payload.get('user_id')
+        
+        # Get users collection
+        users_collection = get_users_collection()
+        if users_collection is None:
+            return jsonify({'error': 'Database connection error'}), 503
+        
+        # Get request data
+        data = request.get_json()
+        current_password = data.get('current_password')
+        new_password = data.get('new_password')
+        
+        if not current_password or not new_password:
+            return jsonify({'error': 'Current password and new password are required'}), 400
+        
+        # Find user
+        from bson import ObjectId
+        user = users_collection.find_one({'_id': ObjectId(user_id)})
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Verify current password
+        if not verify_password(current_password, user['password_hash']):
+            return jsonify({'error': 'Current password is incorrect'}), 401
+        
+        # Check new password strength
+        is_strong, message = is_strong_password(new_password)
+        if not is_strong:
+            return jsonify({'error': message}), 400
+        
+        # Hash new password
+        new_password_hash = hash_password(new_password)
+        
+        # Update password
+        users_collection.update_one(
+            {'_id': ObjectId(user_id)},
+            {'$set': {'password_hash': new_password_hash}}
+        )
+        
+        # Log the action
+        log_action(user_id, 'change_password', 'user', user_id)
+        
+        return jsonify({
+            'message': 'Password changed successfully'
+        }), 200
+    
+    except Exception as e:
+        print(f"Change password error: {e}")
+        return jsonify({'error': 'Failed to change password'}), 500

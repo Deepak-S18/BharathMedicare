@@ -222,3 +222,71 @@ def verify_doctor(user_id):
     except Exception as e:
         print(f"Verify doctor error: {e}")
         return jsonify({'error': 'Failed to verify doctor'}), 500
+
+
+@bp.route('/search-patients', methods=['GET'])
+@require_auth
+def search_patients():
+    """
+    Search for patients by ID, name, email, or phone
+    Accessible by admins and doctors
+    """
+    try:
+        users_collection = get_users_collection()
+        if users_collection is None:
+            return jsonify({'error': 'Database connection error'}), 503
+        
+        query_param = request.args.get('query', '').strip()
+        
+        if not query_param:
+            return jsonify({'error': 'Search query is required'}), 400
+        
+        if len(query_param) < 3:
+            return jsonify({'error': 'Search query must be at least 3 characters'}), 400
+        
+        # Build search query - search in multiple fields
+        search_conditions = [
+            {'patient_id': {'$regex': query_param, '$options': 'i'}},
+            {'full_name': {'$regex': query_param, '$options': 'i'}},
+            {'email': {'$regex': query_param, '$options': 'i'}},
+            {'phone': {'$regex': query_param, '$options': 'i'}}
+        ]
+        
+        # Find patients matching the search
+        patients = list(users_collection.find({
+            'role': 'patient',
+            '$or': search_conditions
+        }).limit(20))  # Limit to 20 results
+        
+        # Format patient data
+        formatted_patients = []
+        for patient in patients:
+            formatted_patients.append({
+                '_id': str(patient['_id']),
+                'patient_id': patient.get('patient_id', ''),
+                'full_name': patient.get('full_name', ''),
+                'email': patient.get('email', ''),
+                'phone': patient.get('phone', ''),
+                'blood_group': patient.get('blood_group', ''),
+                'profile_photo': patient.get('profile_photo', ''),
+                'date_of_birth': patient.get('date_of_birth', ''),
+                'gender': patient.get('gender', '')
+            })
+        
+        # Log the search action
+        log_action(
+            request.user['user_id'], 
+            'patient_search', 
+            'search', 
+            f"Query: {query_param}, Results: {len(formatted_patients)}"
+        )
+        
+        return jsonify({
+            'patients': formatted_patients,
+            'count': len(formatted_patients),
+            'query': query_param
+        }), 200
+    
+    except Exception as e:
+        print(f"Patient search error: {e}")
+        return jsonify({'error': 'Failed to search patients'}), 500

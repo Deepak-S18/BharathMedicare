@@ -7,7 +7,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="../assets/css/theme.css">
-    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css?v=2024-ROOT-FIX">
+    <style>
+        /* Force desktop view */
+        @media (min-width: 1px) {
+            .mobile-menu-toggle {
+                display: none !important;
+            }
+            .sidebar {
+                transform: translateX(0) !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <div id="loading" style="display: flex;">

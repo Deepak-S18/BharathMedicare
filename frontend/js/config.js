@@ -39,6 +39,7 @@ const API_ENDPOINTS = {
     CHECK_RFID: '/api/auth/check-rfid', // Check if RFID is available
     RFID_LOGIN: '/api/auth/rfid-login', // Login using RFID card
     HOSPITAL_LOGIN: '/api/auth/hospital-login', // Hospital portal QR login
+    CHANGE_PASSWORD: '/api/auth/change-password', // Change password
     
     // User endpoints
     CURRENT_USER: '/api/users/me',

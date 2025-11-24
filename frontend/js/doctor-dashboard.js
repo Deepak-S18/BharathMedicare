@@ -106,6 +106,13 @@ async function loadProfile() {
         document.getElementById('profileDoctorId').value = user.doctor_id || 'N/A';
         document.getElementById('profileCreated').value = formatDate(user.created_at || new Date());
         
+        // Update RFID status display
+        console.log('=== PROFILE LOAD DEBUG ===');
+        console.log('Loaded user data:', user);
+        console.log('User RFID from server:', user.rfid_id);
+        console.log('=== END LOAD DEBUG ===');
+        updateRfidStatusDisplay(user);
+        
         // RFID info (optional) - lock if already set
         const rfidInput = document.getElementById('profileRfidId');
         const clearRfidBtn = document.getElementById('clearRfidBtn');
@@ -354,33 +361,61 @@ async function handleUpdateDoctorProfile(event) {
         if (!user.rfid_id) {
             const rfidValue = document.getElementById('profileRfidId').value.trim();
             if (rfidValue) {
-                profileData.rfid_id = rfidValue;
+                updateData.rfid_id = rfidValue;
             }
         }
         
-        console.log('Update data:', updateData);
+        // Debug what we're sending
+        console.log('=== RFID UPDATE DEBUG ===');
+        console.log('Sending update data:', updateData);
+        console.log('RFID being sent:', updateData.rfid_id);
         
         const response = await apiCall(API_ENDPOINTS.UPDATE_PROFILE, {
             method: 'POST',
             body: JSON.stringify(updateData)
         });
         
-        console.log('Update response:', response);
+        // Debug what we got back
+        console.log('Profile update response:', response);
+        console.log('Response user:', response.user);
+        console.log('RFID in response:', response.user?.rfid_id);
+        console.log('=== END DEBUG ===');
         
         // Update stored user data
         setUserData(response.user);
         
+        // Update RFID status display immediately
+        updateRfidStatusDisplay(response.user);
+        
         showSuccess('Profile updated successfully!');
+        
+        // Check if profile is now complete (but don't reload for RFID-only updates)
+        const isRfidOnlyUpdate = Object.keys(updateData).length === 1 && updateData.rfid_id;
         
         // Reload profile to show updated data
         await loadProfile();
         
-        // Check if profile is now complete
-        if (response.user && response.user.is_profile_complete === true) {
+        // Check if profile is now complete (but don't reload for RFID-only updates)
+        if (response.user && response.user.is_profile_complete === true && !isRfidOnlyUpdate) {
             showSuccess('Profile complete! Accessing full dashboard...', 2000);
             setTimeout(() => {
                 window.location.reload();
             }, 2000);
+        } else if (updateData.rfid_id) {
+            // For RFID updates, also update the input field to be read-only
+            const rfidInput = document.getElementById('profileRfidId');
+            const clearRfidBtn = document.getElementById('clearRfidBtn');
+            const rfidHelpText = document.getElementById('rfidHelpText');
+            
+            if (response.user.rfid_id) {
+                rfidInput.readOnly = true;
+                rfidInput.style.background = 'var(--bg-secondary)';
+                rfidInput.style.cursor = 'not-allowed';
+                rfidInput.placeholder = 'RFID linked - Contact admin to change';
+                clearRfidBtn.style.display = 'none';
+                rfidHelpText.innerHTML = '<i class="fas fa-lock"></i> RFID is locked. Only admin can modify it. Contact your administrator to update.';
+                rfidHelpText.style.color = 'var(--warning-color)';
+            }
         } else {
             // Just reload the profile display without full page reload
             displayProfile(response.user);
@@ -1095,6 +1130,243 @@ async function deleteAppointmentDoctor(appointmentId) {
     }
 }
 
+// Patient Search Functions
+async function searchAllPatients() {
+    const searchInput = document.getElementById('searchPatientInput');
+    const searchQuery = searchInput.value.trim();
+    
+    if (!searchQuery) {
+        showError('Please enter a search term (Patient ID, name, email, or phone)');
+        searchInput.focus();
+        return;
+    }
+    
+    if (searchQuery.length < 3) {
+        showError('Please enter at least 3 characters to search');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        // Search for patients using the admin search endpoint
+        const response = await apiCall(`/api/admin/search-patients?query=${encodeURIComponent(searchQuery)}`);
+        
+        const resultsContainer = document.getElementById('patientSearchResults');
+        const resultsGrid = document.getElementById('searchResultsContainer');
+        const noResults = document.getElementById('noSearchResults');
+        
+        if (response.patients && response.patients.length > 0) {
+            // Show results
+            resultsContainer.style.display = 'block';
+            noResults.style.display = 'none';
+            
+            // Display patient cards
+            resultsGrid.style.display = 'grid';
+            resultsGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(350px, 1fr))';
+            resultsGrid.style.gap = '20px';
+            resultsGrid.innerHTML = response.patients.map(patient => `
+                <div class="card" style="padding: 20px;">
+                    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                        <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; flex-shrink: 0;">
+                            ${patient.profile_photo ? 
+                                `<img src="${patient.profile_photo}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" alt="${patient.full_name}">` :
+                                '<i class="fas fa-user"></i>'
+                            }
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <h4 style="margin: 0 0 4px 0; color: var(--text-primary); font-size: 1.1rem;">${patient.full_name}</h4>
+                            <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">
+                                <i class="fas fa-id-card"></i> ${patient.patient_id}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; gap: 8px; margin-bottom: 16px; font-size: 0.9rem;">
+                        <div style="color: var(--text-secondary);">
+                            <i class="fas fa-envelope" style="width: 20px;"></i> ${patient.email}
+                        </div>
+                        <div style="color: var(--text-secondary);">
+                            <i class="fas fa-phone" style="width: 20px;"></i> ${patient.phone || 'Not provided'}
+                        </div>
+                        ${patient.blood_group ? `
+                        <div style="color: var(--text-secondary);">
+                            <i class="fas fa-tint" style="width: 20px;"></i> Blood Group: ${patient.blood_group}
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-primary" onclick="viewPatientRecords('${patient._id}', '${patient.full_name}')" style="flex: 1;">
+                            <i class="fas fa-folder-open"></i> View Records
+                        </button>
+                        <button class="btn btn-success" onclick="writePrescriptionForPatient('${patient._id}', '${patient.full_name}')" style="flex: 1;">
+                            <i class="fas fa-prescription"></i> Write Prescription
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            showSuccess(`Found ${response.patients.length} patient(s)`);
+            
+        } else {
+            // No results
+            resultsContainer.style.display = 'none';
+            resultsGrid.style.display = 'none';
+            noResults.style.display = 'block';
+            
+            showInfo('No patients found matching your search');
+        }
+        
+    } catch (error) {
+        console.error('Patient search error:', error);
+        showError(error.message || 'Failed to search patients');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Write prescription for searched patient (walk-in, no appointment)
+function writePrescriptionForPatient(patientId, patientName) {
+    // Show prescription form with patient ID for direct prescription
+    showDirectPrescriptionForm(patientId, patientName);
+}
+
+// Show direct prescription form (for walk-ins, no appointment)
+function showDirectPrescriptionForm(patientId, patientName) {
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000; overflow-y: auto; padding: 20px;';
+    modal.id = 'directPrescriptionModal';
+    
+    modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto;">
+            <div style="padding: 24px; border-bottom: 2px solid var(--primary-color); display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin: 0; color: var(--primary-color);">
+                    <i class="fas fa-prescription"></i> Write Prescription for ${patientName}
+                </h2>
+                <button onclick="document.getElementById('directPrescriptionModal').remove()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-secondary);">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div style="padding: 24px;">
+                <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
+                    <p style="margin: 0; color: #1565c0; font-size: 0.9rem;">
+                        <i class="fas fa-info-circle"></i> This prescription will be automatically saved to the patient's medical records as an encrypted PDF.
+                    </p>
+                </div>
+                
+                <form id="directPrescriptionForm" onsubmit="submitDirectPrescription(event, '${patientId}', '${patientName}')">
+                    <div class="form-group">
+                        <label>Diagnosis *</label>
+                        <textarea id="directDiagnosis" rows="3" placeholder="Enter diagnosis" required style="width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem;"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Medications *</label>
+                        <div id="directMedicationsList">
+                            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                <input type="text" placeholder="Medicine name, dosage, frequency" required style="flex: 1; padding: 10px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem;">
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary" onclick="addDirectMedicationField()" style="margin-top: 8px;">
+                            <i class="fas fa-plus"></i> Add Another Medication
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Care Instructions</label>
+                        <textarea id="directInstructions" rows="3" placeholder="Enter care instructions (optional)" style="width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem;"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Next Checkup / Follow-up</label>
+                        <textarea id="directNextCheckup" rows="2" placeholder="Next checkup date or follow-up instructions (optional)" style="width: 100%; padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem;"></textarea>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1; padding: 14px;">
+                            <i class="fas fa-save"></i> Save Prescription
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('directPrescriptionModal').remove()" style="padding: 14px 24px;">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// Add medication field for direct prescription
+function addDirectMedicationField() {
+    const container = document.getElementById('directMedicationsList');
+    const fieldId = 'direct_med_' + Date.now();
+    
+    const div = document.createElement('div');
+    div.style.cssText = 'display: flex; gap: 8px; margin-bottom: 8px;';
+    div.innerHTML = `
+        <input type="text" id="${fieldId}" placeholder="Medicine name, dosage, frequency" 
+               style="flex: 1; padding: 10px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem;" required>
+        <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()" style="padding: 10px 15px;">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    
+    container.appendChild(div);
+}
+
+// Submit direct prescription (walk-in)
+async function submitDirectPrescription(event, patientId, patientName) {
+    event.preventDefault();
+    
+    showLoading();
+    
+    try {
+        const diagnosis = document.getElementById('directDiagnosis').value;
+        const instructions = document.getElementById('directInstructions').value;
+        const nextCheckup = document.getElementById('directNextCheckup').value;
+        
+        // Collect all medications
+        const medications = [];
+        document.querySelectorAll('#directMedicationsList input').forEach(input => {
+            if (input.value.trim()) {
+                medications.push(input.value.trim());
+            }
+        });
+        
+        if (medications.length === 0) {
+            showError('Please add at least one medication');
+            hideLoading();
+            return;
+        }
+        
+        // Call the new direct prescription endpoint
+        await apiCall('/api/appointments/prescription/direct', {
+            method: 'POST',
+            body: JSON.stringify({
+                patient_id: patientId,
+                diagnosis,
+                medications,
+                instructions,
+                next_checkup: nextCheckup
+            })
+        });
+        
+        showSuccess(`Prescription for ${patientName} added successfully and saved to medical records!`);
+        
+        // Close modal
+        document.getElementById('directPrescriptionModal').remove();
+        
+    } catch (error) {
+        showError(error.message || 'Failed to add prescription');
+    } finally {
+        hideLoading();
+    }
+}
+
 // Load doctor card
 let doctorCardData = null;
 
@@ -1586,6 +1858,7 @@ function showSection(section) {
     document.getElementById('dashboardSection').style.display = 'none';
     document.getElementById('appointmentsSection').style.display = 'none';
     document.getElementById('patientsSection').style.display = 'none';
+    document.getElementById('patientSearchSection').style.display = 'none';
     document.getElementById('aiAssistantSection').style.display = 'none';
     document.getElementById('doctorCardSection').style.display = 'none';
     document.getElementById('profileSection').style.display = 'none';
@@ -1616,6 +1889,10 @@ function showSection(section) {
         case 'doctorCard':
             document.getElementById('doctorCardSection').style.display = 'block';
             document.querySelector('.sidebar-menu-link[onclick*="doctorCard"]').classList.add('active');
+            break;
+        case 'patientSearch':
+            document.getElementById('patientSearchSection').style.display = 'block';
+            document.querySelector('.sidebar-menu-link[onclick*="patientSearch"]').classList.add('active');
             break;
         case 'profile':
             document.getElementById('profileSection').style.display = 'block';
@@ -1665,6 +1942,29 @@ function clearDoctorRfidField() {
     }
 }
 
+// Update RFID status display in Account Information section
+function updateRfidStatusDisplay(user) {
+    console.log('updateRfidStatusDisplay called with user:', user);
+    console.log('User RFID ID:', user.rfid_id);
+    
+    const rfidStatusField = document.getElementById('profileRfidStatus');
+    if (!rfidStatusField) {
+        console.log('profileRfidStatus field not found');
+        return; // Field might not exist yet
+    }
+    
+    if (user.rfid_id) {
+        console.log('Setting RFID status to linked:', user.rfid_id);
+        rfidStatusField.value = `✓ Linked: ${user.rfid_id}`;
+        rfidStatusField.style.color = 'var(--success-color)';
+        rfidStatusField.style.fontWeight = '600';
+    } else {
+        console.log('Setting RFID status to not linked');
+        rfidStatusField.value = '⚠ No RFID card linked';
+        rfidStatusField.style.color = 'var(--warning-color)';
+        rfidStatusField.style.fontWeight = 'normal';
+    }
+}
 
 // Mobile sidebar toggle
 function toggleMobileSidebar() {
@@ -1681,4 +1981,73 @@ function toggleMobileSidebar() {
         overlay.classList.remove('active');
         setTimeout(() => overlay.style.display = 'none', 300);
     }
+}
+
+// Handle password change
+async function handleChangePassword(event) {
+    event.preventDefault();
+    
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    // Validate passwords match
+    if (newPassword !== confirmPassword) {
+        showError('New passwords do not match');
+        return;
+    }
+    
+    // Validate password strength
+    if (newPassword.length < 8) {
+        showError('Password must be at least 8 characters long');
+        return;
+    }
+    
+    if (!/[A-Z]/.test(newPassword)) {
+        showError('Password must contain at least one uppercase letter');
+        return;
+    }
+    
+    if (!/[a-z]/.test(newPassword)) {
+        showError('Password must contain at least one lowercase letter');
+        return;
+    }
+    
+    if (!/[0-9]/.test(newPassword)) {
+        showError('Password must contain at least one number');
+        return;
+    }
+    
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
+        showError('Password must contain at least one special character');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        await apiCall(API_ENDPOINTS.CHANGE_PASSWORD, {
+            method: 'POST',
+            body: JSON.stringify({
+                current_password: currentPassword,
+                new_password: newPassword
+            })
+        });
+        
+        showSuccess('Password changed successfully!');
+        resetPasswordForm();
+        
+    } catch (error) {
+        showError(error.message || 'Failed to change password');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Reset password form
+function resetPasswordForm() {
+    document.getElementById('changePasswordForm').reset();
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
 }

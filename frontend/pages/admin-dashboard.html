@@ -7,8 +7,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="../assets/css/theme.css">
-    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css?v=2024-ROOT-FIX">
     <link rel="stylesheet" href="../assets/css/contact-messages.css">
+    <style>
+        /* Force desktop view */
+        @media (min-width: 1px) {
+            .mobile-menu-toggle {
+                display: none !important;
+            }
+            .sidebar {
+                transform: translateX(0) !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <div id="loading">
@@ -59,6 +70,11 @@
                         <i class="fas fa-envelope" style="margin-right: 12px; width: 20px;"></i> 
                         Contact Messages
                         <span id="unreadBadge" class="badge badge-danger" style="margin-left: auto;">0</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="javascript:void(0)" class="sidebar-menu-link" onclick="showSection('profile')">
+                        <i class="fas fa-user-circle" style="margin-right: 12px; width: 20px;"></i> My Profile
                     </a>
                 </li>
             </ul>
@@ -141,6 +157,72 @@
                     </div>
                 </div>
 
+                <!-- Admin Profile Summary & Quick Actions -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <!-- Admin Profile Card -->
+                    <div class="card">
+                        <h3 class="card-header"><i class="fas fa-user-shield"></i> Admin Profile</h3>
+                        <div style="margin-top: 16px;">
+                            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                                <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                                    <i class="fas fa-user-shield"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 1.2rem; font-weight: 600; color: var(--text-primary);" id="adminDashName">Admin</div>
+                                    <div style="color: var(--text-secondary); font-size: 0.9rem;" id="adminDashEmail">admin@example.com</div>
+                                </div>
+                            </div>
+                            
+                            <div style="background: var(--bg-secondary); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <span style="color: var(--text-secondary); font-size: 0.9rem;">
+                                        <i class="fas fa-id-card"></i> RFID Status
+                                    </span>
+                                    <span id="adminDashRfidStatus" style="font-weight: 600; font-size: 0.9rem; color: var(--warning-color);">
+                                        Not Linked
+                                    </span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--text-secondary); font-size: 0.9rem;">
+                                        <i class="fas fa-calendar"></i> Member Since
+                                    </span>
+                                    <span id="adminDashMemberSince" style="font-weight: 600; font-size: 0.9rem;">
+                                        --
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <button class="btn btn-primary" onclick="showSection('profile')" style="width: 100%;">
+                                <i class="fas fa-user-circle"></i> Manage Profile & RFID
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions Card -->
+                    <div class="card">
+                        <h3 class="card-header"><i class="fas fa-bolt"></i> Quick Actions</h3>
+                        <div style="display: grid; gap: 12px; margin-top: 16px;">
+                            <button class="btn btn-primary" onclick="showSection('pending')" style="justify-content: flex-start;">
+                                <i class="fas fa-user-check" style="margin-right: 10px;"></i> 
+                                Verify Pending Doctors
+                                <span id="quickPendingBadge" class="badge badge-warning" style="margin-left: auto;">0</span>
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSection('users')" style="justify-content: flex-start;">
+                                <i class="fas fa-users-cog" style="margin-right: 10px;"></i> Manage Users
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSection('audit')" style="justify-content: flex-start;">
+                                <i class="fas fa-clipboard-list" style="margin-right: 10px;"></i> View Audit Logs
+                            </button>
+                            <button class="btn btn-secondary" onclick="showSection('contact')" style="justify-content: flex-start;">
+                                <i class="fas fa-envelope" style="margin-right: 10px;"></i> 
+                                Contact Messages
+                                <span id="quickUnreadBadge" class="badge badge-danger" style="margin-left: auto;">0</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Card -->
                 <div class="card">
                     <h3 class="card-header"><i class="fas fa-chart-line"></i> Recent Activity (Last 7 Days)</h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 16px;">
@@ -151,6 +233,46 @@
                         <div>
                             <div style="font-size: 1.8rem; font-weight: 700; color: var(--success-color);" id="recentRegistrations">0</div>
                             <div style="color: var(--text-secondary); margin-top: 4px;">New Registrations</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Health Card -->
+                <div class="card">
+                    <h3 class="card-header"><i class="fas fa-heartbeat"></i> System Health</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-top: 16px;">
+                        <div style="padding: 16px; background: var(--bg-secondary); border-radius: 8px; border-left: 4px solid var(--success-color);">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <i class="fas fa-database" style="font-size: 2rem; color: var(--success-color);"></i>
+                                <div>
+                                    <div style="font-weight: 600; color: var(--text-primary);">Database</div>
+                                    <div style="color: var(--success-color); font-size: 0.9rem;">
+                                        <i class="fas fa-check-circle"></i> Connected
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding: 16px; background: var(--bg-secondary); border-radius: 8px; border-left: 4px solid var(--success-color);">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <i class="fas fa-server" style="font-size: 2rem; color: var(--success-color);"></i>
+                                <div>
+                                    <div style="font-weight: 600; color: var(--text-primary);">API Server</div>
+                                    <div style="color: var(--success-color); font-size: 0.9rem;">
+                                        <i class="fas fa-check-circle"></i> Running
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding: 16px; background: var(--bg-secondary); border-radius: 8px; border-left: 4px solid var(--info-color);">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <i class="fas fa-shield-alt" style="font-size: 2rem; color: var(--info-color);"></i>
+                                <div>
+                                    <div style="font-weight: 600; color: var(--text-primary);">Security</div>
+                                    <div style="color: var(--info-color); font-size: 0.9rem;">
+                                        <i class="fas fa-lock"></i> Encrypted
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -337,6 +459,142 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </section>
+
+            <!-- Admin Profile Section -->
+            <section id="profileSection" style="display: none;">
+                <div class="dashboard-header">
+                    <h1><i class="fas fa-user-circle"></i> My Profile</h1>
+                    <p>Manage your admin account and RFID card</p>
+                </div>
+
+                <div style="max-width: 800px; margin: 0 auto;">
+                    <!-- Profile Information Card -->
+                    <div class="card" style="margin-bottom: 24px;">
+                        <h3 class="card-header"><i class="fas fa-user"></i> Account Information</h3>
+                        <div style="display: grid; gap: 16px; margin-top: 16px;">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" id="adminName" readonly style="background: var(--bg-secondary);">
+                            </div>
+                            <div class="form-group">
+                                <label>Email Address</label>
+                                <input type="email" id="adminEmail" readonly style="background: var(--bg-secondary);">
+                            </div>
+                            <div class="form-group">
+                                <label>Role</label>
+                                <input type="text" value="Administrator" readonly style="background: var(--bg-secondary);">
+                            </div>
+                            <div class="form-group">
+                                <label>Member Since</label>
+                                <input type="text" id="adminCreated" readonly style="background: var(--bg-secondary);">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RFID Card Status Card -->
+                    <div class="card" style="margin-bottom: 24px;">
+                        <h3 class="card-header"><i class="fas fa-id-card"></i> RFID Card Status</h3>
+                        <div style="margin-top: 16px;">
+                            <div class="form-group">
+                                <label>Current RFID Status</label>
+                                <input type="text" id="adminRfidStatus" readonly style="background: var(--bg-secondary); font-weight: 600;" placeholder="No RFID card linked">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RFID Card Assignment Card -->
+                    <div class="card" style="margin-bottom: 24px; border: 2px solid var(--primary-color);">
+                        <h3 class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin: -1px -1px 0 -1px; border-radius: 11px 11px 0 0;">
+                            <i class="fas fa-id-card"></i> Assign RFID Card
+                        </h3>
+                        <div style="padding: 20px;">
+                            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
+                                <p style="margin: 0; color: #1565c0; font-size: 0.95rem;">
+                                    <i class="fas fa-info-circle"></i> 
+                                    <strong>How to assign your RFID card:</strong>
+                                </p>
+                                <ol style="margin: 10px 0 0 20px; color: #1565c0; font-size: 0.9rem; line-height: 1.8;">
+                                    <li>Click in the field below</li>
+                                    <li>Scan your RFID card with the reader</li>
+                                    <li>Click "Assign RFID Card" to save</li>
+                                    <li>Once assigned, only you can modify it</li>
+                                </ol>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    RFID Card ID
+                                    <span style="color: var(--text-secondary); font-weight: normal; font-size: 0.85rem;">
+                                        (Click and scan your card)
+                                    </span>
+                                </label>
+                                <div style="display: flex; gap: 12px; align-items: center;">
+                                    <input 
+                                        type="text" 
+                                        id="adminRfidInput" 
+                                        placeholder="Click here and scan your RFID card"
+                                        style="flex: 1; font-family: monospace; font-size: 1.1rem;"
+                                        maxlength="50"
+                                    >
+                                    <button 
+                                        type="button" 
+                                        class="btn btn-secondary" 
+                                        id="clearAdminRfidBtn"
+                                        onclick="clearAdminRfidField()"
+                                        style="padding: 12px 20px;"
+                                    >
+                                        <i class="fas fa-times"></i> Clear
+                                    </button>
+                                </div>
+                                <small id="adminRfidHelpText" style="color: var(--text-secondary); display: block; margin-top: 8px;">
+                                    <i class="fas fa-shield-alt"></i> 
+                                    Your RFID card will be linked to your admin account for secure access.
+                                </small>
+                            </div>
+
+                            <div style="display: flex; gap: 12px; margin-top: 20px;">
+                                <!-- Assign Button (shown when no RFID) -->
+                                <button 
+                                    type="button" 
+                                    class="btn btn-primary" 
+                                    onclick="assignAdminRfid()"
+                                    style="flex: 1; padding: 14px;"
+                                >
+                                    <i class="fas fa-save"></i> Assign RFID Card
+                                </button>
+                                
+                                <!-- Update Button (shown when RFID exists) -->
+                                <button 
+                                    type="button" 
+                                    id="updateAdminRfidBtn"
+                                    class="btn btn-warning" 
+                                    onclick="updateAdminRfid()"
+                                    style="flex: 1; padding: 14px; display: none;"
+                                >
+                                    <i class="fas fa-edit"></i> Update RFID Card
+                                </button>
+                                
+                                <button 
+                                    type="button" 
+                                    class="btn btn-secondary" 
+                                    onclick="loadAdminProfile()"
+                                    style="padding: 14px 24px;"
+                                >
+                                    <i class="fas fa-undo"></i> Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Notice -->
+                    <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 8px;">
+                        <p style="margin: 0; color: #856404; font-size: 0.95rem;">
+                            <i class="fas fa-exclamation-triangle"></i> 
+                            <strong>Security Notice:</strong> Once you assign an RFID card, it will be permanently linked to your admin account. Only you can modify it through this interface.
+                        </p>
+                    </div>
                 </div>
             </section>
         </main>

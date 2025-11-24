@@ -367,10 +367,123 @@ async function searchById() {
     }
 }
 
+// Admin RFID activation function
+function activateAdminRFIDScan() {
+    const adminRfidStatus = document.getElementById('adminRfidStatus');
+    const adminRfidStatusText = document.getElementById('adminRfidStatusText');
+    const adminRfidCapture = document.getElementById('adminRfidCapture');
+    
+    // Show status and focus on capture input
+    adminRfidStatus.style.display = 'block';
+    adminRfidStatusText.textContent = 'Admin RFID scanner activated. Scan your admin card now...';
+    adminRfidCapture.focus();
+    
+    console.log('Admin RFID scanner activated. Ready for admin card scan.');
+}
+
+function initAdminRFIDCapture() {
+    const adminRfidCapture = document.getElementById('adminRfidCapture');
+    
+    if (!adminRfidCapture) return;
+    
+    let rfidBuffer = '';
+    let rfidTimeout = null;
+    
+    // Listen for input on the hidden admin capture field
+    adminRfidCapture.addEventListener('input', function() {
+        clearTimeout(rfidTimeout);
+        rfidBuffer = this.value.trim();
+        
+        // RFID readers typically send data quickly
+        rfidTimeout = setTimeout(async () => {
+            if (rfidBuffer.length >= 8) {
+                await handleAdminRFIDLogin(rfidBuffer);
+                rfidBuffer = '';
+                this.value = '';
+            }
+        }, 100);
+    });
+    
+    // Also listen for Enter key
+    adminRfidCapture.addEventListener('keypress', async function(e) {
+        if (e.key === 'Enter') {
+            clearTimeout(rfidTimeout);
+            const rfidId = this.value.trim();
+            if (rfidId.length >= 8) {
+                await handleAdminRFIDLogin(rfidId);
+            }
+            this.value = '';
+            rfidBuffer = '';
+        }
+    });
+}
+
+async function handleAdminRFIDLogin(rfidId) {
+    console.log('Admin RFID Login attempt with ID:', rfidId);
+    
+    const adminRfidStatusText = document.getElementById('adminRfidStatusText');
+    const adminRfidStatus = document.getElementById('adminRfidStatus');
+    
+    if (adminRfidStatusText) {
+        adminRfidStatusText.textContent = `Admin RFID detected: ${rfidId}. Verifying...`;
+    }
+    
+    try {
+        // Login using RFID
+        const response = await fetch(`${API_BASE_URL}/api/auth/rfid-login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ rfid_id: rfidId })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.token) {
+            // Check if user is admin
+            if (data.user.role === 'admin') {
+                // Store token and user data
+                setAuthToken(data.token);
+                setUserData(data.user);
+                
+                if (adminRfidStatusText) {
+                    adminRfidStatusText.textContent = `Admin ${data.user.full_name} verified! Redirecting to dashboard...`;
+                }
+                
+                // Redirect to admin dashboard with full access
+                setTimeout(() => {
+                    window.location.href = 'admin-dashboard.html';
+                }, 1500);
+                
+            } else {
+                // Not an admin - show error
+                if (adminRfidStatusText) {
+                    adminRfidStatusText.textContent = `Access Denied: This card is not registered as an admin. Role: ${data.user.role}`;
+                }
+                console.error('RFID card is not an admin card. Role:', data.user.role);
+            }
+        } else {
+            if (adminRfidStatusText) {
+                adminRfidStatusText.textContent = data.error || 'Admin RFID not found in system';
+            }
+        }
+        
+    } catch (error) {
+        console.error('Admin RFID login error:', error);
+        if (adminRfidStatusText) {
+            adminRfidStatusText.textContent = 'Connection error. Please try again.';
+        }
+    }
+}
+
 // Don't auto-start scanner on page load
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Hospital portal loaded. Click "Click to Scan RFID" to begin.');
     
-    // Initialize RFID capture
+    // Initialize RFID capture for patients/doctors
     initRFIDCapture();
+    
+    // Initialize Admin RFID capture
+    initAdminRFIDCapture();
 });

@@ -259,6 +259,10 @@ body {
     margin-left: 280px;
     padding: 30px;
     min-height: 100vh;
+    width: calc(100vw - 280px);
+    max-width: calc(100vw - 280px);
+    box-sizing: border-box;
+    overflow-x: auto;
 }
 
 /* Dashboard Header */
@@ -422,13 +426,18 @@ body {
 .table-container {
     background: var(--card-bg);
     border-radius: 12px;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: visible;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 100%;
 }
 
 table {
     width: 100%;
+    min-width: 1400px;
     border-collapse: collapse;
+    table-layout: auto;
 }
 
 thead {
@@ -449,6 +458,12 @@ td {
     padding: 16px;
     border-top: 1px solid var(--border-color);
     color: var(--text-secondary);
+}
+
+/* Actions column - prevent wrapping */
+td[style*="white-space: nowrap"] {
+    white-space: nowrap !important;
+    min-width: 300px;
 }
 
 tbody tr:hover {
@@ -752,9 +767,9 @@ tbody tr:hover {
 }
 
 /* ============================================
-   RESPONSIVE - Mobile Only (≤768px)
+   RESPONSIVE - Mobile Only (≤480px)
    ============================================ */
-@media (max-width: 768px) {
+@media (max-width: 480px) {
     /* Show hamburger menu */
     .mobile-menu-toggle {
         display: flex;
@@ -1380,7 +1395,7 @@ tbody tr:hover {
 }
 
 /* Responsive Design for AI Section */
-@media (max-width: 768px) {
+@media (max-width: 480px) {
     .ai-hero-content {
         padding: 32px 20px;
     }

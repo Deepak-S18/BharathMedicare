@@ -54,11 +54,50 @@ async function loadStats() {
         document.getElementById('recentUploads').textContent = stats.recent_activity.uploads_last_7_days;
         document.getElementById('recentRegistrations').textContent = stats.recent_activity.registrations_last_7_days;
 
-        // Update badge
+        // Update badges
         document.getElementById('pendingBadge').textContent = stats.users.pending_doctors;
+        
+        // Update quick action badges
+        const quickPendingBadge = document.getElementById('quickPendingBadge');
+        if (quickPendingBadge) {
+            quickPendingBadge.textContent = stats.users.pending_doctors;
+        }
+
+        // Load and display admin profile on dashboard
+        displayAdminDashboardProfile();
 
     } catch (error) {
         console.error('Failed to load stats:', error);
+    }
+}
+
+// Display admin profile on dashboard
+function displayAdminDashboardProfile() {
+    const user = getUserData();
+    
+    // Update admin name and email
+    const nameEl = document.getElementById('adminDashName');
+    const emailEl = document.getElementById('adminDashEmail');
+    const rfidStatusEl = document.getElementById('adminDashRfidStatus');
+    const memberSinceEl = document.getElementById('adminDashMemberSince');
+    
+    if (nameEl) nameEl.textContent = user.full_name || 'Admin';
+    if (emailEl) emailEl.textContent = user.email || '';
+    
+    // Update RFID status
+    if (rfidStatusEl) {
+        if (user.rfid_id) {
+            rfidStatusEl.innerHTML = '<i class="fas fa-check-circle"></i> Linked';
+            rfidStatusEl.style.color = 'var(--success-color)';
+        } else {
+            rfidStatusEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> Not Linked';
+            rfidStatusEl.style.color = 'var(--warning-color)';
+        }
+    }
+    
+    // Update member since
+    if (memberSinceEl) {
+        memberSinceEl.textContent = formatDate(user.created_at || new Date());
     }
 }
 
@@ -333,6 +372,7 @@ function showSection(section) {
     document.getElementById('usersSection').style.display = 'none';
     document.getElementById('auditSection').style.display = 'none';
     document.getElementById('contactSection').style.display = 'none';
+    document.getElementById('profileSection').style.display = 'none';
 
     // Remove active class from all menu items
     document.querySelectorAll('.sidebar-menu-link').forEach(link => {
@@ -356,6 +396,10 @@ function showSection(section) {
         case 'contact':
             document.getElementById('contactSection').style.display = 'block';
             loadContactMessages();
+            break;
+        case 'profile':
+            document.getElementById('profileSection').style.display = 'block';
+            loadAdminProfile();
             break;
     }
 }
@@ -454,6 +498,13 @@ async function loadContactMessages(status = null) {
         if (unreadBadge) {
             unreadBadge.textContent = counts.unread || 0;
             unreadBadge.style.display = (counts.unread > 0) ? 'inline-block' : 'none';
+        }
+        
+        // Update quick action badge
+        const quickUnreadBadge = document.getElementById('quickUnreadBadge');
+        if (quickUnreadBadge) {
+            quickUnreadBadge.textContent = counts.unread || 0;
+            quickUnreadBadge.style.display = (counts.unread > 0) ? 'inline-block' : 'none';
         }
         
         displayContactMessages();
@@ -623,5 +674,251 @@ async function deleteContactMessage(messageId) {
         loadContactMessages(currentContactFilter === 'all' ? null : currentContactFilter);
     } catch (error) {
         showError('Failed to delete message');
+    }
+}
+
+// Admin Profile Functions
+
+// Load admin profile
+async function loadAdminProfile() {
+    try {
+        const user = getUserData();
+        
+        // Fill profile fields
+        document.getElementById('adminName').value = user.full_name || '';
+        document.getElementById('adminEmail').value = user.email || '';
+        document.getElementById('adminCreated').value = formatDate(user.created_at || new Date());
+        
+        // Update RFID status display
+        updateAdminRfidStatusDisplay(user);
+        
+        // RFID input field handling
+        const rfidInput = document.getElementById('adminRfidInput');
+        const clearBtn = document.getElementById('clearAdminRfidBtn');
+        const helpText = document.getElementById('adminRfidHelpText');
+        
+        rfidInput.value = user.rfid_id || '';
+        
+        if (user.rfid_id) {
+            // RFID already linked - completely lock it
+            rfidInput.readOnly = true;
+            rfidInput.style.background = 'var(--bg-secondary)';
+            rfidInput.style.cursor = 'not-allowed';
+            rfidInput.placeholder = 'RFID card permanently linked';
+            clearBtn.style.display = 'none';
+            
+            // Hide the assign button and show update button instead
+            const assignBtn = document.querySelector('button[onclick="assignAdminRfid()"]');
+            if (assignBtn) {
+                assignBtn.style.display = 'none';
+            }
+            
+            // Show update button
+            const updateBtn = document.getElementById('updateAdminRfidBtn');
+            if (updateBtn) {
+                updateBtn.style.display = 'inline-flex';
+            }
+            
+            helpText.innerHTML = '<i class="fas fa-lock"></i> <strong>RFID card is permanently linked.</strong> This card will remain assigned to your account. Only you can update it using the "Update RFID" button.';
+            helpText.style.color = 'var(--warning-color)';
+        } else {
+            // No RFID yet - allow admin to link it
+            rfidInput.readOnly = false;
+            rfidInput.style.background = '';
+            rfidInput.style.cursor = '';
+            rfidInput.placeholder = 'Click here and scan your RFID card';
+            clearBtn.style.display = 'inline-flex';
+            
+            // Show assign button, hide update button
+            const assignBtn = document.querySelector('button[onclick="assignAdminRfid()"]');
+            if (assignBtn) {
+                assignBtn.style.display = 'inline-flex';
+            }
+            
+            const updateBtn = document.getElementById('updateAdminRfidBtn');
+            if (updateBtn) {
+                updateBtn.style.display = 'none';
+            }
+            
+            helpText.innerHTML = '<i class="fas fa-shield-alt"></i> Your RFID card will be permanently linked to your admin account for secure access.';
+            helpText.style.color = 'var(--text-secondary)';
+        }
+        
+    } catch (error) {
+        console.error('Failed to load admin profile:', error);
+        showError('Failed to load profile');
+    }
+}
+
+// Update RFID status display
+function updateAdminRfidStatusDisplay(user) {
+    const rfidStatusField = document.getElementById('adminRfidStatus');
+    if (!rfidStatusField) return;
+    
+    if (user.rfid_id) {
+        rfidStatusField.value = `✓ Linked: ${user.rfid_id}`;
+        rfidStatusField.style.color = 'var(--success-color)';
+        rfidStatusField.style.fontWeight = '600';
+    } else {
+        rfidStatusField.value = '⚠ No RFID card linked';
+        rfidStatusField.style.color = 'var(--warning-color)';
+        rfidStatusField.style.fontWeight = 'normal';
+    }
+}
+
+// Assign RFID card to admin (first time only)
+async function assignAdminRfid() {
+    const user = getUserData();
+    
+    // Prevent assignment if RFID already exists
+    if (user.rfid_id) {
+        showError('RFID card is already assigned. Use "Update RFID" button to change it.');
+        return;
+    }
+    
+    const rfidInput = document.getElementById('adminRfidInput');
+    const rfidValue = rfidInput.value.trim();
+    
+    if (!rfidValue) {
+        showError('Please scan or enter an RFID card ID');
+        rfidInput.focus();
+        return;
+    }
+    
+    if (rfidValue.length < 8) {
+        showError('RFID card ID must be at least 8 characters');
+        return;
+    }
+    
+    const confirmMsg = `⚠️ IMPORTANT: Once assigned, this RFID card will be permanently linked to your admin account.\n\nRFID Card: ${rfidValue}\n\nAre you sure you want to proceed?`;
+    
+    if (!confirmAction(confirmMsg)) {
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        // Update admin's own RFID
+        const response = await apiCall(API_ENDPOINTS.UPDATE_PROFILE, {
+            method: 'POST',
+            body: JSON.stringify({
+                rfid_id: rfidValue
+            })
+        });
+        
+        // Update stored user data
+        setUserData(response.user);
+        
+        // Update display
+        updateAdminRfidStatusDisplay(response.user);
+        
+        // Update input field
+        const rfidInput = document.getElementById('adminRfidInput');
+        const clearBtn = document.getElementById('clearAdminRfidBtn');
+        const helpText = document.getElementById('adminRfidHelpText');
+        
+        rfidInput.value = response.user.rfid_id;
+        rfidInput.readOnly = true;
+        rfidInput.style.background = 'var(--bg-secondary)';
+        rfidInput.style.cursor = 'not-allowed';
+        rfidInput.placeholder = 'RFID card permanently linked';
+        clearBtn.style.display = 'none';
+        
+        // Hide assign button, show update button
+        const assignBtn = document.querySelector('button[onclick="assignAdminRfid()"]');
+        if (assignBtn) assignBtn.style.display = 'none';
+        
+        const updateBtn = document.getElementById('updateAdminRfidBtn');
+        if (updateBtn) updateBtn.style.display = 'inline-flex';
+        
+        helpText.innerHTML = '<i class="fas fa-lock"></i> <strong>RFID card is permanently linked.</strong> This card will remain assigned to your account.';
+        helpText.style.color = 'var(--warning-color)';
+        
+        showSuccess('RFID card assigned successfully! You can now use it at the hospital portal.');
+        
+    } catch (error) {
+        console.error('RFID assignment error:', error);
+        showError(error.message || 'Failed to assign RFID card');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Update RFID card (for already assigned cards)
+async function updateAdminRfid() {
+    const user = getUserData();
+    
+    if (!user.rfid_id) {
+        showError('No RFID card is currently assigned. Use "Assign RFID Card" instead.');
+        return;
+    }
+    
+    // Prompt for new RFID
+    const newRfid = prompt(`⚠️ UPDATE RFID CARD\n\nCurrent RFID: ${user.rfid_id}\n\nPlease scan or enter your NEW RFID card ID:`);
+    
+    if (!newRfid) {
+        return; // User cancelled
+    }
+    
+    const trimmedRfid = newRfid.trim();
+    
+    if (trimmedRfid.length < 8) {
+        showError('RFID card ID must be at least 8 characters');
+        return;
+    }
+    
+    if (trimmedRfid === user.rfid_id) {
+        showError('New RFID card is the same as the current one');
+        return;
+    }
+    
+    const confirmMsg = `⚠️ CONFIRM RFID UPDATE\n\nYou are about to change your RFID card:\n\nFrom: ${user.rfid_id}\nTo: ${trimmedRfid}\n\nThis action will update your permanent RFID assignment.\n\nAre you absolutely sure?`;
+    
+    if (!confirmAction(confirmMsg)) {
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await apiCall(API_ENDPOINTS.UPDATE_PROFILE, {
+            method: 'POST',
+            body: JSON.stringify({
+                rfid_id: trimmedRfid
+            })
+        });
+        
+        // Update stored user data
+        setUserData(response.user);
+        
+        // Update display
+        updateAdminRfidStatusDisplay(response.user);
+        
+        // Update input field
+        const rfidInput = document.getElementById('adminRfidInput');
+        rfidInput.value = response.user.rfid_id;
+        
+        showSuccess('RFID card updated successfully! Your new card is now active.');
+        
+        // Reload profile to refresh all displays
+        await loadAdminProfile();
+        
+    } catch (error) {
+        console.error('RFID update error:', error);
+        showError(error.message || 'Failed to update RFID card');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Clear admin RFID field
+function clearAdminRfidField() {
+    const user = getUserData();
+    if (!user.rfid_id) {
+        document.getElementById('adminRfidInput').value = '';
+        showSuccess('Field cleared');
+    } else {
+        showError('RFID is already linked and cannot be cleared. Use "Update RFID" to change it.');
     }
 }

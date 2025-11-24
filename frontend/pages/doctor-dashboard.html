@@ -7,7 +7,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="../assets/css/theme.css">
-    <link rel="stylesheet" href="../assets/css/dashboard.css?v=AI-ADDED">
+    <link rel="stylesheet" href="../assets/css/dashboard.css?v=2024-ROOT-FIX">
+    <style>
+        /* Force desktop view */
+        @media (min-width: 1px) {
+            .mobile-menu-toggle {
+                display: none !important;
+            }
+            .sidebar {
+                transform: translateX(0) !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <div id="loading">
@@ -44,6 +55,12 @@
                 <li class="sidebar-menu-item">
                     <a href="javascript:void(0)" class="sidebar-menu-link" onclick="showSection('patients')">
                         <i class="fas fa-users" style="margin-right: 12px; width: 20px;"></i> My Patients
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="javascript:void(0)" class="sidebar-menu-link" onclick="showSection('patientSearch')">
+                        <i class="fas fa-search" style="margin-right: 12px; width: 20px;"></i> Patient Search
+                        <span class="badge-new" style="background: #10b981;">NEW</span>
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
@@ -220,6 +237,59 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </section>
+
+            <!-- Patient Search & Prescription Section -->
+            <section id="patientSearchSection" style="display: none;">
+                <div class="dashboard-header">
+                    <h1><i class="fas fa-search"></i> Patient Search & Prescription</h1>
+                    <p>Search for any patient and write prescriptions (walk-ins, emergencies, etc.)</p>
+                </div>
+
+                <!-- Search Card -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <h3 class="card-header"><i class="fas fa-search"></i> Search Patient</h3>
+                    <div style="margin-top: 16px;">
+                        <div class="form-group">
+                            <label for="searchPatientInput">Search by Patient ID, Name, Email, or Phone</label>
+                            <div style="display: flex; gap: 12px;">
+                                <input 
+                                    type="text" 
+                                    id="searchPatientInput" 
+                                    placeholder="Enter Patient ID (PAT-...), name, email, or phone number"
+                                    style="flex: 1;"
+                                    onkeypress="if(event.key==='Enter') searchAllPatients()"
+                                >
+                                <button class="btn btn-primary" onclick="searchAllPatients()" style="padding: 12px 24px;">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                            <small style="color: var(--text-secondary); display: block; margin-top: 8px;">
+                                <i class="fas fa-info-circle"></i> 
+                                Search for any patient in the system to view records and write prescriptions
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Results -->
+                <div id="patientSearchResults" style="display: none;">
+                    <div class="card">
+                        <h3 class="card-header"><i class="fas fa-user"></i> Search Results</h3>
+                        <div id="searchResultsContainer" style="margin-top: 16px;">
+                            <!-- Results will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No Results Message -->
+                <div id="noSearchResults" style="display: none;">
+                    <div class="card" style="text-align: center; padding: 40px;">
+                        <i class="fas fa-search" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 16px;"></i>
+                        <h3 style="color: var(--text-primary); margin-bottom: 8px;">No Patients Found</h3>
+                        <p style="color: var(--text-secondary);">Try searching with a different Patient ID, name, email, or phone number</p>
+                    </div>
                 </div>
             </section>
 
@@ -595,13 +665,29 @@
                             <input type="text" id="profileCreated" readonly style="background: var(--bg-secondary);">
                         </div>
 
-                        <div class="form-group">
-                            <label>
-                                RFID Card ID 
-                                <span style="color: var(--text-secondary); font-weight: normal; font-size: 0.85rem;">
-                                    (Optional - For hospital kiosk access)
-                                </span>
-                            </label>
+                        <div style="margin-top: 16px;">
+                            <div class="form-group">
+                                <label>
+                                    <i class="fas fa-id-card"></i> RFID Card Status
+                                </label>
+                                <input type="text" id="profileRfidStatus" readonly style="background: var(--bg-secondary);" placeholder="No RFID card linked">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RFID Card Section -->
+                    <div class="card" style="margin-bottom: 24px;">
+                        <h3 class="card-header">
+                            <i class="fas fa-id-card"></i> RFID Card (Optional)
+                        </h3>
+                        <div style="margin-top: 16px;">
+                            <div class="form-group">
+                                <label>
+                                    RFID Card ID 
+                                    <span style="color: var(--text-secondary); font-weight: normal; font-size: 0.85rem;">
+                                        (Optional - For hospital kiosk access)
+                                    </span>
+                                </label>
                             <div style="display: flex; gap: 12px; align-items: center;">
                                 <input 
                                     type="text" 
@@ -620,10 +706,11 @@
                                     <i class="fas fa-times"></i> Clear
                                 </button>
                             </div>
-                            <small id="rfidHelpText" style="color: var(--text-secondary); display: block; margin-top: 8px;">
-                                <i class="fas fa-info-circle"></i> 
-                                Click in the field above and scan your RFID card. Once linked, only admin can change it.
-                            </small>
+                                <small id="rfidHelpText" style="color: var(--text-secondary); display: block; margin-top: 8px;">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Click in the field above and scan your RFID card. Once linked, only admin can change it.
+                                </small>
+                            </div>
                         </div>
                     </div>
 
@@ -637,6 +724,39 @@
                         </button>
                     </div>
                 </form>
+
+                <!-- Change Password Section -->
+                <div class="card" style="margin-top: 24px; max-width: 900px; margin-left: auto; margin-right: auto;">
+                    <h3 class="card-header"><i class="fas fa-lock"></i> Change Password</h3>
+                    <form id="changePasswordForm" onsubmit="handleChangePassword(event)" style="margin-top: 16px;">
+                        <div class="form-group">
+                            <label>Current Password *</label>
+                            <input type="password" id="currentPassword" required placeholder="Enter your current password">
+                        </div>
+
+                        <div class="form-group">
+                            <label>New Password *</label>
+                            <input type="password" id="newPassword" required placeholder="Enter new password">
+                            <small style="color: var(--text-secondary); display: block; margin-top: 4px;">
+                                Password must be at least 8 characters with uppercase, lowercase, number, and special character
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Confirm New Password *</label>
+                            <input type="password" id="confirmPassword" required placeholder="Re-enter new password">
+                        </div>
+
+                        <div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary" style="padding: 12px 28px;">
+                                <i class="fas fa-key"></i> Change Password
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="resetPasswordForm()" style="padding: 12px 28px;">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </section>
         </main>
     </div>
